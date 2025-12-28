@@ -114,28 +114,56 @@ async function mostrarMenu(user) {
 }
 
 // 5. FUNCIÓN PARA QUE EL ADMIN AGREGUE NUEVOS MENÚS
-document.getElementById('admin-add-menu').onclick = async () => {
-    const titulo = prompt("Nombre de la nueva función (Ej: Reportar Accidente):");
-    const icono = prompt("Icono de FontAwesome (Ej: fa-helmet-safety):");
-    const soloAdmin = confirm("¿Esta función es SOLO para administradores?");
+// Lista de iconos comunes para SST (puedes añadir más a esta lista)
+const iconosSST = [
+    'fa-helmet-safety', 'fa-fire-extinguisher', 'fa-ambulance', 'fa-truck-monster', 
+    'fa-list-check', 'fa-user-shield', 'fa-hard-drive', 'fa-file-medical', 
+    'fa-radiation', 'fa-biohazard', 'fa-exclamation-triangle', 'fa-mask-face',
+    'fa-plug', 'fa-screwdriver-wrench', 'fa-eye', 'fa-ear-listen'
+];
 
-    if (titulo && icono) {
+let iconoSeleccionado = '';
+
+document.getElementById('admin-add-menu').onclick = () => {
+    document.getElementById('modal-iconos').style.display = 'flex';
+    mostrarIconos();
+};
+
+function mostrarIconos() {
+    const contenedor = document.getElementById('lista-iconos');
+    contenedor.innerHTML = '';
+    
+    iconosSST.forEach(icon => {
+        const div = document.createElement('div');
+        div.className = 'menu-card';
+        div.style.padding = '10px';
+        div.innerHTML = `<i class="fas ${icon}" style="font-size: 24px;"></i>`;
+        div.onclick = () => seleccionarEsteIcono(icon);
+        contenedor.appendChild(div);
+    });
+}
+
+async function seleccionarEsteIcono(icon) {
+    const titulo = prompt("Nombre de la nueva función:");
+    const soloAdmin = confirm("¿Es solo para administradores?");
+
+    if (titulo) {
         const { error } = await _supabase
             .from('config_menus')
             .insert([{ 
                 titulo: titulo, 
-                icono: icono, 
+                icono: icon, 
                 solo_admin: soloAdmin, 
                 color: '#00d2ff' 
             }]);
 
-        if (error) {
-            alert("Error al guardar: " + error.message);
-        } else {
-            alert("Nueva función agregada con éxito.");
-            location.reload(); // Recargar para mostrar el nuevo botón
-        }
+        if (!error) location.reload();
     }
+}
+
+function cerrarModalIconos() {
+    document.getElementById('modal-iconos').style.display = 'none';
+}
 };
 
 // 6. CERRAR SESIÓN
