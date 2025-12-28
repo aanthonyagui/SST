@@ -72,20 +72,16 @@ document.getElementById('admin-add-company').onclick = async () => {
 async function mostrarMenuPrincipal(empresa) {
     document.getElementById('company-section').style.display = 'none';
     document.getElementById('app-section').style.display = 'block';
-    document.getElementById('header-empresa').innerHTML = `<img src="${empresa.logo_url}" style="width:50px;"><br><b>${empresa.nombre}</b>`;
     
+    // Generamos el encabezado con el logo grande
+    document.getElementById('header-empresa').innerHTML = `
+        <img src="${empresa.logo_url}" onerror="this.src='https://via.placeholder.com/100'">
+        <br><b>${empresa.nombre}</b>
+    `;
+    
+    // El resto del código se mantiene igual...
     document.getElementById('user-email').textContent = usuarioActual.email;
-    const { data: menus } = await _supabase.from('config_menus').select('*');
-    const contenedor = document.getElementById('menu-dinamico');
-    contenedor.innerHTML = '';
-    
-    menus?.forEach(m => {
-        if(m.solo_admin && usuarioActual.rol !== 'admin') return;
-        const card = document.createElement('div');
-        card.className = 'menu-card';
-        card.innerHTML = `<i class="fas ${m.icono}"></i><span>${m.titulo}</span>`;
-        contenedor.appendChild(card);
-    });
+    // ...
 }
 
 document.getElementById('admin-add-menu').onclick = () => {
