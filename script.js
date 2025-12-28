@@ -23,10 +23,10 @@ function animate() {
 }
 initParticles(); animate();
 
-// --- LÓGICA DE NAVEGACIÓN ---
+// --- LÓGICA DE USUARIO ---
 let usuarioActual = null;
-
 const loginBtn = document.getElementById('login-button');
+
 loginBtn.onclick = async () => {
     const email = document.getElementById('email').value.toLowerCase().trim();
     const { data } = await _supabase.from('autorizados').select('*').eq('email', email).single();
@@ -41,7 +41,6 @@ async function mostrarSeleccionEmpresa() {
     document.getElementById('login-section').style.display = 'none';
     document.getElementById('app-section').style.display = 'none';
     document.getElementById('company-section').style.display = 'block';
-
     if(usuarioActual.rol === 'admin') document.getElementById('admin-add-company').style.display = 'block';
 
     const { data: empresas } = await _supabase.from('empresas').select('*');
@@ -51,27 +50,65 @@ async function mostrarSeleccionEmpresa() {
     empresas?.forEach(emp => {
         const card = document.createElement('div');
         card.className = 'menu-card';
-        card.innerHTML = `<img src="${emp.logo_url || 'https://via.placeholder.com/50'}" onerror="this.src='https://via.placeholder.com/50'"><span>${emp.nombre}</span>`;
+        card.innerHTML = `<img src="${emp.logo_url}" alt="logo"><span>${emp.nombre}</span>`;
         card.onclick = () => mostrarMenuPrincipal(emp);
         contenedor.appendChild(card);
     });
 }
 
+// --- AGREGAR EMPRESA CON SUBIDA DE IMAGEN ---
+document.getElementById('admin-add-company').onclick = async () => {
+    const nombre = prompt("Nombre de la empresa:");
+    if (!nombre) return;
+
+    const opcion = confirm("¿Deseas subir una imagen desde tu PC? (Cancelar para pegar enlace)");
+    let logo_url = "";
+
+    if (opcion) {
+        const fileInput = document.getElementById('file-logo');
+        fileInput.click();
+        
+        fileInput.onchange = async (e) => {
+            const file = e.target.files[0];
+            const fileName = `${Date.now()}_${file.name}`;
+            
+            // Subir al Storage
+            const { data, error } = await _supabase.storage
+                .from('logos')
+                .upload(fileName, file);
+
+            if (error) return alert("Error al subir: " + error.message);
+
+            // Obtener URL Pública
+            const { data: publicUrl } = _supabase.storage
+                .from('logos')
+                .getPublicUrl(fileName);
+            
+            logo_url = publicUrl.publicUrl;
+            await guardarEmpresaBD(nombre, logo_url);
+        };
+    } else {
+        logo_url = prompt("Pega el enlace directo de la imagen:");
+        if (logo_url) await guardarEmpresaBD(nombre, logo_url);
+    }
+};
+
+async function guardarEmpresaBD(nombre, url) {
+    const { error } = await _supabase.from('empresas').insert([{ nombre, logo_url: url }]);
+    if (!error) mostrarSeleccionEmpresa();
+}
+
+// --- MENÚ PRINCIPAL ---
 async function mostrarMenuPrincipal(empresa) {
     document.getElementById('company-section').style.display = 'none';
     document.getElementById('app-section').style.display = 'block';
-    
-    document.getElementById('header-empresa').innerHTML = `
-        <img src="${empresa.logo_url}" style="width:60px; margin-bottom:10px;">
-        <h4>${empresa.nombre}</h4>
-    `;
+    document.getElementById('header-empresa').innerHTML = `<img src="${empresa.logo_url}" style="width:50px;"><br><b>${empresa.nombre}</b>`;
     
     document.getElementById('user-email').textContent = usuarioActual.email;
-    if(usuarioActual.rol === 'admin') document.getElementById('admin-add-menu').style.display = 'block';
-
     const { data: menus } = await _supabase.from('config_menus').select('*');
     const contenedor = document.getElementById('menu-dinamico');
     contenedor.innerHTML = '';
+    
     menus?.forEach(m => {
         if(m.solo_admin && usuarioActual.rol !== 'admin') return;
         const card = document.createElement('div');
@@ -81,37 +118,7 @@ async function mostrarMenuPrincipal(empresa) {
     });
 }
 
-// --- ACCIONES DE ADMIN ---
-document.getElementById('admin-add-company').onclick = async () => {
-    const nombre = prompt("Nombre de la empresa:");
-    const logo_url = prompt("URL del logo (Link de la imagen):");
-    if(nombre && logo_url) {
-        await _supabase.from('empresas').insert([{ nombre, logo_url }]);
-        mostrarSeleccionEmpresa();
-    }
-};
-
-document.getElementById('admin-add-menu').onclick = () => {
-    document.getElementById('modal-iconos').style.display = 'flex';
-    const lista = document.getElementById('lista-iconos');
-    lista.innerHTML = '';
-    iconosSST.forEach(icon => {
-        const div = document.createElement('div');
-        div.className = 'menu-card';
-        div.innerHTML = `<i class="fas ${icon}"></i>`;
-        div.onclick = async () => {
-            const titulo = prompt("Título de la función:");
-            if(titulo) {
-                await _supabase.from('config_menus').insert([{ titulo, icono: icon, solo_admin: confirm("¿Solo Admin?"), color: '#00d2ff' }]);
-                location.reload();
-            }
-        };
-        lista.appendChild(div);
-    });
-};
-
 window.regresarAEmpresas = () => mostrarSeleccionEmpresa();
-document.getElementById('btn-cerrar-modal').onclick = () => document.getElementById('modal-iconos').style.display = 'none';
 document.getElementById('logout-button').onclick = () => { localStorage.clear(); location.reload(); };
 
 const sesion = localStorage.getItem('userSST');
