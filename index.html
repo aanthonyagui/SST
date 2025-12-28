@@ -1,56 +1,19 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SST Pro Minería</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
-<body>
-    <canvas id="canvas-bg"></canvas>
-
-    <div class="container">
-        <div id="login-section">
-            <img src="logo-sst.png" style="width: 70px; margin-bottom: 10px;" alt="Logo">
-            <h2>SST Dashboard</h2>
-            <p>Minería Segura</p>
-            <input type="email" id="email" placeholder="Correo autorizado">
-            <button id="login-button">Ingresar al Sistema</button>
-        </div>
-
-        <div id="company-section" style="display:none;">
-            <h3>Seleccione Empresa</h3>
-            <div id="lista-empresas" class="menu-grid"></div>
-            <button id="admin-add-company" class="admin-only" style="display:none; background: #2ecc71; margin-top: 15px;">
-                <i class="fas fa-building"></i> Agregar Empresa
-            </button>
-        </div>
-
-        <div id="app-section" style="display:none;">
-            <div id="header-empresa"></div>
-            <h3>Panel de Control</h3>
-            <p>Usuario: <b id="user-email"></b> <br> <span id="user-role" style="color:#00d2ff; font-size:0.8em;"></span></p>
-            <div class="menu-grid" id="menu-dinamico"></div>
-            <button id="admin-add-menu" class="admin-only" style="display:none; background: #f1c40f; color: #000; margin-top: 20px;">
-                <i class="fas fa-plus-circle"></i> Agregar Función
-            </button>
-            <button onclick="regresarAEmpresas()" style="background:#555; margin-top:10px;">Cambiar Empresa</button>
-            <button id="logout-button">Salir</button>
+<div id="modal-empresa" class="modal" style="display:none;">
+    <div class="container" style="max-width: 400px;">
+        <h3>Nueva Empresa</h3>
+        <input type="text" id="nombre-empresa" placeholder="Nombre de la Empresa">
+        <p style="font-size: 0.8em; margin-top: 10px;">Opción 1: Subir desde PC</p>
+        <button onclick="document.getElementById('file-logo').click()" style="background: #2ecc71;">
+            <i class="fas fa-upload"></i> Seleccionar Imagen
+        </button>
+        <input type="file" id="file-logo" style="display:none;" accept="image/*">
+        
+        <p style="font-size: 0.8em; margin-top: 10px;">Opción 2: Enlace Web</p>
+        <input type="text" id="url-logo-link" placeholder="Pegue el enlace aquí">
+        
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button onclick="guardarEmpresaCompleta()" id="btn-guardar-emp">Guardar</button>
+            <button onclick="cerrarModalEmpresa()" style="background: #555;">Cancelar</button>
         </div>
     </div>
-
-    <div id="modal-iconos" class="modal" style="display:none;">
-        <div class="container" style="max-width: 450px; max-height: 80vh; overflow-y: auto;">
-            <h3>Seleccione un Icono</h3>
-            <div id="lista-iconos" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px;"></div>
-            <button id="btn-cerrar-modal" style="margin-top: 20px; background: #555;">Cancelar</button>
-        </div>
-    </div>
-
-    <input type="file" id="file-logo" style="display:none;" accept="image/*">
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script type="module" src="script.js"></script>
-</body>
-</html>
+</div>
