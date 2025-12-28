@@ -81,4 +81,59 @@ img { object-fit: contain; }
 
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 100; }
 .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.menu-card { background: rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
+.menu-card { background: rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; cursor: pointer; display: flex; flex-direction: column; align-items: center; } /* --- ESTILOS RESPONSIVE (MÓVIL) --- */
+
+/* Botón hamburguesa: Oculto en PC, visible en Móvil */
+#menu-toggle {
+    display: none; 
+    background: transparent; 
+    color: var(--primary); 
+    font-size: 1.5rem; 
+    padding: 10px; 
+    width: auto; 
+    margin-bottom: 15px;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* OVERLAY: Fondo oscuro cuando se abre el menú */
+#sidebar-overlay {
+    display: none;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 90; /* Debajo del sidebar, encima del contenido */
+    backdrop-filter: blur(3px);
+}
+
+/* MEDIA QUERY: Solo aplica en pantallas menores a 768px (Celulares/Tablets) */
+@media (max-width: 768px) {
+    .dashboard-layout {
+        width: 100vw; height: 100vh; /* Pantalla completa */
+        border-radius: 0; /* Sin bordes redondeados en móvil */
+        border: none;
+    }
+
+    /* El menú se vuelve "flotante" y se esconde a la izquierda */
+    .sidebar {
+        position: absolute;
+        top: 0; left: 0;
+        height: 100%;
+        z-index: 100; /* Por encima de todo */
+        background: #1a1a1a; /* Fondo sólido para que no se vea lo de atrás */
+        transform: translateX(-100%); /* ESCONDIDO A LA IZQUIERDA */
+        transition: transform 0.3s ease; /* Animación suave */
+        box-shadow: 4px 0 15px rgba(0,0,0,0.5);
+    }
+
+    /* Clase para MOSTRAR el menú */
+    .sidebar.active {
+        transform: translateX(0); /* VUELVE A SU SITIO */
+    }
+
+    /* Mostrar botón hamburguesa */
+    #menu-toggle { display: block; }
+    
+    /* Ajustes de contenido */
+    .content-area { padding: 15px; }
+    .worker-grid { grid-template-columns: 1fr; } /* 1 columna en móvil */
+    .form-grid { grid-template-columns: 1fr; } /* Formularios en 1 columna */
+}
