@@ -1,8 +1,8 @@
 /* =========================================
-   STYLE.CSS - TU VERSIÓN ORIGINAL MEJORADA
+   STYLE.CSS - TU VERSIÓN ORIGINAL (RESPETADA)
    ========================================= */
 :root {
-    --primary: #00d2ff;       /* Azul Neón */
+    --primary: #00d2ff;       /* Azul Cian Neón */
     --danger: #e74c3c;        /* Rojo */
     --success: #2ecc71;       /* Verde */
     --text: #ffffff;          /* Blanco */
@@ -73,7 +73,7 @@ body {
 /* CONTENIDO */
 .content-area { flex: 1; padding: 25px; overflow-y: auto; position: relative; }
 
-/* PESTAÑAS Y BOTONES */
+/* ESTILOS DE TUS BOTONES ORIGINALES */
 .header-tools { display: flex; flex-direction: column; }
 .tab-btn {
     background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #aaa;
@@ -81,23 +81,14 @@ body {
     display: inline-flex; align-items: center; gap: 8px; font-size: 0.9em; white-space: nowrap;
 }
 .tab-btn:hover { background: rgba(255,255,255,0.1); }
-.tab-btn.active { background: var(--primary); color: #000; border-color: var(--primary); font-weight: bold; box-shadow: 0 0 10px rgba(0, 210, 255, 0.4); }
+.tab-btn.active {
+    background: var(--primary); /* Ese cian que te gusta */
+    color: #000;
+    border-color: var(--primary);
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(0, 210, 255, 0.4);
+}
 .badge { background: rgba(0,0,0,0.3); color: white; border-radius: 10px; padding: 2px 6px; font-size: 0.8em; }
-
-/* DROPDOWN (MENÚ FLOTANTE) */
-.dropdown { position: relative; display: inline-block; }
-.dropdown-content {
-    display: none; position: absolute; right: 0; top: 100%;
-    background-color: #222; min-width: 200px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.9);
-    border: 1px solid #444; border-radius: 8px; z-index: 2000;
-}
-.dropdown-content a {
-    color: white; padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px;
-    border-bottom: 1px solid #333; font-size: 0.9em; cursor: pointer;
-}
-.dropdown-content a:hover { background: var(--primary); color: black; }
-.show { display: block; }
 
 /* GRID TRABAJADORES */
 .worker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; margin-top: 15px; }
@@ -115,6 +106,7 @@ body {
 .w-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
 /* FORMULARIOS */
+.form-scroll { max-height: 75vh; overflow-y: auto; padding-right: 10px; }
 .seccion-form { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 12px; margin-bottom: 20px; }
 .seccion-form h4 { margin-top: 0; color: var(--primary); border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 8px; margin-bottom: 15px; font-size: 1.1em; }
 .foto-perfil { width: 120px; height: 120px; object-fit: cover; border-radius: 10px; border: 2px solid #555; margin-bottom: 10px; background: #222; }
@@ -147,7 +139,22 @@ button:hover { filter: brightness(1.2); }
 }
 .menu-card img { width: 70px; height: 70px; object-fit: contain; margin-bottom: 10px; }
 
-/* RESPONSIVE MÓVIL */
+/* DROPDOWN (ESTILOS BASE) */
+.dropdown { position: relative; display: inline-block; }
+.dropdown-content {
+    display: none; position: absolute; right: 0; top: 100%;
+    background-color: #222; min-width: 200px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.9);
+    border: 1px solid #444; border-radius: 8px; z-index: 2000;
+}
+.dropdown-content a {
+    color: white; padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid #333; font-size: 0.9em; cursor: pointer;
+}
+.dropdown-content a:hover { background: var(--primary); color: black; }
+.show { display: block; }
+
+/* RESPONSIVE MÓVIL (AQUÍ ESTÁ EL ARREGLO) */
 #menu-toggle, #sidebar-overlay { display: none; }
 
 @media (max-width: 768px) {
@@ -157,19 +164,23 @@ button:hover { filter: brightness(1.2); }
     
     .sidebar {
         position: fixed; top: 0; left: 0; height: 100vh; width: 80%; max-width: 300px;
-        z-index: 200; background: #111; transform: translateX(-100%);
+        z-index: 300; background: #111; transform: translateX(-100%);
         box-shadow: 10px 0 30px rgba(0,0,0,0.9);
     }
     .sidebar.active { transform: translateX(0); }
     .sidebar-footer { background: #1a1a1a; padding: 15px; position: sticky; bottom: 0; }
     
-    .content-area { height: auto; padding: 15px; overflow: visible; padding-bottom: 100px; }
+    .content-area { height: auto; padding: 15px; overflow: visible; padding-bottom: 120px; }
     .form-grid { grid-template-columns: 1fr; }
     .multi-select-box { grid-column: span 1; }
     .worker-grid { grid-template-columns: 1fr; }
-    .desktop-text { display: none; }
-    #tab-container { overflow-x: auto; padding-bottom: 5px; }
+    .desktop-text { display: none; } /* Ocultar texto en botones */
     
+    #tab-container { 
+        display: flex; gap: 5px; overflow-x: auto; padding-bottom: 5px; 
+    }
+    .tab-btn { padding: 8px 12px; }
+
     #menu-toggle {
         display: inline-block; position: sticky; top: 10px; z-index: 95;
         background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.3);
@@ -178,16 +189,8 @@ button:hover { filter: brightness(1.2); }
     }
     #sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 90; }
 
-    /* --- MENÚ FLOTANTE "BONITO" PARA MÓVIL --- */
+    /* --- ESTO HACE QUE EL MENÚ SE VEA BONITO EN CELULAR --- */
     .dropdown-content {
         position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
         width: 85%; max-width: 300px;
-        background: rgba(20, 20, 20, 0.98); border: 1px solid var(--primary);
-        box-shadow: 0 0 50px rgba(0,0,0,0.9); padding: 10px 0; border-radius: 15px;
-    }
-    .dropdown.show::before {
-        content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(0,0,0,0.8); z-index: -1; backdrop-filter: blur(5px);
-    }
-    .dropdown-content a { padding: 15px; font-size: 1.1em; justify-content: center; }
-}
+        background: rgba(20, 20, 20
