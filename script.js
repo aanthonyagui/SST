@@ -26,3 +26,20 @@ async function cargarMenusDinamicos(rolUsuario) {
         contenedor.appendChild(card);
     });
 }
+async function guardarNuevoMenu() {
+    const titulo = prompt("Nombre de la nueva función:");
+    const icono = prompt("Icono de FontAwesome (ej: fa-helmet-safety):");
+    
+    if (titulo && icono) {
+        const { error } = await _supabase
+            .from('config_menus')
+            .insert([{ 
+                titulo: titulo, 
+                icono: icono, 
+                color: '#00d2ff', 
+                solo_admin: false 
+            }]);
+
+        if (!error) location.reload(); // Recarga para ver el nuevo botón
+    }
+}
