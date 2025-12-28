@@ -1,74 +1,63 @@
-:root { --primary: #00d2ff; --text: #ffffff; }
+/* ... (Mantén tus estilos previos de root, body, container) ... */
 
-body { 
-    margin: 0; overflow: hidden; background: #050505; 
-    font-family: 'Segoe UI', sans-serif; color: var(--text); 
-    display: flex; justify-content: center; align-items: center; height: 100vh; 
-}
-#canvas-bg { position: fixed; top: 0; left: 0; z-index: -1; }
-
-/* ESTILO ORIGINAL PARA LOGIN Y SELECCIÓN (PEQUEÑO Y CENTRADO) */
-.container { 
-    background: rgba(30, 30, 30, 0.75); backdrop-filter: blur(15px); 
-    -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.15); 
-    border-radius: 20px; padding: 25px; width: 90%; max-width: 400px; 
-    text-align: center; z-index: 10; 
-}
-
-/* NUEVO: ESTILO PARA EL PANEL PRINCIPAL (GRANDE Y DIVIDIDO) */
-.dashboard-layout {
-    display: flex;
-    width: 95vw; height: 90vh; /* Ocupa casi toda la pantalla */
-    background: rgba(30, 30, 30, 0.85); /* Un poco más oscuro para leer mejor */
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 20px;
-    overflow: hidden; /* Para que no se salga nada de los bordes redondeados */
-    z-index: 10;
-}
-
-/* BARRA LATERAL (IZQUIERDA) */
+/* 1. SIDEBAR CON SCROLL */
 .sidebar {
     width: 250px;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.5);
     border-right: 1px solid rgba(255, 255, 255, 0.1);
     display: flex; flex-direction: column;
     padding: 20px;
     text-align: center;
+    max-height: 100vh; /* Limita la altura */
 }
 
-/* ÁREA DE CONTENIDO (DERECHA) */
-.content-area {
+.sidebar-menu {
     flex: 1;
-    padding: 30px;
-    overflow-y: auto;
-    text-align: left; /* El contenido va alineado a la izquierda */
+    overflow-y: auto; /* ACTIVA EL SCROLL VERTICAL */
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding-right: 5px; /* Espacio para la barra */
 }
 
-/* ELEMENTOS DEL MENÚ LATERAL */
-.menu-item-row {
-    display: flex; align-items: center;
-    padding: 12px 15px; margin-bottom: 8px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px; cursor: pointer; transition: 0.2s;
-    text-align: left;
+/* Estilo de la barra de scroll (Webkit) */
+.sidebar-menu::-webkit-scrollbar { width: 5px; }
+.sidebar-menu::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 5px; }
+.sidebar-menu::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); }
+
+/* ... (Mantén estilos del dashboard-layout, content-area, etc.) ... */
+
+/* 2. ESTILOS PARA EL MÓDULO DE TRABAJADORES */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
 }
-.menu-item-row:hover { background: rgba(0, 210, 255, 0.2); border-left: 3px solid var(--primary); }
-.menu-item-row i { margin-right: 15px; color: var(--primary); width: 25px; text-align: center; }
 
-/* LOGOS */
-#header-empresa img { width: 100px; height: 100px; object-fit: contain; margin-bottom: 10px; }
-.menu-card img { width: 80px; height: 80px; object-fit: contain; margin-bottom: 10px; } /* Para selección de empresa */
+.worker-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+}
 
-/* BOTONES Y INPUTS GENERALES */
-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; box-sizing: border-box; }
-button { width: 100%; padding: 12px; border-radius: 10px; border: none; background: #007bff; color: white; font-weight: bold; cursor: pointer; margin-bottom: 5px; }
-.btn-small { width: auto; padding: 10px 15px; margin: 2px; }
+.worker-card {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 15px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
 
-/* Grid para selección de empresa (Se mantiene igual) */
-.menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-.menu-card { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 15px; cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: 0.2s; }
-.menu-card:hover { background: rgba(0, 210, 255, 0.2); }
-.menu-card i { font-size: 24px; color: var(--primary); }
+.w-avatar {
+    width: 45px; height: 45px;
+    background: var(--primary);
+    color: black;
+    font-weight: bold;
+    border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
+    font-size: 1.2em;
+}
 
-.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+.w-info h4 { margin: 0; color: white; }
+.w-info p { margin: 2px 0; font-size: 0.85em; color: #ccc; }
