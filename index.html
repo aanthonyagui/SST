@@ -24,7 +24,9 @@
         <div id="app-section" style="display:none;">
             <h3>Panel de Control</h3>
             <p>Usuario: <b id="user-email"></b> <span id="user-role" style="color:gold; font-size:0.8em;"></span></p>
-            
+            <button class="admin-only" onclick="abrirCreadorMenu()" style="display:none; background: gold; color: black; margin-top:10px;">
+    <i class="fas fa-plus-circle"></i> Agregar Nueva Función al Menú
+</button>
             <div class="menu-grid" id="menu-dinamico">
     </div>
                 <div class="menu-card" onclick="alert('Módulo Trabajadores')">
