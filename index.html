@@ -10,49 +10,54 @@
 <body>
     <canvas id="canvas-bg"></canvas>
 
-    <div class="container">
+    <div id="initial-container" class="container">
         <div id="login-section">
-            <img src="logo-sst.png" style="width: 70px; margin-bottom: 10px;" alt="Logo SST">
+            <img src="logo-sst.png" style="width: 70px; margin-bottom: 10px;" alt="Logo">
             <h2>SST Dashboard</h2>
-            <p>Minería Segura</p>
             <input type="email" id="email" placeholder="Correo autorizado">
-            <button id="login-button">Ingresar al Sistema</button>
+            <button id="login-button">Ingresar</button>
         </div>
 
         <div id="company-section" style="display:none;">
             <h3>Seleccione Empresa</h3>
-            <div id="lista-empresas" class="menu-grid">
-                </div>
+            <div id="lista-empresas" class="menu-grid"></div>
             <button id="admin-add-company" class="admin-only" style="display:none; background: #2ecc71; margin-top: 15px;">
                 <i class="fas fa-plus"></i> Agregar Empresa
             </button>
         </div>
+    </div>
 
-        <div id="app-section" style="display:none;">
-            <div id="header-empresa">
-                </div>
-            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
-            <p>Usuario: <b id="user-email"></b></p>
+    <div id="app-section" style="display:none;" class="main-layout">
+        <aside class="sidebar">
+            <div id="header-empresa"></div>
+            <nav id="menu-dinamico" class="sidebar-menu"></nav>
             
-            <div class="menu-grid" id="menu-dinamico">
-                </div>
+            <div class="sidebar-footer">
+                <button onclick="regresarAEmpresas()" class="btn-side"><i class="fas fa-exchange-alt"></i></button>
+                <button id="logout-button" class="btn-side btn-exit"><i class="fas fa-power-off"></i></button>
+            </div>
+        </aside>
 
-            <button id="admin-add-menu" class="admin-only" style="display:none; background: #f1c40f; color: #000; margin-top: 20px;">
-                <i class="fas fa-plus-circle"></i> Agregar Función
-            </button>
+        <main class="content-area">
+            <div id="view-title">
+                <h2>Bienvenido</h2>
+                <p id="user-email-display"></p>
+            </div>
+            <div id="dynamic-content">
+                <p>Seleccione una opción del menú para comenzar.</p>
+            </div>
             
-            <button onclick="regresarAEmpresas()" style="background:#555; margin-top:10px;">
-                <i class="fas fa-arrow-left"></i> Cambiar Empresa
+            <button id="admin-add-menu" class="admin-only" style="display:none;">
+                <i class="fas fa-plus"></i> Nueva Función
             </button>
-            <button id="logout-button">Salir</button>
-        </div>
+        </main>
     </div>
 
     <div id="modal-iconos" class="modal" style="display:none;">
-        <div class="container" style="max-width: 450px; max-height: 80vh; overflow-y: auto;">
-            <h3>Seleccione un Icono</h3>
-            <div id="lista-iconos" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px;"></div>
-            <button onclick="document.getElementById('modal-iconos').style.display='none'" style="margin-top: 20px; background: #555;">Cancelar</button>
+        <div class="container" style="max-width: 450px;">
+            <h3>Icono</h3>
+            <div id="lista-iconos"></div>
+            <button onclick="document.getElementById('modal-iconos').style.display='none'">Cerrar</button>
         </div>
     </div>
 
