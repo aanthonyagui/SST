@@ -13,9 +13,9 @@
 
     <div class="container">
         <div id="login-section">
-            <img src="logo-sst.png" style="width: 80px;" alt="Logo">
+            <img src="logo-sst.png" style="width: 70px; margin-bottom: 10px;" alt="Logo">
             <h2>SST Dashboard</h2>
-            <p>Minería Segura</p>
+            <p>Minería Segura & Salud</p>
             <input type="email" id="email" placeholder="Correo autorizado">
             <button id="login-button">Ingresar al Sistema</button>
             <p id="login-message"></p>
@@ -23,43 +23,16 @@
 
         <div id="app-section" style="display:none;">
             <h3>Panel de Control</h3>
-            <p>Usuario: <b id="user-email"></b> <span id="user-role" style="color:gold; font-size:0.8em;"></span></p>
-            <button class="admin-only" onclick="abrirCreadorMenu()" style="display:none; background: gold; color: black; margin-top:10px;">
-    <i class="fas fa-plus-circle"></i> Agregar Nueva Función al Menú
-</button>
+            <p>Usuario: <b id="user-email"></b> <span id="user-role" style="color:#00d2ff; font-size:0.8em;"></span></p>
+            
             <div class="menu-grid" id="menu-dinamico">
-    </div>
-                <div class="menu-card" onclick="alert('Módulo Trabajadores')">
-                    <i class="fas fa-users"></i>
-                    <span>Trabajadores</span>
                 </div>
-                <div class="menu-card" onclick="alert('Reportar Accidente')">
-                    <i class="fas fa-ambulance"></i>
-                    <span>Reportar Accidente</span>
-                </div>
-                <div class="menu-card" onclick="alert('Inspecciones')">
-                    <i class="fas fa-clipboard-check"></i>
-                    <span>Inspecciones</span>
-                </div>
-                <div class="menu-card" onclick="alert('Horarios')">
-                    <i class="fas fa-calendar-alt"></i>
-                    <span>Horarios y Charlas</span>
-                </div>
-                
-                <div class="menu-card admin-only" style="display:none;" onclick="alert('Índices de Gestión')">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Índices de Gestión</span>
-                </div>
-                <div class="menu-card admin-only" style="display:none;" onclick="alert('Configuración')">
-                    <i class="fas fa-tools"></i>
-                    <span>Configuración</span>
-                </div>
-            </div>
-            <div style="display: flex; justify-content: center; width: 100%;">
-    <button id="logout-button">
-        <i class="fas fa-sign-out-alt"></i> Salir del Sistema
-    </button>
-</div>
+
+            <button id="admin-add-menu" class="admin-only" style="display:none; background: #f1c40f; color: #000; margin-top: 20px;">
+                <i class="fas fa-plus-circle"></i> Agregar Nueva Función
+            </button>
+            
+            <button id="logout-button">Salir del Sistema</button>
         </div>
     </div>
 
