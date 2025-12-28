@@ -1,139 +1,56 @@
 :root { --primary: #00d2ff; --text: #ffffff; }
 
-body { 
-    margin: 0; overflow: hidden; background: #000; /* Fondo negro base */
-    font-family: 'Segoe UI', sans-serif; color: var(--text); 
-    display: flex; justify-content: center; align-items: center; height: 100vh; 
-}
+body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; color: var(--text); display: flex; justify-content: center; align-items: center; height: 100vh; }
+#canvas-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
 
-/* EL FONDO DE ÁTOMOS */
-#canvas-bg { 
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    z-index: 0; /* Detrás de todo */
-    pointer-events: none; /* No interfiere con clics */
-}
+/* CONTENEDOR INICIAL */
+.container { position: relative; z-index: 10; background: rgba(30, 30, 30, 0.75); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 20px; padding: 25px; width: 90%; max-width: 400px; text-align: center; }
 
-/* CONTENEDOR INICIAL (LOGIN) - TRANSPARENTE */
-.container { 
-    position: relative; z-index: 10;
-    background: rgba(30, 30, 30, 0.6); /* Semi-transparente */
-    backdrop-filter: blur(12px); 
-    -webkit-backdrop-filter: blur(12px); 
-    border: 1px solid rgba(255, 255, 255, 0.15); 
-    border-radius: 20px; padding: 30px; 
-    width: 90%; max-width: 400px; text-align: center; 
-}
+/* DASHBOARD */
+.dashboard-layout { position: relative; z-index: 10; display: flex; width: 95vw; height: 90vh; background: rgba(20, 20, 20, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 15px; overflow: hidden; }
 
-/* DASHBOARD GRANDE (SIDEBAR + CONTENIDO) */
-.dashboard-layout {
-    position: relative; z-index: 10;
-    display: flex;
-    width: 95vw; height: 90vh;
-    background: rgba(20, 20, 20, 0.75); /* Oscuro pero transparente para ver fondo */
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    overflow: hidden;
-}
-
-/* SIDEBAR IZQUIERDA */
-.sidebar {
-    width: 260px;
-    background: rgba(0, 0, 0, 0.4);
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex; flex-direction: column;
-    padding: 20px;
-}
-
-.sidebar-menu {
-    flex: 1;
-    overflow-y: auto; /* SCROLL ACTIVADO */
-    margin: 20px 0;
-    padding-right: 5px;
-}
+/* SIDEBAR */
+.sidebar { width: 260px; background: rgba(0, 0, 0, 0.4); border-right: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; padding: 20px; transition: transform 0.3s ease; }
+.sidebar-menu { flex: 1; overflow-y: auto; margin: 20px 0; padding-right: 5px; }
 .sidebar-menu::-webkit-scrollbar { width: 4px; }
 .sidebar-menu::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+.sidebar-footer { display: flex; gap: 5px; margin-top: auto; }
 
-/* CONTENIDO DERECHA */
-.content-area {
-    flex: 1; padding: 30px; overflow-y: auto;
-}
+/* CONTENIDO */
+.content-area { flex: 1; padding: 20px; overflow-y: auto; position: relative; }
 
-/* ELEMENTOS GENERALES */
-.menu-item-row {
-    display: flex; align-items: center; padding: 12px; margin-bottom: 8px;
-    background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer; transition:0.2s;
-}
+/* ITEMS MENÚ */
+.menu-item-row { display: flex; align-items: center; padding: 12px; margin-bottom: 8px; background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer; transition:0.2s; }
 .menu-item-row:hover { background: rgba(0,210,255,0.2); border-left: 3px solid var(--primary); }
 .menu-item-row i { margin-right: 15px; color: var(--primary); width: 20px; text-align: center; }
 
-/* ESTILOS DE TRABAJADORES */
+/* ELEMENTOS GENERALES */
 .worker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
 .worker-card { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; display: flex; align-items: center; gap: 12px; }
-.w-avatar { width: 40px; height: 40px; background: var(--primary); color: #000; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; }
+.w-avatar { width: 40px; height: 40px; background: var(--primary); color: #000; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; overflow: hidden; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-/* INPUTS Y BOTONES */
-input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: white; box-sizing: border-box;}
+input, select { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: white; box-sizing: border-box; }
 button { width: 100%; padding: 12px; border-radius: 8px; border: none; background: #007bff; color: white; font-weight: bold; cursor: pointer; }
-.btn-small { width: auto; padding: 8px 12px; margin: 0 2px; }
-img { object-fit: contain; }
-
+.btn-small { width: auto; padding: 8px 12px; }
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 100; }
 .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.menu-card { background: rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; cursor: pointer; display: flex; flex-direction: column; align-items: center; } /* --- ESTILOS RESPONSIVE (MÓVIL) --- */
+.menu-card { background: rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
+.menu-card img { width: 60px; height: 60px; object-fit: contain; }
 
-/* Botón hamburguesa: Oculto en PC, visible en Móvil */
-#menu-toggle {
-    display: none; 
-    background: transparent; 
-    color: var(--primary); 
-    font-size: 1.5rem; 
-    padding: 10px; 
-    width: auto; 
-    margin-bottom: 15px;
-    border: 1px solid rgba(255,255,255,0.2);
-}
+/* --- MÓVIL (RESPONSIVE) --- */
+#menu-toggle { display: none; } /* Oculto en PC */
+#sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 90; backdrop-filter: blur(3px); }
 
-/* OVERLAY: Fondo oscuro cuando se abre el menú */
-#sidebar-overlay {
-    display: none;
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.7);
-    z-index: 90; /* Debajo del sidebar, encima del contenido */
-    backdrop-filter: blur(3px);
-}
-
-/* MEDIA QUERY: Solo aplica en pantallas menores a 768px (Celulares/Tablets) */
 @media (max-width: 768px) {
-    .dashboard-layout {
-        width: 100vw; height: 100vh; /* Pantalla completa */
-        border-radius: 0; /* Sin bordes redondeados en móvil */
-        border: none;
-    }
-
-    /* El menú se vuelve "flotante" y se esconde a la izquierda */
-    .sidebar {
-        position: absolute;
-        top: 0; left: 0;
-        height: 100%;
-        z-index: 100; /* Por encima de todo */
-        background: #1a1a1a; /* Fondo sólido para que no se vea lo de atrás */
-        transform: translateX(-100%); /* ESCONDIDO A LA IZQUIERDA */
-        transition: transform 0.3s ease; /* Animación suave */
-        box-shadow: 4px 0 15px rgba(0,0,0,0.5);
-    }
-
-    /* Clase para MOSTRAR el menú */
-    .sidebar.active {
-        transform: translateX(0); /* VUELVE A SU SITIO */
-    }
-
-    /* Mostrar botón hamburguesa */
-    #menu-toggle { display: block; }
+    .dashboard-layout { width: 100vw; height: 100vh; border-radius: 0; border: none; }
     
-    /* Ajustes de contenido */
+    /* El Sidebar se esconde a la izquierda */
+    .sidebar { position: absolute; top: 0; left: 0; height: 100%; z-index: 100; background: #1a1a1a; transform: translateX(-100%); box-shadow: 4px 0 15px rgba(0,0,0,0.5); }
+    .sidebar.active { transform: translateX(0); } /* Al activarse sale */
+
+    /* Aparece el botón */
+    #menu-toggle { display: block; background: transparent; border: 1px solid rgba(255,255,255,0.3); width: auto; padding: 8px 12px; margin-bottom: 10px; color: var(--primary); font-size: 1.2rem; }
+    
     .content-area { padding: 15px; }
-    .worker-grid { grid-template-columns: 1fr; } /* 1 columna en móvil */
-    .form-grid { grid-template-columns: 1fr; } /* Formularios en 1 columna */
+    .form-grid { grid-template-columns: 1fr; } /* Inputs uno debajo de otro */
 }
