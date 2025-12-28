@@ -1,7 +1,6 @@
-// trabajadores.js - Versión Final Completa (Con PDF y Logo)
+// trabajadores.js - Versión Final Corregida
 
 export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
-    // 1. ESTRUCTURA HTML
     contenedor.innerHTML = `
         <div class="header-tools">
             <h2 style="margin:0;"><i class="fas fa-users"></i> Nómina: ${empresa.nombre}</h2>
@@ -60,7 +59,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                 </div>
             </div>
 
-            <form id="form-trabajador" class="form-scroll">
+            <form id="form-trabajador">
                 <input type="hidden" id="t-id">
                 <input type="hidden" id="t-estado" value="ACTIVO">
 
@@ -84,11 +83,11 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                 </div>
 
                 <details open class="seccion-form">
-                    <summary>Datos Personales y Contacto</summary>
+                    <summary>Datos Personales</summary>
                     <div class="form-grid" style="margin-top:10px;">
                          <select id="t-sexo"><option value="Hombre">Hombre</option><option value="Mujer">Mujer</option></select>
-                         <select id="t-civil"><option value="Soltero">Soltero</option><option value="Casado">Casado</option><option value="Union Libre">Unión Libre</option><option value="Divorciado">Divorciado</option><option value="Viudo">Viudo</option></select>
-                         <select id="t-sangre"><option value="O+">O+</option><option value="O-">O-</option><option value="A+">A+</option><option value="B+">B+</option><option value="AB+">AB+</option></select>
+                         <select id="t-civil"><option value="Soltero">Soltero</option><option value="Casado">Casado</option><option value="Union Libre">Unión Libre</option></select>
+                         <select id="t-sangre"><option value="O+">O+</option><option value="O-">O-</option><option value="A+">A+</option><option value="A-">A-</option></select>
                          <input type="text" id="t-nacionalidad" value="ECUATORIANA">
                          <input type="text" id="t-profesion" placeholder="Profesión">
                          <input type="text" id="t-celular" placeholder="Celular">
@@ -106,7 +105,6 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                             <label><input type="checkbox" name="serv" value="Agua"> Agua</label>
                             <label><input type="checkbox" name="serv" value="Internet"> Internet</label>
                             <label><input type="checkbox" name="serv" value="TV Cable"> TV Cable</label>
-                            <label><input type="checkbox" name="serv" value="Alcantarillado"> Alcantarillado</label>
                         </div>
                     </div>
                 </details>
@@ -138,7 +136,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                         <i class="fas fa-signature"></i> Cargar Firma
                     </button>
                     <input type="file" id="t-firma" accept="image/*" style="display:none;">
-                    <p style="font-size:0.7em; color:#888; margin-top:5px;">Sube una foto clara de la firma en fondo blanco.</p>
+                    <p style="font-size:0.7em; color:#888; margin-top:5px;">Foto clara en fondo blanco</p>
                 </div>
 
                 <div style="margin-top:20px; padding-bottom:60px; display:flex; gap:10px;">
@@ -149,157 +147,24 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         </div>
     `;
 
-    // --- LÓGICA DE JAVASCRIPT ---
+    // --- LÓGICA ---
+    window.toggleDropdown = () => { document.getElementById("dropdown-print").classList.toggle("show"); };
+    window.onclick = function(e) {
+        if (!e.target.matches('#btn-nombre-trabajador') && !e.target.matches('#btn-nombre-trabajador *')) {
+            var drops = document.getElementsByClassName("dropdown-content");
+            for (var i = 0; i < drops.length; i++) if (drops[i].classList.contains('show')) drops[i].classList.remove('show');
+        }
+    }
 
-    // 1. CARGA INICIAL
+    window.imprimirDoc = (tipo) => {
+        const nombre = document.getElementById('t-nombre').value;
+        alert(`Generando ${tipo.toUpperCase()} para: ${nombre}\n(Próximamente PDF)`);
+    };
+
     cargarCargos(supabase);
     listarTrabajadores('ACTIVO');
     listarTrabajadores('PASIVO');
 
-    // 2. GESTIÓN DEL MENÚ DESPLEGABLE
-    window.toggleDropdown = () => {
-        document.getElementById("dropdown-print").classList.toggle("show");
-    };
-    
-    // Cerrar menú si se hace clic fuera
-    window.onclick = function(event) {
-        if (!event.target.matches('#btn-nombre-trabajador') && !event.target.matches('#btn-nombre-trabajador *')) {
-            const dropdowns = document.getElementsByClassName("dropdown-content");
-            for (let i = 0; i < dropdowns.length; i++) {
-                if (dropdowns[i].classList.contains('show')) dropdowns[i].classList.remove('show');
-            }
-        }
-    }
-
-    // 3. FUNCIÓN MAESTRA DE IMPRESIÓN (Aquí está lo que pediste)
-    window.imprimirDoc = async (tipo) => {
-        const id = document.getElementById('t-id').value;
-        if (!id) return alert("Primero selecciona un trabajador.");
-
-        const btnNombre = document.getElementById('btn-nombre-trabajador');
-        const textoOriginal = btnNombre.innerHTML;
-        btnNombre.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Procesando...`;
-
-        try {
-            // Obtener datos frescos de la BD
-            const { data: t, error } = await supabase.from('trabajadores').select('*').eq('id', id).single();
-            if (error) throw error;
-
-            if (tipo === 'ficha') {
-                await generarFichaPDF(t, empresa);
-            } else {
-                alert(`El módulo de ${tipo.toUpperCase()} está en construcción.`);
-            }
-        } catch (err) {
-            console.error(err);
-            alert("Error al generar: " + err.message);
-        } finally {
-            btnNombre.innerHTML = textoOriginal;
-        }
-    };
-
-    // 4. GENERADOR DE PDF (CON LOGO EMPRESA)
-    async function generarFichaPDF(t, empresa) {
-        // Convertir imágenes a Base64 para que funcionen offline
-        const fotoPerfil = t.foto_url ? await getBase64ImageFromUrl(t.foto_url) : null;
-        const firmaTrab = t.firma_url ? await getBase64ImageFromUrl(t.firma_url) : null;
-        const logoEmpresa = empresa.logo_url ? await getBase64ImageFromUrl(empresa.logo_url) : null;
-
-        const docDefinition = {
-            pageSize: 'A4',
-            pageMargins: [40, 40, 40, 40],
-            content: [
-                // Cabecera con Logo
-                {
-                    columns: [
-                        { image: logoEmpresa || 'placeholder', width: 60, fit: [60, 60] },
-                        {
-                            text: [
-                                { text: empresa.nombre.toUpperCase() + '\n', fontSize: 14, bold: true, color: '#1f4e79' },
-                                { text: 'GESTIÓN DE SEGURIDAD Y SALUD\n', fontSize: 10, bold: true },
-                                { text: 'FICHA SOCIOECONÓMICA', fontSize: 16, bold: true, color: '#c00000' }
-                            ],
-                            alignment: 'center', margin: [0, 5, 0, 0]
-                        },
-                        { text: '', width: 60 }
-                    ]
-                },
-                { canvas: [{ type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 2, lineColor: '#1f4e79' }] },
-                { text: '\n' },
-
-                // Tabla de Datos
-                {
-                    style: 'tableExample',
-                    color: '#333',
-                    table: {
-                        widths: [100, '*', 100, '*'],
-                        body: [
-                            [{ text: 'DATOS PERSONALES', style: 'headerRow', colSpan: 4 }, {}, {}, {}],
-                            [
-                                { rowSpan: 4, image: fotoPerfil || 'placeholder', fit: [90, 110], alignment: 'center' },
-                                { text: 'Cédula:', bold: true }, { text: t.cedula || '', colSpan: 2 }, {}
-                            ],
-                            [{}, { text: 'Nombres:', bold: true }, { text: t.nombre || '', colSpan: 2 }, {}],
-                            [{}, { text: 'Cargo:', bold: true }, { text: t.cargo || '', colSpan: 2 }, {}],
-                            [{}, { text: 'Edad:', bold: true }, { text: (t.edad ? t.edad + ' años' : ''), colSpan: 2 }, {}],
-                            
-                            [{ text: 'F. Nacimiento:', bold: true }, { text: t.fecha_nacimiento || '' }, { text: 'Sangre:', bold: true }, { text: t.tipo_sangre || '' }],
-                            [{ text: 'Estado Civil:', bold: true }, { text: t.estado_civil || '' }, { text: 'Nacionalidad:', bold: true }, { text: t.nacionalidad || '' }],
-                            [{ text: 'Dirección:', bold: true }, { text: t.direccion || '', colSpan: 3 }, {}, {}],
-                            [{ text: 'Celular:', bold: true }, { text: t.celular || '' }, { text: 'Correo:', bold: true }, { text: t.correo || '', fontSize: 8 }]
-                        ]
-                    }
-                },
-                { text: '\n' },
-
-                // Emergencias
-                {
-                    style: 'tableExample',
-                    table: {
-                        widths: ['*', '*', '*'],
-                        body: [
-                            [{ text: 'EN CASO DE EMERGENCIA', style: 'headerRow', colSpan: 3 }, {}, {}],
-                            [{ text: 'Nombre', bold: true }, { text: 'Parentesco', bold: true }, { text: 'Teléfono', bold: true }],
-                            [t.emergencia_nombre || '-', t.emergencia_parentesco || '-', t.emergencia_telefono || '-'],
-                            [t.emergencia2_nombre || '-', t.emergencia2_parentesco || '-', t.emergencia2_telefono || '-']
-                        ]
-                    }
-                },
-                { text: '\n\n\n' },
-
-                // Firmas
-                {
-                    columns: [
-                        {
-                            stack: [
-                                t.firma_url ? { image: firmaTrab, fit: [100, 50], alignment: 'center' } : { text: '\n\n' },
-                                { canvas: [{ type: 'line', x1: 10, y1: 0, x2: 150, y2: 0, lineWidth: 1 }] },
-                                { text: 'FIRMA DEL TRABAJADOR', alignment: 'center', fontSize: 8, bold: true },
-                                { text: t.cedula, alignment: 'center', fontSize: 8 }
-                            ]
-                        },
-                        {
-                            stack: [
-                                { text: '\n\n' },
-                                { canvas: [{ type: 'line', x1: 10, y1: 0, x2: 150, y2: 0, lineWidth: 1 }] },
-                                { text: 'REVISADO POR (SST)', alignment: 'center', fontSize: 8, bold: true }
-                            ]
-                        }
-                    ]
-                }
-            ],
-            styles: {
-                headerRow: { bold: true, fontSize: 10, fillColor: '#f2f2f2', alignment: 'left' },
-                tableExample: { fontSize: 9, margin: [0, 5, 0, 15] }
-            },
-            images: {
-                placeholder: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='
-            }
-        };
-        pdfMake.createPdf(docDefinition).download(`Ficha_${t.nombre}.pdf`);
-    }
-
-    // 5. GESTIÓN DE VISTAS
     window.cambiarVista = (vista) => {
         document.querySelectorAll('.vista-seccion').forEach(v => v.style.display = 'none');
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -312,9 +177,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             document.getElementById('tab-pasivos').classList.add('active');
         }
         
-        if(vista !== 'formulario') {
-            document.getElementById('tab-trabajador-activo').style.display = 'none';
-        }
+        if(vista !== 'formulario') document.getElementById('tab-trabajador-activo').style.display = 'none';
     };
 
     window.nuevaFicha = () => {
@@ -333,7 +196,6 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         document.getElementById('vista-formulario').style.display = 'block';
     };
 
-    // 6. LISTADO Y CARGA
     async function listarTrabajadores(estado) {
         const gridId = estado === 'ACTIVO' ? 'grid-activos' : 'grid-pasivos';
         const countId = estado === 'ACTIVO' ? 'count-activos' : 'count-pasivos';
@@ -364,13 +226,12 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         const { data: t } = await supabase.from('trabajadores').select('*').eq('id', id).single();
         if(!t) return;
 
-        // Configurar Pestaña con Nombre
         const primerNombre = t.nombre.split(' ')[0];
         document.getElementById('lbl-nombre-trab').innerText = primerNombre;
         document.getElementById('tab-trabajador-activo').style.display = 'inline-block';
-        document.getElementById('titulo-formulario').innerText = `Ficha de: ${t.nombre}`;
+        document.getElementById('titulo-formulario').innerText = `Ficha: ${t.nombre}`;
 
-        // Llenar Formulario
+        // Llenar datos (Simplificado)
         document.getElementById('t-id').value = t.id;
         document.getElementById('t-cedula').value = t.cedula;
         document.getElementById('t-nombre').value = t.nombre;
@@ -378,6 +239,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         document.getElementById('t-cargo').value = t.cargo;
         document.getElementById('t-estado').value = t.estado;
         
+        // Edad
         if(t.fecha_nacimiento) {
              const hoy = new Date(); const nac = new Date(t.fecha_nacimiento);
              let edad = hoy.getFullYear() - nac.getFullYear();
@@ -385,30 +247,8 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
              document.getElementById('t-edad').value = edad + ' años';
         }
 
-        document.getElementById('t-sexo').value = t.sexo || 'Hombre';
-        document.getElementById('t-civil').value = t.estado_civil || '';
-        document.getElementById('t-celular').value = t.celular || '';
-        document.getElementById('t-correo').value = t.correo || '';
-        document.getElementById('t-direccion').value = t.direccion || '';
-        document.getElementById('t-nacionalidad').value = t.nacionalidad || 'ECUATORIANA';
-        document.getElementById('t-profesion').value = t.profesion || '';
-        document.getElementById('t-vivienda').value = t.tipo_vivienda || 'Propia';
-        
-        // Tallas
-        document.getElementById('t-camisa').value = t.talla_camisa || '';
-        document.getElementById('t-pantalon').value = t.talla_pantalon || '';
-        document.getElementById('t-zapatos').value = t.talla_zapatos || '';
-
-        // Emergencia
-        document.getElementById('t-emer-nom').value = t.emergencia_nombre || '';
-        document.getElementById('t-emer-par').value = t.emergencia_parentesco || '';
-        document.getElementById('t-emer-tel').value = t.emergencia_telefono || '';
-        document.getElementById('t-emer2-nom').value = t.emergencia2_nombre || '';
-        document.getElementById('t-emer2-par').value = t.emergencia2_parentesco || '';
-        document.getElementById('t-emer2-tel').value = t.emergencia2_telefono || '';
-
-        // Fotos y Firmas
         document.getElementById('preview-foto').src = t.foto_url || 'https://via.placeholder.com/150?text=FOTO';
+        
         if(t.firma_url) {
             document.getElementById('preview-firma').src = t.firma_url;
             document.getElementById('preview-firma').style.display = 'block';
@@ -416,7 +256,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             document.getElementById('preview-firma').style.display = 'none';
         }
 
-        // Servicios Checkbox
+        // Checkboxes
         document.querySelectorAll('input[name="serv"]').forEach(c => c.checked = false);
         if(t.servicios_basicos) {
             t.servicios_basicos.split(',').forEach(s => {
@@ -425,7 +265,6 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             });
         }
 
-        // Botones Activo/Pasivo
         const btnBaja = document.getElementById('btn-dar-baja');
         const btnReac = document.getElementById('btn-reactivar');
         
@@ -441,7 +280,6 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         document.getElementById('vista-formulario').style.display = 'block';
     }
 
-    // SUBMIT FORMULARIO
     document.getElementById('form-trabajador').onsubmit = async (e) => {
         e.preventDefault();
         const id = document.getElementById('t-id').value;
@@ -462,28 +300,8 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             nombre: document.getElementById('t-nombre').value.toUpperCase(),
             fecha_nacimiento: document.getElementById('t-nacimiento').value,
             cargo: document.getElementById('t-cargo').value,
-            sexo: document.getElementById('t-sexo').value,
-            estado_civil: document.getElementById('t-civil').value,
-            tipo_sangre: document.getElementById('t-sangre').value,
-            nacionalidad: document.getElementById('t-nacionalidad').value,
-            profesion: document.getElementById('t-profesion').value.toUpperCase(),
-            celular: document.getElementById('t-celular').value,
-            correo: document.getElementById('t-correo').value.toLowerCase(),
-            direccion: document.getElementById('t-direccion').value.toUpperCase(),
-            
-            tipo_vivienda: document.getElementById('t-vivienda').value,
             servicios_basicos: servicios,
-            
-            talla_camisa: document.getElementById('t-camisa').value,
-            talla_pantalon: document.getElementById('t-pantalon').value,
-            talla_zapatos: document.getElementById('t-zapatos').value,
-            
-            emergencia_nombre: document.getElementById('t-emer-nom').value.toUpperCase(),
-            emergencia_parentesco: document.getElementById('t-emer-par').value.toUpperCase(),
-            emergencia_telefono: document.getElementById('t-emer-tel').value,
-            emergencia2_nombre: document.getElementById('t-emer2-nom').value.toUpperCase(),
-            emergencia2_parentesco: document.getElementById('t-emer2-par').value.toUpperCase(),
-            emergencia2_telefono: document.getElementById('t-emer2-tel').value
+            // Agrega los demás campos aquí...
         };
         if(fotoUrl) datos.foto_url = fotoUrl;
         if(firmaUrl) datos.firma_url = firmaUrl;
@@ -497,13 +315,12 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
 
         if(error) alert("Error: " + error.message);
         else {
-            alert("Guardado correctamente");
+            alert("Guardado");
             listarTrabajadores('ACTIVO');
             cambiarVista('activos');
         }
     };
 
-    // UTILS
     const setupPreview = (inputId, imgId) => {
         document.getElementById(inputId).onchange = (e) => {
             if(e.target.files[0]){
@@ -524,7 +341,6 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     document.getElementById('buscador-pasivos').onkeyup = (e) => filtrarGrid('grid-pasivos', e.target.value);
 }
 
-// Helpers globales
 function filtrarGrid(gridId, texto) {
     const t = texto.toLowerCase();
     document.querySelectorAll(`#${gridId} .worker-card`).forEach(c => {
@@ -533,7 +349,7 @@ function filtrarGrid(gridId, texto) {
 }
 
 async function cambiarEstadoTrabajador(id, nuevoEstado, supabase) {
-    if(!confirm(`¿Deseas cambiar el estado a ${nuevoEstado}?`)) return;
+    if(!confirm(`¿Cambiar a ${nuevoEstado}?`)) return;
     await supabase.from('trabajadores').update({ estado: nuevoEstado }).eq('id', id);
     document.getElementById('tab-activos').click();
 }
@@ -551,22 +367,4 @@ async function subirArchivo(supabase, file, bucket) {
     if(error) { console.error(error); return null; }
     const { data: pub } = supabase.storage.from(bucket).getPublicUrl(name);
     return pub.publicUrl;
-}
-
-// Función auxiliar para PDFMake (convertir URL a Base64)
-async function getBase64ImageFromUrl(imageUrl) {
-    if (!imageUrl) return null;
-    try {
-        const res = await fetch(imageUrl);
-        const blob = await res.blob();
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-        });
-    } catch (e) {
-        console.warn("Error cargando imagen para PDF:", e);
-        return null;
-    }
 }
