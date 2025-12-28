@@ -1,61 +1,56 @@
-:root {
-    --glass: rgba(255, 255, 255, 0.1);
-    --text: #ffffff;
-    --primary: #00d2ff;
-}
-
+/* Centrado absoluto para el panel principal */
 body {
     margin: 0;
-    overflow: hidden; /* Importante para la galaxia */
+    overflow: hidden;
     background: #050505;
     font-family: 'Segoe UI', sans-serif;
-    color: var(--text);
+    color: #ffffff;
     display: flex;
     justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-}
-
-#canvas-bg {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: -1;
+    align-items: center; /* Centra verticalmente */
+    height: 100vh;
+    width: 100vw;
 }
 
 .container {
-    background: var(--glass);
-    backdrop-filter: blur(15px);
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 30px;
-    padding: 2rem;
+    border-radius: 28px;
+    padding: 40px;
     width: 90%;
-    max-width: 500px;
-    box-shadow: 0 0 40px rgba(0, 210, 255, 0.2);
+    max-width: 420px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    z-index: 10;
+    position: relative;
 }
 
-.menu-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
+/* Ajuste del botón Cerrar Sesión para que no estorbe */
+#logout-button {
+    margin-top: 25px;
+    background: rgba(231, 76, 60, 0.2);
+    border: 1px solid #e74c3c;
+    color: #e74c3c;
+    padding: 10px;
+    font-size: 0.85em;
+    width: auto; /* No ocupa todo el ancho */
+    padding-left: 20px;
+    padding-right: 20px;
+    align-self: center;
+    transition: all 0.3s;
 }
 
-.menu-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 20px;
-    transition: 0.3s;
-    cursor: pointer;
+#logout-button:hover {
+    background: #e74c3c;
+    color: white;
+}
+
+/* Estilo para los campos de texto */
+input[type="email"] {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
     text-align: center;
-}
-
-.menu-card:hover {
-    background: var(--primary);
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 210, 255, 0.4);
-}
-
-.admin-only {
-    border: 1px solid gold !important; /* Distinción visual para admin */
+    margin-bottom: 20px;
 }
