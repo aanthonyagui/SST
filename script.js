@@ -1,3 +1,5 @@
+import { iconosSST } from './iconos.js';
+
 const SUPABASE_URL = 'https://pyvasykgetphdjvbijqe.supabase.co';
 const SUPABASE_KEY = 'sb_publishable__UMvHXVhw5-se2Lik_A3pQ_TIRd8P-N';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -36,9 +38,8 @@ function animate() {
 }
 initParticles(); animate();
 
-// --- LOGICA DE SESIÓN Y MENÚS ---
+// --- LÓGICA DE SESIÓN ---
 const loginBtn = document.getElementById('login-button');
-const iconosSST = ['fa-helmet-safety', 'fa-fire-extinguisher', 'fa-ambulance', 'fa-truck-monster', 'fa-list-check', 'fa-user-shield', 'fa-file-medical', 'fa-hard-hat', 'fa-tools', 'fa-eye', 'fa-radiation', 'fa-biohazard'];
 
 loginBtn.addEventListener('click', async () => {
     const email = document.getElementById('email').value.toLowerCase().trim();
@@ -96,8 +97,10 @@ async function crearNuevoMenu(icon) {
     if (!error) location.reload();
 }
 
-function cerrarModalIconos() { document.getElementById('modal-iconos').style.display = 'none'; }
-document.getElementById('logout-button').onclick = () => { localStorage.clear(); location.reload(); };
+// Funciones globales para que el HTML las vea
+window.cerrarModalIconos = () => { document.getElementById('modal-iconos').style.display = 'none'; };
+window.logout = () => { localStorage.clear(); location.reload(); };
+document.getElementById('logout-button').onclick = window.logout;
 
 const sesion = localStorage.getItem('userSST');
 if(sesion) mostrarMenu(JSON.parse(sesion));
