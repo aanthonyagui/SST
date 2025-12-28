@@ -1,72 +1,44 @@
-:root { --primary: #00d2ff; --text: #ffffff; }
+:root { --primary: #00d2ff; --text: #ffffff; --side-bg: rgba(20, 20, 20, 0.85); }
 
-body { 
-    margin: 0; 
-    overflow: hidden; 
-    background: #050505; 
-    font-family: 'Segoe UI', sans-serif; 
-    color: var(--text); 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    height: 100vh; 
-}
-
+body { margin: 0; background: #050505; font-family: 'Segoe UI', sans-serif; color: var(--text); overflow-x: hidden; }
 #canvas-bg { position: fixed; top: 0; left: 0; z-index: -1; }
 
+/* Contenedor inicial centrado (Login y Empresas) */
 .container { 
-    background: rgba(30, 30, 30, 0.75); 
-    backdrop-filter: blur(15px); 
-    -webkit-backdrop-filter: blur(15px); 
-    border: 1px solid rgba(255, 255, 255, 0.15); 
-    border-radius: 20px; 
-    padding: 25px; 
-    width: 90%; 
-    max-width: 400px; 
-    text-align: center; 
-    z-index: 10; 
+    margin: 10vh auto; background: rgba(30, 30, 30, 0.75); backdrop-filter: blur(15px);
+    border-radius: 20px; padding: 25px; width: 90%; max-width: 400px; text-align: center;
 }
 
-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; box-sizing: border-box; }
+/* DISEÑO MULTI-COLUMNA */
+.main-layout { display: flex; height: 100vh; width: 100vw; }
 
-button { width: 100%; padding: 12px; border-radius: 10px; border: none; background: #007bff; color: white; font-weight: bold; cursor: pointer; margin-bottom: 5px; }
+.sidebar { 
+    width: 250px; background: var(--side-bg); backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; padding: 20px;
+}
 
-.menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+.content-area { flex: 1; padding: 30px; overflow-y: auto; background: rgba(0,0,0,0.2); }
 
+/* Elementos del Sidebar */
+#header-empresa img { width: 100%; max-height: 100px; object-fit: contain; margin-bottom: 15px; }
+#header-empresa b { font-size: 1.1em; display: block; text-align: center; margin-bottom: 20px; }
+
+.sidebar-menu { flex: 1; }
 .menu-card { 
-    background: rgba(255, 255, 255, 0.08); 
-    border: 1px solid rgba(255, 255, 255, 0.1); 
-    border-radius: 15px; 
-    padding: 20px; 
-    cursor: pointer; 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    transition: 0.2s; 
+    display: flex; align-items: center; padding: 12px; margin-bottom: 10px;
+    background: rgba(255,255,255,0.05); border-radius: 10px; cursor: pointer; transition: 0.3s;
 }
+.menu-card:hover { background: var(--primary); color: #000; }
+.menu-card i { margin-right: 15px; font-size: 1.2em; }
 
-.menu-card:hover { background: rgba(0, 210, 255, 0.2); border-color: var(--primary); transform: scale(1.02); }
+.sidebar-footer { display: flex; gap: 10px; margin-top: auto; }
+.btn-side { flex: 1; padding: 10px; border-radius: 8px; border: none; cursor: pointer; }
+.btn-exit { background: #dc3545; color: white; }
 
-/* LOGOS GRANDES EN SELECCIÓN */
-.menu-card img { 
-    width: 85px; 
-    height: 85px; 
-    object-fit: contain; 
-    margin-bottom: 10px; 
-}
+/* Grid de Empresas (Sigue siendo cuadriculado) */
+.menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.company-card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; cursor: pointer; text-align: center; }
+.company-card img { width: 60px; height: 60px; object-fit: contain; }
 
-/* LOGO GRANDE EN EL PANEL PRINCIPAL */
-#header-empresa img { 
-    width: 110px; 
-    height: auto; 
-    max-height: 110px; 
-    object-fit: contain; 
-}
-
-#header-empresa b { font-size: 1.3em; color: var(--primary); display: block; margin-top: 10px; }
-
-.menu-card i { font-size: 28px; margin-bottom: 10px; color: var(--primary); }
-
-.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-
-#logout-button { background: #dc3545; margin-top: 10px; }
+input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; background: rgba(0,0,0,0.3); color: white; }
+button { cursor: pointer; }
