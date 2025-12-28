@@ -156,7 +156,32 @@ document.getElementById('admin-add-menu').onclick = () => {
         l.appendChild(d);
     });
 };
+// FUNCIÓN PARA ABRIR/CERRAR MENÚ MÓVIL
+window.toggleMenu = () => {
+    const sidebar = document.getElementById('mySidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    
+    // Si tiene la clase 'active', se la quitamos (Cerrar)
+    if (sidebar.classList.contains('active')) {
+        sidebar.classList.remove('active');
+        overlay.style.display = 'none';
+    } else {
+        // Si no la tiene, se la ponemos (Abrir)
+        sidebar.classList.add('active');
+        overlay.style.display = 'block';
+    }
+};
 
+// CERRAR MENÚ AUTOMÁTICAMENTE AL DAR CLIC EN UNA OPCIÓN (UX MEJORADA)
+// Busca dentro de mostrarMenuPrincipal donde creas 'row.onclick' y agrega:
+/*
+    row.onclick = () => {
+        // ... tu lógica de cargar módulo ...
+        
+        // AGREGAR ESTO: Si estamos en móvil, cerrar menú al elegir
+        if(window.innerWidth <= 768) toggleMenu(); 
+    };
+*/
 window.regresarAEmpresas = () => mostrarSeleccionEmpresa();
 document.getElementById('logout-button').onclick = () => { localStorage.clear(); location.reload(); };
 
