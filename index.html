@@ -10,12 +10,13 @@
 <body>
     <canvas id="canvas-bg"></canvas>
 
-    <div id="initial-container" class="container">
+    <div id="start-container" class="container">
         <div id="login-section">
             <img src="logo-sst.png" style="width: 70px; margin-bottom: 10px;" alt="Logo">
             <h2>SST Dashboard</h2>
+            <p>Minería Segura</p>
             <input type="email" id="email" placeholder="Correo autorizado">
-            <button id="login-button">Ingresar</button>
+            <button id="login-button">Ingresar al Sistema</button>
         </div>
 
         <div id="company-section" style="display:none;">
@@ -27,37 +28,42 @@
         </div>
     </div>
 
-    <div id="app-section" style="display:none;" class="main-layout">
-        <aside class="sidebar">
-            <div id="header-empresa"></div>
-            <nav id="menu-dinamico" class="sidebar-menu"></nav>
-            
-            <div class="sidebar-footer">
-                <button onclick="regresarAEmpresas()" class="btn-side"><i class="fas fa-exchange-alt"></i></button>
-                <button id="logout-button" class="btn-side btn-exit"><i class="fas fa-power-off"></i></button>
+    <div id="app-section" class="dashboard-layout" style="display:none;">
+        
+        <div class="sidebar">
+            <div id="header-empresa"></div> <div class="user-info-side">
+                <small>Usuario:</small><br>
+                <b id="user-email"></b>
             </div>
-        </aside>
 
-        <main class="content-area">
-            <div id="view-title">
-                <h2>Bienvenido</h2>
-                <p id="user-email-display"></p>
+            <div id="menu-dinamico" class="sidebar-menu"></div>
+
+            <div class="sidebar-footer">
+                <button id="admin-add-menu" class="admin-only btn-small" style="display:none; background: #f1c40f; color: black;">
+                    <i class="fas fa-plus"></i> Func.
+                </button>
+                <button onclick="regresarAEmpresas()" class="btn-small" style="background: #555;">
+                    <i class="fas fa-exchange-alt"></i>
+                </button>
+                <button id="logout-button" class="btn-small" style="background: #dc3545;">
+                    <i class="fas fa-power-off"></i>
+                </button>
             </div>
-            <div id="dynamic-content">
-                <p>Seleccione una opción del menú para comenzar.</p>
+        </div>
+
+        <div class="content-area">
+            <div id="workspace">
+                <h2>Bienvenido al Sistema de Gestión</h2>
+                <p>Seleccione una opción del menú izquierdo para comenzar.</p>
             </div>
-            
-            <button id="admin-add-menu" class="admin-only" style="display:none;">
-                <i class="fas fa-plus"></i> Nueva Función
-            </button>
-        </main>
+        </div>
     </div>
 
     <div id="modal-iconos" class="modal" style="display:none;">
-        <div class="container" style="max-width: 450px;">
-            <h3>Icono</h3>
-            <div id="lista-iconos"></div>
-            <button onclick="document.getElementById('modal-iconos').style.display='none'">Cerrar</button>
+        <div class="container" style="max-width: 450px; max-height: 80vh; overflow-y: auto;">
+            <h3>Seleccione un Icono</h3>
+            <div id="lista-iconos" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px;"></div>
+            <button onclick="document.getElementById('modal-iconos').style.display='none'" style="margin-top: 20px; background: #555;">Cancelar</button>
         </div>
     </div>
 
