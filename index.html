@@ -38,5 +38,14 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
+    <div id="modal-iconos" class="modal" style="display:none;">
+    <div class="container" style="max-width: 500px; max-height: 80vh; overflow-y: auto;">
+        <h3>Selecciona un Icono</h3>
+        <input type="text" id="search-icon" placeholder="Buscar icono (ej: helmet, fire, car)..." oninput="filtrarIconos()">
+        <div id="lista-iconos" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px;">
+            </div>
+        <button onclick="cerrarModalIconos()" style="margin-top: 20px; background: #555;">Cancelar</button>
+    </div>
+</div>
 </body>
 </html>
