@@ -12,7 +12,7 @@
 
     <div class="container">
         <div id="login-section">
-            <img src="logo-sst.png" style="width: 70px; margin-bottom: 10px;" alt="Logo">
+            <img src="logo-sst.png" style="width: 70px; margin-bottom: 10px;" alt="Logo SST">
             <h2>SST Dashboard</h2>
             <p>Minería Segura</p>
             <input type="email" id="email" placeholder="Correo autorizado">
@@ -21,21 +21,29 @@
 
         <div id="company-section" style="display:none;">
             <h3>Seleccione Empresa</h3>
-            <div id="lista-empresas" class="menu-grid"></div>
+            <div id="lista-empresas" class="menu-grid">
+                </div>
             <button id="admin-add-company" class="admin-only" style="display:none; background: #2ecc71; margin-top: 15px;">
                 <i class="fas fa-plus"></i> Agregar Empresa
             </button>
         </div>
 
         <div id="app-section" style="display:none;">
-            <div id="header-empresa" style="margin-bottom: 15px;"></div>
-            <h3>Panel de Control</h3>
-            <p>Usuario: <b id="user-email"></b> <br> <span id="user-role" style="color:#00d2ff; font-size:0.8em;"></span></p>
-            <div class="menu-grid" id="menu-dinamico"></div>
+            <div id="header-empresa">
+                </div>
+            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
+            <p>Usuario: <b id="user-email"></b></p>
+            
+            <div class="menu-grid" id="menu-dinamico">
+                </div>
+
             <button id="admin-add-menu" class="admin-only" style="display:none; background: #f1c40f; color: #000; margin-top: 20px;">
                 <i class="fas fa-plus-circle"></i> Agregar Función
             </button>
-            <button onclick="regresarAEmpresas()" style="background:#555; margin-top:10px;">Cambiar Empresa</button>
+            
+            <button onclick="regresarAEmpresas()" style="background:#555; margin-top:10px;">
+                <i class="fas fa-arrow-left"></i> Cambiar Empresa
+            </button>
             <button id="logout-button">Salir</button>
         </div>
     </div>
