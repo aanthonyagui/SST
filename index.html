@@ -23,6 +23,14 @@
             <h3>Panel de Control</h3>
             <p>Bienvenido: <b id="user-email"></b></p>
             <div class="menu-grid">
+                <div class="menu-card" id="btn-indices" onclick="abrirModulo('indices')">
+    <i class="fas fa-chart-line"></i>
+    <span>Índices de Gestión</span>
+</div>
+<div class="menu-card admin-only" id="btn-config" onclick="abrirModulo('config')" style="display:none;">
+    <i class="fas fa-tools"></i>
+    <span>Configuración y Recursos</span>
+</div>
                 <div class="menu-card" onclick="alert('Módulo Trabajadores')">
                     <i class="fas fa-users"></i>
                     <span>Trabajadores</span>
