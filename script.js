@@ -78,14 +78,27 @@ loginButton.addEventListener('click', async () => {
 });
 
 function entrarAMenu(email, rol) {
-    document.getElementById('login-section').style.display = 'none';
-    document.getElementById('app-section').style.display = 'block';
-    document.getElementById('user-email').textContent = email;
-    
-    if (rol === 'admin') {
-        document.getElementById('user-role').textContent = '(ADMINISTRADOR)';
-        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
-    }
+    const loginSec = document.getElementById('login-section');
+    const appSec = document.getElementById('app-section');
+
+    // Desvanecimiento suave
+    loginSec.style.opacity = '0';
+    setTimeout(() => {
+        loginSec.style.display = 'none';
+        appSec.style.display = 'block';
+        appSec.style.opacity = '1';
+        
+        document.getElementById('user-email').textContent = email;
+        
+        if (rol === 'admin') {
+            document.getElementById('user-role').textContent = 'ADMIN';
+            // Mostrar todas las tarjetas para admin
+            document.querySelectorAll('.admin-only').forEach(el => {
+                el.style.display = 'flex'; // Usamos flex para que el icono y texto se alineen
+                el.style.flexDirection = 'column';
+            });
+        }
+    }, 400);
 }
 
 // Cerrar sesión
