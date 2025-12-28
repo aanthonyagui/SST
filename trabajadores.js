@@ -1,60 +1,60 @@
-// trabajadores.js - Módulo de Gestión de Personal
+// Módulo de Trabajadores
 
-// 1. DIBUJAR LA PANTALLA DE TRABAJADORES
-export async function cargarModuloTrabajadores(supabase, empresa, contenedor) {
+export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
+    // 1. Dibujar la estructura HTML (Lista + Formulario Oculto)
     contenedor.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2><i class="fas fa-users-hard-hat"></i> Personal: ${empresa.nombre}</h2>
-            <button id="btn-nuevo-trabajador" style="width:auto; background:#2ecc71;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2><i class="fas fa-users"></i> Nómina: ${empresa.nombre}</h2>
+            <button id="btn-nuevo-trab" style="width:auto; background:#2ecc71;">
                 <i class="fas fa-user-plus"></i> Nueva Ficha
             </button>
         </div>
+        <hr style="border:0; border-top:1px solid #444; margin:15px 0;">
 
-        <div class="tabs">
-            <button class="tab-btn active" onclick="mostrarTab('lista')">Nómina Activa</button>
-        </div>
-
-        <div id="vista-lista" style="margin-top:15px;">
+        <div id="vista-lista-t">
             <div id="grid-trabajadores" class="worker-grid">Cargando personal...</div>
         </div>
 
-        <div id="vista-formulario" style="display:none; background:rgba(0,0,0,0.3); padding:20px; border-radius:15px;">
-            <h3>Ficha Socioeconómica</h3>
+        <div id="vista-form-t" style="display:none; background:rgba(0,0,0,0.2); padding:20px; border-radius:10px;">
+            <h3 style="color:#00d2ff;">Ficha Socioeconómica</h3>
             <form id="form-trabajador">
                 <div class="form-grid">
                     <input type="text" id="t-nombre" placeholder="Nombre Completo" required>
                     <input type="text" id="t-cedula" placeholder="Cédula / DNI" required>
-                    <input type="text" id="t-cargo" placeholder="Cargo (ej: Perforista)" required>
+                    <input type="text" id="t-cargo" placeholder="Cargo (ej. Perforista)" required>
                     <input type="number" id="t-edad" placeholder="Edad">
                     <select id="t-sangre" style="padding:12px; background:rgba(0,0,0,0.3); color:white; border:1px solid #555; border-radius:8px;">
                         <option value="">Tipo de Sangre</option>
                         <option value="O+">O+</option><option value="O-">O-</option>
                         <option value="A+">A+</option><option value="A-">A-</option>
                     </select>
-                    <input type="text" id="t-contacto" placeholder="Contacto Emergencia (Nombre y Tel)">
+                    <input type="text" id="t-contacto" placeholder="Contacto Emergencia">
                 </div>
                 <div style="margin-top:20px; display:flex; gap:10px;">
                     <button type="submit" style="background:#00d2ff; color:black;">Guardar Ficha</button>
-                    <button type="button" id="btn-cancelar" style="background:#555;">Cancelar</button>
+                    <button type="button" id="btn-cancelar-t" style="background:#555;">Cancelar</button>
                 </div>
             </form>
         </div>
     `;
 
-    // Eventos
-    document.getElementById('btn-nuevo-trabajador').onclick = () => {
-        document.getElementById('vista-lista').style.display = 'none';
-        document.getElementById('vista-formulario').style.display = 'block';
+    // 2. Lógica de Botones (Mostrar/Ocultar)
+    document.getElementById('btn-nuevo-trab').onclick = () => {
+        document.getElementById('vista-lista-t').style.display = 'none';
+        document.getElementById('vista-form-t').style.display = 'block';
+        document.getElementById('btn-nuevo-trab').style.display = 'none';
     };
 
-    document.getElementById('btn-cancelar').onclick = () => {
-        document.getElementById('vista-formulario').style.display = 'none';
-        document.getElementById('vista-lista').style.display = 'block';
+    document.getElementById('btn-cancelar-t').onclick = () => {
+        document.getElementById('vista-form-t').style.display = 'none';
+        document.getElementById('vista-lista-t').style.display = 'block';
+        document.getElementById('btn-nuevo-trab').style.display = 'block';
     };
 
-    // GUARDAR TRABAJADOR
+    // 3. Lógica de Guardar (Submit)
     document.getElementById('form-trabajador').onsubmit = async (e) => {
         e.preventDefault();
+        
         const datos = {
             nombre: document.getElementById('t-nombre').value,
             cedula: document.getElementById('t-cedula').value,
@@ -62,42 +62,42 @@ export async function cargarModuloTrabajadores(supabase, empresa, contenedor) {
             edad: document.getElementById('t-edad').value,
             tipo_sangre: document.getElementById('t-sangre').value,
             contacto_emergencia: document.getElementById('t-contacto').value,
-            empresa_id: empresa.id // Vinculamos a la empresa actual
+            empresa_id: empresa.id // Aquí vinculamos a la empresa
         };
 
         const { error } = await supabase.from('trabajadores').insert([datos]);
-        
-        if (error) alert("Error al guardar: " + error.message);
-        else {
-            alert("Trabajador registrado correctamente");
-            document.getElementById('vista-formulario').style.display = 'none';
-            document.getElementById('vista-lista').style.display = 'block';
+
+        if (error) {
+            alert("Error: " + error.message);
+        } else {
+            alert("Trabajador registrado con éxito");
             document.getElementById('form-trabajador').reset();
-            cargarListaTrabajadores(supabase, empresa.id); // Recargar lista
+            document.getElementById('btn-cancelar-t').click(); // Regresar a lista
+            listarTrabajadores(supabase, empresa.id); // Recargar lista
         }
     };
 
-    // Cargar lista inicial
-    cargarListaTrabajadores(supabase, empresa.id);
+    // 4. Cargar lista inicial
+    listarTrabajadores(supabase, empresa.id);
 }
 
-// 2. FUNCIÓN PARA LEER Y MOSTRAR LA LISTA
-async function cargarListaTrabajadores(supabase, empresaId) {
+// Función interna para listar
+async function listarTrabajadores(supabase, empresaId) {
     const grid = document.getElementById('grid-trabajadores');
-    grid.innerHTML = '<p>Buscando...</p>';
+    grid.innerHTML = '<p>Actualizando lista...</p>';
 
     const { data: lista, error } = await supabase
         .from('trabajadores')
         .select('*')
         .eq('empresa_id', empresaId);
 
-    if (error) {
-        grid.innerHTML = 'Error cargando datos.';
+    if (error || !lista) {
+        grid.innerHTML = '<p>Error al cargar datos.</p>';
         return;
     }
 
     if (lista.length === 0) {
-        grid.innerHTML = '<p>No hay trabajadores registrados en esta empresa.</p>';
+        grid.innerHTML = '<p>No hay trabajadores registrados aún.</p>';
         return;
     }
 
@@ -107,10 +107,10 @@ async function cargarListaTrabajadores(supabase, empresaId) {
         card.className = 'worker-card';
         card.innerHTML = `
             <div class="w-avatar">${t.nombre.charAt(0)}</div>
-            <div class="w-info">
-                <h4>${t.nombre}</h4>
-                <p>${t.cargo} | CC: ${t.cedula}</p>
-                <small style="color:#aaa;">Sangre: ${t.tipo_sangre || 'N/A'}</small>
+            <div>
+                <h4 style="margin:0; color:white;">${t.nombre}</h4>
+                <small style="color:#ccc;">${t.cargo} | CC: ${t.cedula}</small><br>
+                <small style="color:#00d2ff;">Sangre: ${t.tipo_sangre || 'N/A'}</small>
             </div>
         `;
         grid.appendChild(card);
