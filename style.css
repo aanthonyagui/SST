@@ -1,14 +1,13 @@
 :root {
-    --glass: rgba(255, 255, 255, 0.1);
-    --text: #ffffff;
     --primary: #00d2ff;
+    --text: #ffffff;
 }
-/* FONDO Y BASE */
+
 body {
     margin: 0;
     overflow: hidden;
     background: #050505;
-    font-family: 'Segoe UI', Arial, sans-serif;
+    font-family: 'Segoe UI', sans-serif;
     color: var(--text);
     display: flex;
     justify-content: center;
@@ -18,69 +17,49 @@ body {
 
 #canvas-bg {
     position: fixed;
-    top: 0;
-    left: 0;
+    top: 0; left: 0;
     z-index: -1;
 }
 
-/* PANEL ESTILO PRIMERAS VERSIONES (Sólido y Elegante) */
 .container {
-    background: rgba(30, 30, 30, 0.65); /* Gris oscuro con transparencia */
-    color: #ffffff;
-    padding: 35px;
+    background: rgba(30, 30, 30, 0.65);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 20px;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(12px); /* El efecto de desenfoque del fondo */
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.15); /* Borde fino para resaltar */
+    padding: 30px;
     width: 90%;
     max-width: 400px;
     text-align: center;
-    z-index: 10;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
 }
 
-/* MODO OSCURO AUTOMÁTICO PARA EL PANEL */
-@media (prefers-color-scheme: dark) {
-    .container {
-        background: #1e1e1e;
-        color: #f4f4f4;
-    }
-}
-
-/* Campos de entrada más oscuros y limpios */
 input[type="email"] {
     width: 100%;
     padding: 14px;
     margin: 15px 0;
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(0, 0, 0, 0.3); /* Fondo interno del input */
+    background: rgba(0, 0, 0, 0.3);
     color: white;
     box-sizing: border-box;
-    font-size: 16px;
     outline: none;
 }
-input[type="email"]::placeholder {
-    color: rgba(255, 255, 255, 0.5);
-}
+
 button {
     width: 100%;
     padding: 12px;
-    border-radius: 8px;
+    border-radius: 10px;
     border: none;
     background: #007bff;
     color: white;
     font-weight: bold;
     cursor: pointer;
-    font-size: 16px;
     transition: 0.3s;
 }
 
-button:hover {
-    background: #0056b3;
-}
+button:hover { background: #0056b3; }
 
-/* GRID DE MENÚ */
 .menu-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -92,33 +71,23 @@ button:hover {
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
-    padding: 18px;
+    padding: 15px;
     cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
-    color: #ffffff;
-    transition: all 0.3s ease;
+    transition: 0.3s;
 }
+
 .menu-card:hover {
     background: rgba(0, 210, 255, 0.2);
-    border-color: #00d2ff;
+    border-color: var(--primary);
     transform: translateY(-3px);
 }
-@media (prefers-color-scheme: dark) {
-    .menu-card { background: #2d2d2d; border-color: #444; color: #eee; }
-}
 
-.menu-card i { 
-    font-size: 26px; 
-    margin-bottom: 10px; 
-    color: #00d2ff; /* El azul neón de los átomos */
-}
+.menu-card i { font-size: 24px; margin-bottom: 8px; color: var(--primary); }
 
-/* Títulos */
-h2 { margin-bottom: 5px; font-weight: 600; }
-p { font-size: 0.9em; color: rgba(255, 255, 255, 0.7); margin-bottom: 20px; }
-#logout-button {
-    background: #dc3545;
-    margin-top: 20px;
-}
+#logout-button { background: #dc3545; margin-top: 15px; }
+
+h2, h3 { margin: 5px 0; }
+p { font-size: 0.9em; opacity: 0.8; }
