@@ -1,4 +1,4 @@
-// trabajadores.js - VERSIÓN FINAL CON BOTONES Y ESTILOS RECUPERADOS
+// trabajadores.js - VERSIÓN FINAL CON ESTILO NEÓN Y DATOS COMPLETOS
 
 export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     contenedor.innerHTML = `
@@ -8,7 +8,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             <div id="tab-container">
                 <button class="tab-btn active" id="tab-activos" onclick="cambiarVista('activos')">
                     <i class="fas fa-user-check"></i> <span class="desktop-text">Activos</span>
-                    <span id="count-activos" class="badge" style="background:var(--success); color:black;">0</span>
+                    <span id="count-activos" class="badge" style="background:var(--success);">0</span>
                 </button>
                 
                 <button class="tab-btn" id="tab-pasivos" onclick="cambiarVista('pasivos')">
@@ -25,35 +25,35 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                     </button>
                     
                     <div id="drop-content" class="dropdown-content">
-                        <div style="text-align:center; padding:10px; color:#888; font-size:0.8em; border-bottom:1px solid #444;">GENERAR DOCUMENTOS</div>
+                        <div style="text-align:center; padding:10px; color:#888; font-size:0.8em; border-bottom:1px solid rgba(255,255,255,0.1);">GENERAR DOCUMENTOS</div>
                         <a onclick="imprimirDoc('ficha')"><i class="fas fa-file-pdf" style="color:var(--danger);"></i> Ficha Socioeconómica</a>
                         <a onclick="imprimirDoc('ats')"><i class="fas fa-hard-hat" style="color:var(--warning);"></i> Generar ATS</a>
                         <a onclick="imprimirDoc('kardex')"><i class="fas fa-clipboard-list" style="color:var(--success);"></i> Kardex EPP</a>
                         <a onclick="imprimirDoc('induccion')"><i class="fas fa-chalkboard-teacher"></i> Inducción</a>
-                        <a onclick="toggleDrop()" style="color:#aaa; justify-content:center; border-top:1px solid #444;"><i class="fas fa-times"></i> Cerrar</a>
+                        <a onclick="toggleDrop()" style="color:#aaa; justify-content:center; border-top:1px solid rgba(255,255,255,0.1);"><i class="fas fa-times"></i> Cerrar Menú</a>
                     </div>
                 </div>
             </div>
         </div>
-        <hr style="border:0; border-top:1px solid rgba(255,255,255,0.2); margin:15px 0;">
+        <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:20px 0;">
 
         <div id="vista-activos">
-            <input type="text" id="buscador-activos" placeholder="Buscar trabajador activo..." style="width:100%; padding:12px; border-radius:30px; border:1px solid #444; background:rgba(0,0,0,0.5); color:white; margin-bottom:15px;">
+            <input type="text" id="buscador-activos" placeholder="Buscar trabajador activo..." style="width:100%; border-radius:30px; margin-bottom:15px;">
             <div id="grid-activos" class="worker-grid">Cargando...</div>
         </div>
         <div id="vista-pasivos" style="display:none;">
-            <input type="text" id="buscador-pasivos" placeholder="Buscar trabajador retirado..." style="width:100%; padding:12px; border-radius:30px; border:1px solid var(--danger); background:rgba(0,0,0,0.5); color:white; margin-bottom:15px;">
+            <input type="text" id="buscador-pasivos" placeholder="Buscar trabajador retirado..." style="width:100%; border-radius:30px; border-color:var(--danger); margin-bottom:15px;">
             <div id="grid-pasivos" class="worker-grid"></div>
         </div>
 
         <div id="vista-formulario" style="display:none;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3 style="margin:0; color:var(--primary);">Ficha Personal</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 style="margin:0; color:var(--primary); text-transform:uppercase; letter-spacing:1px;">Ficha Personal</h3>
                 
                 <div style="display:flex; gap:10px;">
-                    <button id="btn-baja" class="btn-small" style="background:var(--danger); display:none;"><i class="fas fa-user-slash"></i> <span class="desktop-text">Dar Baja</span></button>
+                    <button id="btn-baja" class="btn-small" style="background:var(--danger); display:none; color:white;"><i class="fas fa-user-slash"></i> <span class="desktop-text">Dar Baja</span></button>
                     <button id="btn-alta" class="btn-small" style="background:var(--success); color:black; display:none;"><i class="fas fa-user-check"></i> <span class="desktop-text">Reactivar</span></button>
-                    <button class="btn-small" style="background:#555;" onclick="cambiarVista('activos')"><i class="fas fa-times"></i></button>
+                    <button class="btn-small" style="background:#444;" onclick="cambiarVista('activos')"><i class="fas fa-times"></i></button>
                 </div>
             </div>
 
@@ -67,68 +67,70 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                         <div style="text-align:center; flex:0 0 120px; margin:0 auto;">
                             <img id="preview-foto" src="https://via.placeholder.com/150" class="foto-perfil">
                             <input type="file" id="t-foto" hidden accept="image/*">
-                            <button type="button" onclick="document.getElementById('t-foto').click()" class="btn-small" style="margin-top:10px; width:100%; background:#333; border:1px solid #555;">Cambiar Foto</button>
+                            <button type="button" onclick="document.getElementById('t-foto').click()" class="btn-small" style="margin-top:10px; width:100%; background:rgba(255,255,255,0.1); border:1px solid #555;">Subir Foto</button>
                         </div>
                         <div class="form-grid" style="flex:1;">
                             <input id="t-cedula" placeholder="Cédula" required maxlength="10">
-                            <input id="t-nombre" placeholder="Apellidos y Nombres" required>
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                                <div><label style="font-size:0.7em; color:#aaa;">Fecha Nacimiento</label><input type="date" id="t-nacimiento"></div>
-                                <input id="t-lugar" placeholder="Lugar Nacimiento">
+                            <input id="t-nombre" placeholder="Apellidos y Nombres Completos" required>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                                <div><label style="font-size:0.7em; color:#aaa; margin-left:5px;">Fecha Nacimiento</label><input type="date" id="t-nacimiento"></div>
+                                <input id="t-lugar" placeholder="Lugar de Nacimiento" style="margin-top:19px;">
                             </div>
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
                                 <select id="t-sexo"><option>Hombre</option><option>Mujer</option></select>
-                                <select id="t-civil"><option>Soltero</option><option>Casado</option><option>Unión Libre</option><option>Divorciado</option></select>
+                                <select id="t-civil"><option>Soltero(a)</option><option>Casado(a)</option><option>Unión Libre</option><option>Divorciado(a)</option><option>Viudo(a)</option></select>
                             </div>
                             <select id="t-sangre"><option>O+</option><option>O-</option><option>A+</option><option>A-</option><option>AB+</option></select>
                             <input id="t-discapacidad" placeholder="Discapacidad (NO / %)">
                             <input id="t-religion" placeholder="Religión">
                             <input id="t-celular" placeholder="Celular">
                             <input id="t-correo" type="email" placeholder="Correo Electrónico">
-                            <input id="t-licencia" placeholder="Tipo Licencia (A, B...)">
+                            <input id="t-licencia" placeholder="Tipo Licencia (A, B, C...)">
                         </div>
                     </div>
                 </div>
 
                 <div class="seccion-form">
-                    <h4><i class="fas fa-briefcase"></i> Información Laboral</h4>
+                    <h4><i class="fas fa-briefcase"></i> Información Laboral y Bancaria</h4>
                     <div class="form-grid">
                         <select id="t-cargo" required><option>Cargando cargos...</option></select>
-                        <input id="t-profesion" placeholder="Profesión">
+                        <input id="t-profesion" placeholder="Profesión / Título">
                         <input id="t-sueldo" placeholder="Sueldo Mensual ($)">
-                        <div><label style="font-size:0.7em; color:#aaa;">Fecha Afiliación IESS</label><input type="date" id="t-afiliacion"></div>
-                        <input id="t-banco" placeholder="Banco">
-                        <input id="t-cuenta" placeholder="Nº Cuenta">
+                        <div><label style="font-size:0.7em; color:#aaa; margin-left:5px;">Fecha Afiliación IESS</label><input type="date" id="t-afiliacion"></div>
+                        <input id="t-banco" placeholder="Banco (Pichincha, Guayaquil...)">
+                        <input id="t-cuenta" placeholder="Nº Cuenta Ahorros">
                     </div>
                 </div>
 
                 <div class="seccion-form">
-                    <h4><i class="fas fa-home"></i> Vivienda</h4>
+                    <h4><i class="fas fa-home"></i> Vivienda y Ubicación</h4>
                     <div class="form-grid">
-                        <input id="t-direccion" placeholder="Dirección Domiciliaria" style="grid-column:1/-1">
+                        <input id="t-direccion" placeholder="Dirección Domiciliaria Completa" style="grid-column:1/-1">
                         <select id="t-vivienda"><option>Propia</option><option>Arrendada</option><option>Familiar</option></select>
-                        <input id="t-material" placeholder="Material Paredes">
-                        <input id="t-cubierta" placeholder="Material Techo">
+                        <input id="t-material" placeholder="Material Paredes (Cemento...)">
+                        <input id="t-cubierta" placeholder="Material Techo (Zinc, Losa...)">
                         <input id="t-habitaciones" placeholder="Nº Habitaciones">
                         <input id="t-seguridad" placeholder="Seguridad Sector (Buena/Mala)">
                     </div>
-                    <div class="multi-select-box" style="margin-top:10px;">
-                        <label>Servicios Básicos:</label>
-                        <label><input type="checkbox" name="serv" value="Luz"> Luz</label>
-                        <label><input type="checkbox" name="serv" value="Agua"> Agua</label>
-                        <label><input type="checkbox" name="serv" value="Internet"> Internet</label>
-                        <label><input type="checkbox" name="serv" value="Alcantarillado"> Alcantarillado</label>
+                    <div class="multi-select-box" style="margin-top:15px;">
+                        <label style="display:block; margin-bottom:5px; color:#aaa;">Servicios Básicos:</label>
+                        <div style="display:flex; flex-wrap:wrap; gap:15px;">
+                            <label><input type="checkbox" name="serv" value="Luz"> Luz</label>
+                            <label><input type="checkbox" name="serv" value="Agua"> Agua</label>
+                            <label><input type="checkbox" name="serv" value="Internet"> Internet</label>
+                            <label><input type="checkbox" name="serv" value="Alcantarillado"> Alcantarillado</label>
+                        </div>
                     </div>
                 </div>
 
                 <div class="seccion-form">
-                    <h4><i class="fas fa-ambulance"></i> Emergencia</h4>
+                    <h4><i class="fas fa-ambulance"></i> En Caso de Emergencia</h4>
                     <div class="form-grid">
                         <input id="t-emer-nom" placeholder="Nombre Contacto 1">
                         <input id="t-emer-par" placeholder="Parentesco">
                         <input id="t-emer-tel" placeholder="Teléfono">
                     </div>
-                    <hr style="border-color:#444; margin:10px 0;">
+                    <hr style="border-color:rgba(255,255,255,0.1); margin:15px 0;">
                     <div class="form-grid">
                         <input id="t-emer2-nom" placeholder="Nombre Contacto 2">
                         <input id="t-emer2-par" placeholder="Parentesco">
@@ -138,38 +140,39 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
 
                 <div class="seccion-form">
                     <h4>Tallas y Firma</h4>
-                    <div class="form-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom:15px;">
+                    <div class="form-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom:20px;">
                         <input id="t-camisa" placeholder="Camisa">
                         <input id="t-pantalon" placeholder="Pantalón">
                         <input id="t-zapatos" placeholder="Zapatos">
                     </div>
-                    <div style="text-align:center; border:1px dashed #555; padding:10px; border-radius:10px;">
-                        <img id="preview-firma" src="" style="height:60px; display:none; margin:0 auto 5px; background:white; padding:5px; border-radius:5px;">
-                        <button type="button" onclick="document.getElementById('t-firma').click()" class="btn-small" style="background:#444;">Cargar Firma</button>
+                    <div style="text-align:center; border:1px dashed #555; padding:20px; border-radius:15px; background:rgba(0,0,0,0.2);">
+                        <img id="preview-firma" src="" style="height:70px; display:none; margin:0 auto 10px; background:white; padding:5px; border-radius:5px;">
+                        <button type="button" onclick="document.getElementById('t-firma').click()" class="btn-small" style="background:#444; margin:0 auto;">Cargar Firma</button>
                         <input type="file" id="t-firma" hidden accept="image/*">
+                        <p style="font-size:0.8em; color:#888; margin-top:5px;">Firma clara en fondo blanco</p>
                     </div>
                 </div>
 
-                <div style="display:flex; gap:10px; padding-bottom:80px; margin-top:20px;">
-                    <button type="submit" id="btn-guardar" style="background:var(--primary); color:black; flex:1;">GUARDAR CAMBIOS</button>
-                    <button type="button" onclick="cambiarVista('activos')" style="background:#555; flex:1;">CANCELAR</button>
+                <div style="display:flex; gap:15px; padding-bottom:80px; margin-top:20px;">
+                    <button type="submit" id="btn-guardar" style="background:var(--primary); color:black; flex:2;">GUARDAR CAMBIOS</button>
+                    <button type="button" onclick="cambiarVista('activos')" style="background:#333; flex:1;">CANCELAR</button>
                 </div>
             </form>
         </div>
     `;
 
-    // --- LÓGICA ---
+    // --- LÓGICA JAVASCRIPT ---
     
-    // Toggle Menú
+    // Toggle Menú Flotante
     window.toggleDrop = () => {
         const d = document.getElementById("drop-content");
         const p = document.getElementById("dropdown-trabajador");
         d.classList.toggle("show");
-        if(d.classList.contains("show")) p.classList.add("show");
+        if(d.classList.contains("show")) p.classList.add("show"); // Activa fondo oscuro en móvil
         else p.classList.remove("show");
     };
 
-    // Previews
+    // Previews de Fotos
     const setupPreview = (inputId, imgId) => {
         document.getElementById(inputId).onchange = (e) => {
             if(e.target.files[0]){
@@ -182,7 +185,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     setupPreview('t-foto', 'preview-foto');
     setupPreview('t-firma', 'preview-firma');
 
-    // Navegación
+    // Navegación Vistas
     window.cambiarVista = (v) => {
         document.querySelectorAll('.vista-seccion').forEach(e=>e.style.display='none');
         document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
@@ -212,7 +215,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         document.getElementById('vista-formulario').style.display='block';
     };
 
-    // Listar
+    // Listar Trabajadores
     async function listar(estado, gridId) {
         const { data } = await supabase.from('trabajadores').select('*').eq('empresa_id', empresa.id).eq('estado', estado).order('nombre');
         const grid = document.getElementById(gridId); grid.innerHTML='';
@@ -220,28 +223,28 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         
         data?.forEach(t=>{
             const d = document.createElement('div'); d.className='worker-card';
+            const imgUrl = t.foto_url || 'https://via.placeholder.com/50';
             d.innerHTML=`
-                <div class="w-avatar"><img src="${t.foto_url || 'https://via.placeholder.com/50'}" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div><h4 style="margin:0">${t.nombre}</h4><small style="color:#aaa">${t.cargo}</small></div>
+                <div class="w-avatar"><img src="${imgUrl}" onerror="this.src='https://via.placeholder.com/50'"></div>
+                <div><h4 style="margin:0; font-size:1em;">${t.nombre}</h4><small style="color:#aaa; font-size:0.8em;">${t.cargo}</small></div>
             `;
             d.onclick=()=>abrir(t);
             grid.appendChild(d);
         });
     }
 
+    // Abrir Ficha (Editar)
     function abrir(t) {
-        // Mapeo simple
         const fields = ['cedula','nombre','nacimiento','lugar','sexo','civil','sangre','discapacidad','religion','celular','correo','licencia','cargo','profesion','sueldo','afiliacion','banco','cuenta','direccion','vivienda','material','cubierta','habitaciones','seguridad','camisa','pantalon','zapatos'];
         fields.forEach(f => {
             const el = document.getElementById('t-'+f);
             if(el) el.value = t[f.replace('-','_')] || (t['tipo_'+f] || '');
         });
         
-        // Especiales
         document.getElementById('t-id').value = t.id;
         document.getElementById('t-estado').value = t.estado;
         
-        // Botones Estado
+        // Botones Estado (Dar Baja)
         const btnBaja = document.getElementById('btn-baja');
         const btnAlta = document.getElementById('btn-alta');
         if(t.estado === 'ACTIVO') {
@@ -252,7 +255,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             btnAlta.onclick = () => cambiarEstado(t.id, 'ACTIVO');
         }
 
-        // Emergencia
+        // Emergencias
         document.getElementById('t-emer-nom').value = t.emergencia_nombre;
         document.getElementById('t-emer-par').value = t.emergencia_parentesco;
         document.getElementById('t-emer-tel').value = t.emergencia_telefono;
@@ -269,7 +272,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         document.getElementById('preview-foto').src = t.foto_url || 'https://via.placeholder.com/150';
         if(t.firma_url) { document.getElementById('preview-firma').src=t.firma_url; document.getElementById('preview-firma').style.display='block'; }
 
-        // Mostrar Nombre en Menú
+        // Mostrar Botón con Nombre
         document.getElementById('lbl-nombre-trab').innerText = t.nombre.split(' ')[0];
         document.getElementById('dropdown-trabajador').style.display='inline-block';
         
@@ -277,15 +280,13 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         document.getElementById('vista-formulario').style.display='block';
     }
 
-    // CAMBIAR ESTADO (DAR BAJA)
     async function cambiarEstado(id, nuevoEstado) {
         if(!confirm(`¿Seguro deseas cambiar a ${nuevoEstado}?`)) return;
         await supabase.from('trabajadores').update({ estado: nuevoEstado }).eq('id', id);
-        alert("Estado actualizado");
-        document.getElementById('tab-activos').click(); // Recargar
+        document.getElementById('tab-activos').click(); 
     }
 
-    // GUARDAR
+    // GUARDAR (Submit)
     document.getElementById('form-trabajador').onsubmit = async(e)=>{
         e.preventDefault();
         const id = document.getElementById('t-id').value;
@@ -336,7 +337,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
 
         if(id) await supabase.from('trabajadores').update(datos).eq('id',id);
         else await supabase.from('trabajadores').insert([datos]);
-        alert("Guardado");
+        alert("Guardado Correctamente");
         listar('ACTIVO','grid-activos');
         cambiarVista('activos');
     };
@@ -347,9 +348,9 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         return supabase.storage.from('fichas_personal').getPublicUrl(n).data.publicUrl;
     }
 
-    // IMPRIMIR PDF
+    // IMPRIMIR PDF (Con los datos completos)
     window.imprimirDoc = async(t)=>{
-        if(t!=='ficha') return alert("En construcción");
+        if(t!=='ficha') return alert("Próximamente");
         const id = document.getElementById('t-id').value;
         const { data: tr } = await supabase.from('trabajadores').select('*').eq('id',id).single();
         const logo = await base64(empresa.logo_url);
