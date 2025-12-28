@@ -1,158 +1,100 @@
 import { cargarModuloTrabajadores } from './trabajadores.js';
 
-// --- SISTEMA DE DIAGNÓSTICO DE ERRORES ---
-window.onerror = function(msg, url, line) {
-    alert("⚠️ ERROR CRÍTICO DEL SISTEMA:\n" + msg + "\nEn línea: " + line);
-    return false;
-};
-
-// --- CONFIGURACIÓN SUPABASE ---
+// CONEXIÓN SUPABASE
 const SUPABASE_URL = 'https://pyvasykgetphdjvbijqe.supabase.co';
-const SUPABASE_KEY = 'sb_publishable__UMvHXVhw5-se2Lik_A3pQ_TIRd8P-N'; // Verifica que sea la correcta
+const SUPABASE_KEY = 'sb_publishable__UMvHXVhw5-se2Lik_A3pQ_TIRd8P-N'; // VERIFICA QUE ESTA KEY SEA CORRECTA
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// --- FONDO ANIMADO ---
+// FONDO ANIMADO
 try {
-    const canvas = document.getElementById('canvas-bg');
-    if (canvas) {
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-        const initParticles = () => {
-            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-            particles = [];
-            for(let i=0; i<60; i++) particles.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5, size: Math.random()*2});
-        };
-        const animate = () => {
-            ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle='#00d2ff';
-            particles.forEach(p=>{
-                p.x+=p.vx; p.y+=p.vy;
-                if(p.x<0||p.x>canvas.width) p.vx*=-1; if(p.y<0||p.y>canvas.height) p.vy*=-1;
-                ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fill();
-            });
-            requestAnimationFrame(animate);
-        };
-        initParticles(); animate();
-        window.addEventListener('resize', initParticles);
+    const cvs = document.getElementById('canvas-bg');
+    if(cvs) {
+        const ctx = cvs.getContext('2d');
+        let pts = [];
+        const init = () => { cvs.width=window.innerWidth; cvs.height=window.innerHeight; pts=[]; for(let i=0;i<50;i++) pts.push({x:Math.random()*cvs.width, y:Math.random()*cvs.height, vx:(Math.random()-0.5), vy:(Math.random()-0.5)}); };
+        const anim = () => { ctx.clearRect(0,0,cvs.width,cvs.height); ctx.fillStyle='#00d2ff'; pts.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; if(p.x<0||p.x>cvs.width) p.vx*=-1; if(p.y<0||p.y>cvs.height) p.vy*=-1; ctx.beginPath(); ctx.arc(p.x,p.y,1.5,0,6.28); ctx.fill(); }); requestAnimationFrame(anim); };
+        init(); anim(); window.onresize=init;
     }
-} catch (e) { console.error("Error en animación:", e); }
+} catch(e){}
 
-// --- LOGIN ---
+// LOGIN
 let usuarioActual = null;
-
 document.getElementById('login-button').onclick = async () => {
-    const btn = document.getElementById('login-button');
-    const emailInput = document.getElementById('email');
-    const email = emailInput.value.trim().toLowerCase();
+    const email = document.getElementById('email').value.toLowerCase().trim();
+    if(!email) return alert("Escribe un correo");
+
+    const { data, error } = await _supabase.from('autorizados').select('*').eq('email', email).single();
     
-    if(!email) return alert("Por favor escribe un correo.");
-
-    btn.innerHTML = "Verificando...";
-    btn.disabled = true;
-
-    try {
-        // 1. Intento de Login "Universal" (Backdoor de Emergencia)
-        // ÚSALO SI LA BASE DE DATOS FALLA: Escribe 'admin@goldmins.com'
-        if(email === 'admin@goldmins.com') {
-            usuarioActual = { email: email, rol: 'admin' };
-            mostrarSeleccionEmpresa();
-            return;
-        }
-
-        // 2. Consulta Real a Supabase
-        const { data, error } = await _supabase
-            .from('autorizados')
-            .select('*')
-            .eq('email', email)
-            .maybeSingle(); // Usamos maybeSingle para evitar errores si no existe
-
-        if (error) throw error;
-
-        if (data) {
-            usuarioActual = data;
-            mostrarSeleccionEmpresa();
-        } else {
-            alert("Acceso Denegado: El correo no está en la lista de autorizados.");
-            btn.innerHTML = "Ingresar al Sistema";
-            btn.disabled = false;
-        }
-
-    } catch (err) {
-        alert("Error de Conexión: " + err.message);
-        btn.innerHTML = "Ingresar al Sistema";
-        btn.disabled = false;
+    // BACKDOOR: Si falla la BD o no existe, permitir admin por defecto (SOLO PARA PRUEBAS)
+    if(data || email === 'admin@goldmins.com') {
+        usuarioActual = data || { email: 'admin@goldmins.com', rol: 'admin' };
+        mostrarEmpresas();
+    } else {
+        alert("Usuario no autorizado.");
     }
 };
 
-// --- NAVEGACIÓN ---
-async function mostrarSeleccionEmpresa() {
-    document.getElementById('start-container').style.display = 'block'; 
-    document.getElementById('login-section').style.display = 'none';
-    document.getElementById('company-section').style.display = 'block';
-
+async function mostrarEmpresas() {
+    document.getElementById('start-container').style.display='block';
+    document.getElementById('login-section').style.display='none';
+    document.getElementById('company-section').style.display='block';
+    
     const list = document.getElementById('lista-empresas');
-    list.innerHTML = '<p style="color:#aaa;">Cargando empresas...</p>';
-
+    list.innerHTML = '<p style="color:#aaa;">Cargando...</p>';
+    
     const { data: empresas } = await _supabase.from('empresas').select('*');
     list.innerHTML = '';
-
-    if (empresas && empresas.length > 0) {
+    
+    if(empresas && empresas.length > 0) {
         empresas.forEach(emp => {
-            const div = document.createElement('div');
-            div.className = 'menu-card';
-            div.innerHTML = `<img src="${emp.logo_url}" onerror="this.src='https://via.placeholder.com/50'"> <p>${emp.nombre}</p>`;
-            div.onclick = () => cargarDashboard(emp);
-            list.appendChild(div);
+            const d = document.createElement('div');
+            d.className = 'menu-card';
+            // Placeholder si la imagen está rota
+            d.innerHTML = `<img src="${emp.logo_url}" onerror="this.src='https://via.placeholder.com/100?text=LOGO'"> <p>${emp.nombre}</p>`;
+            d.onclick = () => entrarApp(emp);
+            list.appendChild(d);
         });
     } else {
-        list.innerHTML = '<p>No hay empresas registradas.</p>';
+        list.innerHTML = '<p>No hay empresas. Agrega una.</p>';
     }
-    
+
     if(usuarioActual.rol === 'admin') {
-        const btnAdd = document.getElementById('admin-add-company');
-        if(btnAdd) {
-            btnAdd.style.display = 'block';
-            btnAdd.onclick = async () => {
-                const n = prompt("Nombre:"); const l = prompt("URL Logo:");
-                if(n) { await _supabase.from('empresas').insert([{nombre:n, logo_url:l}]); mostrarSeleccionEmpresa(); }
-            };
+        const btn = document.getElementById('admin-add-company');
+        btn.style.display = 'block';
+        btn.onclick = async () => {
+            const n = prompt("Nombre Empresa:"); const l = prompt("URL Logo:");
+            if(n) { await _supabase.from('empresas').insert([{nombre:n, logo_url:l}]); mostrarEmpresas(); }
         }
     }
 }
 
-async function cargarDashboard(empresa) {
-    document.getElementById('start-container').style.display = 'none';
-    document.getElementById('app-section').style.display = 'flex'; // FLEX para sidebar
+async function entrarApp(empresa) {
+    document.getElementById('start-container').style.display='none';
+    document.getElementById('app-section').style.display='flex';
+    
+    document.getElementById('header-empresa').innerHTML = `<img src="${empresa.logo_url}" style="width:70px; display:block; margin:0 auto;"><h4 style="margin:5px 0; text-align:center;">${empresa.nombre}</h4>`;
+    document.getElementById('user-email').innerText = usuarioActual.email;
 
-    document.getElementById('header-empresa').innerHTML = `<img src="${empresa.logo_url}" style="width:80px; margin-bottom:10px;"><h3>${empresa.nombre}</h3>`;
-    document.getElementById('user-email').textContent = usuarioActual.email;
-
-    // Cargar Menú
+    const menu = document.getElementById('menu-dinamico');
     const { data: menus } = await _supabase.from('config_menus').select('*');
-    const menuDiv = document.getElementById('menu-dinamico');
-    menuDiv.innerHTML = '';
+    menu.innerHTML = '';
 
     menus?.forEach(m => {
-        const row = document.createElement('div');
-        row.className = 'menu-item-row';
-        row.innerHTML = `<i class="fas ${m.icono}"></i> <span>${m.titulo}</span>`;
-        row.onclick = () => {
-            // Cerrar menú en móvil
-            document.getElementById('mySidebar').classList.remove('active');
-            
-            const titulo = m.titulo.toLowerCase();
+        const d = document.createElement('div');
+        d.className = 'menu-item-row';
+        d.innerHTML = `<i class="fas ${m.icono}"></i> <span>${m.titulo}</span>`;
+        d.onclick = () => {
+            document.getElementById('mySidebar').classList.remove('active'); // Cerrar en móvil
+            const t = m.titulo.toLowerCase();
             const ws = document.getElementById('workspace');
-            
-            if(titulo.includes('trabajador') || titulo.includes('personal') || titulo.includes('ficha')) {
+            if(t.includes('trabajador') || t.includes('personal') || t.includes('ficha')) {
                 cargarModuloTrabajadores(ws, _supabase, empresa);
             } else {
                 ws.innerHTML = `<h2>${m.titulo}</h2><p>En construcción...</p>`;
             }
         };
-        menuDiv.appendChild(row);
+        menu.appendChild(d);
     });
 }
 
-// Menú Móvil
-window.toggleSidebar = () => {
-    document.getElementById('mySidebar').classList.toggle('active');
-};
+window.toggleSidebar = () => document.getElementById('mySidebar').classList.toggle('active');
