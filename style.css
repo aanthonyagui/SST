@@ -1,9 +1,15 @@
+:root {
+    --glass: rgba(255, 255, 255, 0.1);
+    --text: #ffffff;
+    --primary: #00d2ff;
+}
 /* FONDO Y BASE */
 body {
     margin: 0;
     overflow: hidden;
     background: #050505;
     font-family: 'Segoe UI', Arial, sans-serif;
+    color: var(--text);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -19,8 +25,9 @@ body {
 
 /* PANEL ESTILO PRIMERAS VERSIONES (Sólido y Elegante) */
 .container {
-    background: #ffffff; /* Fondo blanco sólido como el inicio */
+    background:var(--glass); /* Fondo blanco sólido como el inicio */
     color: #333;
+    backdrop-filter: blur(15px);
     padding: 30px;
     border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
