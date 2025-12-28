@@ -1,335 +1,56 @@
-/* =========================================
-   1. VARIABLES Y CONFIGURACIÓN BASE
-   ========================================= */
-:root {
-    --primary: #00d2ff;       /* Azul Cian Neón */
-    --danger: #e74c3c;        /* Rojo */
-    --success: #2ecc71;       /* Verde */
-    --text: #ffffff;          /* Blanco */
-    --bg-dark: #050505;       /* Fondo */
-    --glass-bg: rgba(30, 30, 30, 0.65);
-    --input-bg: rgba(0, 0, 0, 0.5);
-}
+:root { --primary: #00d2ff; --text: #ffffff; }
 
-/* RESET BÁSICO PARA EVITAR DESBORDES */
-* {
-    box-sizing: border-box; /* Clave para que el padding no agrande el ancho */
-}
+body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; color: var(--text); display: flex; justify-content: center; align-items: center; height: 100vh; }
+#canvas-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
 
-body {
-    margin: 0;
-    padding: 0;
-    /* En PC ocultamos scroll, en móvil se maneja distinto */
-    overflow: hidden; 
-    background: var(--bg-dark);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: var(--text);
-    
-    /* CENTRADO PERFECTO DEL LOGIN */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh; /* Usamos min-height para asegurar que cubra todo */
-}
+/* CONTENEDOR INICIAL */
+.container { position: relative; z-index: 10; background: rgba(30, 30, 30, 0.75); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 20px; padding: 25px; width: 90%; max-width: 400px; text-align: center; }
 
-#canvas-bg {
-    position: fixed; top: 0; left: 0;
-    width: 100%; height: 100%;
-    z-index: 0; pointer-events: none;
-}
+/* DASHBOARD */
+.dashboard-layout { position: relative; z-index: 10; display: flex; width: 95vw; height: 90vh; background: rgba(20, 20, 20, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 15px; overflow: hidden; }
 
-/* Scrollbar personalizado */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
-::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
+/* SIDEBAR */
+.sidebar { width: 260px; background: rgba(0, 0, 0, 0.4); border-right: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; padding: 20px; transition: transform 0.3s ease; }
+.sidebar-menu { flex: 1; overflow-y: auto; margin: 20px 0; padding-right: 5px; }
+.sidebar-menu::-webkit-scrollbar { width: 4px; }
+.sidebar-menu::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+.sidebar-footer { display: flex; gap: 5px; margin-top: auto; }
 
-/* =========================================
-   2. CONTENEDORES INICIALES (LOGIN)
-   ========================================= */
-.container {
-    position: relative;
-    z-index: 10;
-    background: var(--glass-bg);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 20px;
-    padding: 30px;
-    width: 90%; 
-    max-width: 400px;
-    /* Aseguramos márgenes automáticos para centrado */
-    margin: auto; 
-    text-align: center;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-}
+/* CONTENIDO */
+.content-area { flex: 1; padding: 20px; overflow-y: auto; position: relative; }
 
-/* =========================================
-   3. DASHBOARD PRINCIPAL (LAYOUT PC)
-   ========================================= */
-.dashboard-layout {
-    position: relative;
-    z-index: 10;
-    display: flex;
-    width: 96vw; height: 92vh;
-    background: rgba(20, 20, 20, 0.85);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
-}
-
-/* --- SIDEBAR (PC) --- */
-.sidebar {
-    width: 260px;
-    background: rgba(0, 0, 0, 0.4);
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex; flex-direction: column;
-    padding: 20px;
-    height: 100%; /* Ocupa toda la altura disponible */
-    transition: transform 0.3s ease;
-}
-
-.user-info-side {
-    flex-shrink: 0; /* No se encoge */
-    margin-bottom: 15px; padding-bottom: 15px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    font-size: 0.9em; color: #ccc; text-align: center;
-}
-
-.sidebar-menu {
-    flex-grow: 1; /* Ocupa todo el espacio disponible */
-    overflow-y: auto; /* Scroll si hay muchos items */
-    margin-bottom: 10px;
-}
-
-.sidebar-footer {
-    flex-shrink: 0; /* Los botones de abajo NUNCA se encogen */
-    display: flex; gap: 8px;
-    padding-top: 10px;
-    border-top: 1px solid rgba(255,255,255,0.1);
-    background: transparent; /* Transparente en PC */
-}
-
-/* Items Menú */
-.menu-item-row {
-    display: flex; align-items: center;
-    padding: 12px 15px; margin-bottom: 8px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px; cursor: pointer; transition: 0.2s;
-    user-select: none;
-}
-.menu-item-row:hover {
-    background: rgba(0, 210, 255, 0.15);
-    border-left: 3px solid var(--primary);
-    padding-left: 12px;
-}
+/* ITEMS MENÚ */
+.menu-item-row { display: flex; align-items: center; padding: 12px; margin-bottom: 8px; background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer; transition:0.2s; }
+.menu-item-row:hover { background: rgba(0,210,255,0.2); border-left: 3px solid var(--primary); }
 .menu-item-row i { margin-right: 15px; color: var(--primary); width: 20px; text-align: center; }
 
-/* --- CONTENIDO (PC) --- */
-.content-area {
-    flex: 1;
-    padding: 25px;
-    overflow-y: auto;
-    position: relative;
-    width: 100%; /* Asegura que no se desborde */
-}
+/* ELEMENTOS GENERALES */
+.worker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
+.worker-card { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; display: flex; align-items: center; gap: 12px; }
+.w-avatar { width: 40px; height: 40px; background: var(--primary); color: #000; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; overflow: hidden; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+input, select { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: white; box-sizing: border-box; }
+button { width: 100%; padding: 12px; border-radius: 8px; border: none; background: #007bff; color: white; font-weight: bold; cursor: pointer; }
+.btn-small { width: auto; padding: 8px 12px; }
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 100; }
+.menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.menu-card { background: rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
+.menu-card img { width: 60px; height: 60px; object-fit: contain; }
 
-/* =========================================
-   4. ESTILOS FORMULARIO Y FICHAS
-   ========================================= */
-.header-tools { display: flex; flex-direction: column; width: 100%; }
-
-/* Botones Pestañas */
-.tab-btn {
-    background: transparent; border: 1px solid rgba(255,255,255,0.2);
-    color: #aaa; padding: 8px 15px; border-radius: 5px;
-    cursor: pointer; transition: 0.3s;
-    display: inline-flex; align-items: center; gap: 8px;
-    font-size: 0.9em; white-space: nowrap;
-}
-.tab-btn.active {
-    background: var(--primary); color: #000;
-    border-color: var(--primary); font-weight: bold;
-}
-.badge { background: rgba(0,0,0,0.3); color: white; border-radius: 10px; padding: 2px 6px; font-size: 0.8em; }
-
-/* Grid Trabajadores */
-.worker-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 15px; margin-top: 15px; width: 100%;
-}
-.worker-card {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px; padding: 15px;
-    display: flex; align-items: center; gap: 15px;
-    cursor: pointer; transition: 0.2s;
-}
-.worker-card:hover { transform: translateY(-3px); border-color: var(--primary); }
-.w-avatar {
-    width: 50px; height: 50px; flex-shrink: 0; /* No aplastar avatar */
-    background: var(--primary); color: #000;
-    border-radius: 50%; display: flex; justify-content: center; align-items: center;
-    font-weight: bold; overflow: hidden;
-}
-
-/* Formularios */
-.form-scroll {
-    width: 100%;
-    overflow-x: hidden; /* Evita scroll horizontal */
-}
-
-.seccion-form {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 15px; border-radius: 12px; margin-bottom: 20px;
-    width: 100%;
-}
-.seccion-form h4 {
-    margin-top: 0; color: var(--primary);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 8px; margin-bottom: 15px;
-}
-
-/* Fotos y Firmas (Responsive) */
-.foto-perfil {
-    width: 120px; height: 120px;
-    object-fit: cover; border-radius: 10px;
-    border: 2px solid #555; margin-bottom: 10px; background: #222;
-}
-#preview-firma {
-    max-width: 100%; /* Que no se salga del ancho del celular */
-    height: auto;
-    max-height: 100px;
-    background: rgba(255,255,255,0.1);
-    padding: 5px; border-radius: 5px;
-}
-
-.form-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%;
-}
-.multi-select-box {
-    background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px;
-    grid-column: span 2; display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 10px; border: 1px solid rgba(255,255,255,0.1);
-}
-
-/* Inputs */
-input, select, textarea {
-    width: 100%; padding: 12px; margin: 5px 0;
-    border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.2);
-    background: var(--input-bg); color: white;
-    font-family: inherit; font-size: 16px; /* Evita zoom en iPhone */
-}
-button {
-    width: 100%; padding: 12px; border-radius: 10px;
-    border: none; background: #007bff; color: white;
-    font-weight: bold; cursor: pointer; display: flex;
-    justify-content: center; align-items: center; gap: 8px;
-}
-.btn-small { width: auto; padding: 8px 12px; font-size: 0.9em; }
-
-/* Selección Empresa */
-.menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
-.menu-card {
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 12px; padding: 20px;
-    cursor: pointer; display: flex; flex-direction: column; align-items: center;
-}
-.menu-card img { width: 70px; height: 70px; object-fit: contain; }
-
-.modal {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.9); z-index: 1000;
-    display: flex; justify-content: center; align-items: center;
-}
-
-/* =========================================
-   5. RESPONSIVE MÓVIL (CORRECCIONES)
-   ========================================= */
-
-/* Ocultos en PC */
-#menu-toggle { display: none; }
-#sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 90; backdrop-filter: blur(4px); }
+/* --- MÓVIL (RESPONSIVE) --- */
+#menu-toggle { display: none; } /* Oculto en PC */
+#sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 90; backdrop-filter: blur(3px); }
 
 @media (max-width: 768px) {
-    /* 1. Body y Scroll */
-    body {
-        height: auto; /* Permite crecer */
-        min-height: 100vh;
-        overflow-y: auto; /* Scroll vertical activado */
-        background: #000;
-        display: block; /* Quita el centrado flex para el contenido largo */
-    }
-
-    /* 2. Login Centrado en Móvil */
-    .container {
-        margin: 10vh auto; /* Margen superior para separarlo del borde */
-        width: 85%;
-    }
-
-    /* 3. Dashboard Expandido */
-    .dashboard-layout {
-        width: 100%; 
-        height: auto; 
-        min-height: 100vh;
-        border-radius: 0; 
-        border: none;
-        display: block; 
-        margin: 0;
-    }
-
-    /* 4. Sidebar Corregido (Botones visibles) */
-    .sidebar {
-        position: fixed; top: 0; left: 0;
-        height: 100dvh; /* Altura dinámica del viewport */
-        width: 80%; max-width: 300px;
-        z-index: 200; background: #111;
-        transform: translateX(-100%);
-        box-shadow: 10px 0 30px rgba(0,0,0,0.9);
-        padding-bottom: 20px; /* Espacio extra abajo */
-    }
-    .sidebar.active { transform: translateX(0); }
+    .dashboard-layout { width: 100vw; height: 100vh; border-radius: 0; border: none; }
     
-    .sidebar-footer {
-        background: #1a1a1a; /* Fondo sólido para que se note */
-        padding: 15px;
-        position: sticky; /* Se pega al fondo si hace falta */
-        bottom: 0;
-    }
+    /* El Sidebar se esconde a la izquierda */
+    .sidebar { position: absolute; top: 0; left: 0; height: 100%; z-index: 100; background: #1a1a1a; transform: translateX(-100%); box-shadow: 4px 0 15px rgba(0,0,0,0.5); }
+    .sidebar.active { transform: translateX(0); } /* Al activarse sale */
 
-    /* 5. Contenido Adaptable (Sin scroll horizontal) */
-    .content-area {
-        height: auto;
-        padding: 15px;
-        overflow: visible;
-        padding-bottom: 80px;
-    }
-
-    /* 6. Formulario Adaptado */
-    .form-grid { grid-template-columns: 1fr; } /* Inputs a 1 columna */
-    .multi-select-box { grid-column: span 1; }
-    .worker-grid { grid-template-columns: 1fr; }
+    /* Aparece el botón */
+    #menu-toggle { display: block; background: transparent; border: 1px solid rgba(255,255,255,0.3); width: auto; padding: 8px 12px; margin-bottom: 10px; color: var(--primary); font-size: 1.2rem; }
     
-    /* 7. Scroll Horizontal Pestañas */
-    #tab-container { 
-        flex-wrap: nowrap; 
-        overflow-x: auto; 
-        -webkit-overflow-scrolling: touch; 
-        padding-bottom: 10px;
-    }
-    
-    /* 8. Botón Hamburguesa */
-    #menu-toggle {
-        display: inline-block;
-        position: sticky; top: 10px; z-index: 95;
-        background: rgba(0,0,0,0.8);
-        border: 1px solid rgba(255,255,255,0.3);
-        color: var(--primary);
-        font-size: 1.4rem; padding: 8px 12px;
-        margin-bottom: 15px; border-radius: 5px;
-    }
+    .content-area { padding: 15px; }
+    .form-grid { grid-template-columns: 1fr; } /* Inputs uno debajo de otro */
 }
