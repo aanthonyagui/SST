@@ -3,75 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SST Minería Ecuador</title>
+    <title>SST Pro - Minería</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192x192.png">
-    <meta name="theme-color" content="#007bff"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
-        <img src="logo-sst.png" alt="Logo SST Minería" class="logo"> <h1>SST Minería Ecuador</h1>
-        <p>Reportes de Seguridad y Salud en el Trabajo</p>
-
         <div id="login-section">
-            <h2>Inicio de Sesión</h2>
-            <input type="email" id="email" placeholder="Correo electrónico" required>
-           <input type="password" id="password" placeholder="Contraseña (opcional)">
-            <button id="login-button">Iniciar Sesión</button>
-            <p id="login-message" class="message"></p>
+            <img src="logo-sst.png" style="width: 80px;" alt="Logo">
+            <h2>SST Dashboard</h2>
+            <input type="email" id="email" placeholder="Correo autorizado">
+            <button id="login-button">Ingresar</button>
+            <p id="login-message"></p>
         </div>
 
         <div id="app-section" style="display:none;">
-            <h2>Bienvenido, <span id="user-email"></span>!</h2>
-            <p>Accede a tus herramientas de SST.</p>
-
-            <h3>Nuevo Reporte de Incidente</h3>
-            <form id="incident-form">
-                <label for="fecha">Fecha:</label>
-                <input type="date" id="fecha" required>
-
-                <label for="tipo-incidente">Tipo de Incidente:</label>
-                <select id="tipo-incidente" required>
-                    <option value="">Seleccione...</option>
-                    <option value="Accidente Leve">Accidente Leve</option>
-                    <option value="Accidente Grave">Accidente Grave</option>
-                    <option value="Incidente Peligroso">Incidente Peligroso</option>
-                    <option value="Acto Inseguro">Acto Inseguro</option>
-                    <option value="Condicion Insegura">Condición Insegura</option>
-                </select>
-
-                <label for="descripcion">Descripción:</label>
-                <textarea id="descripcion" rows="4" placeholder="Detalle del incidente..." required></textarea>
-
-                <button type="submit">Guardar Reporte (Offline)</button>
-            </form>
-            <p id="form-message" class="message"></p>
-
-            <h3>Reportes Pendientes</h3>
-            <ul id="pending-reports">
-                </ul>
-            <button id="sync-button" style="display:none;">Sincronizar Reportes</button>
-            <p id="sync-message" class="message"></p>
-
-            <button id="logout-button">Cerrar Sesión</button>
+            <h3>Panel de Control</h3>
+            <p>Bienvenido: <b id="user-email"></b></p>
+            <div class="menu-grid">
+                <div class="menu-card" onclick="alert('Módulo Trabajadores')">
+                    <i class="fas fa-users"></i>
+                    <span>Trabajadores</span>
+                </div>
+                <div class="menu-card" onclick="alert('Módulo Accidentes')">
+                    <i class="fas fa-ambulance"></i>
+                    <span>Reportar Accidentes</span>
+                </div>
+                <div class="menu-card" onclick="alert('Módulo Inspecciones')">
+                    <i class="fas fa-clipboard-check"></i>
+                    <span>Inspecciones</span>
+                </div>
+                <div class="menu-card" onclick="alert('Módulo Horarios')">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Horario y Charlas</span>
+                </div>
+            </div>
+            <button id="logout-button" style="margin-top: 20px; background: #e74c3c;">Cerrar Sesión</button>
         </div>
     </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
-    <script>
-        // Registrar Service Worker para PWA
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(registration => {
-                        console.log('Service Worker registrado con éxito:', registration);
-                    })
-                    .catch(error => {
-                        console.error('Fallo el registro del Service Worker:', error);
-                    });
-            });
-        }
-    </script>
 </body>
 </html>
