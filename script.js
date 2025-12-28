@@ -3,7 +3,7 @@ const SUPABASE_URL = 'https://pyvasykgetphdjvbijqe.supabase.co';
 const SUPABASE_KEY = 'sb_publishable__UMvHXVhw5-se2Lik_A3pQ_TIRd8P-N';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// --- ANIMACIÓN DE ÁTOMOS (GALAXIA) ---
+// --- ANIMACIÓN ÁTOMOS (FONDO) ---
 const canvas = document.getElementById('canvas-bg');
 const ctx = canvas.getContext('2d');
 let particles = [];
@@ -12,13 +12,13 @@ function initParticles() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     particles = [];
-    for(let i=0; i<80; i++) {
+    for(let i=0; i<70; i++) {
         particles.push({
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
-            vx: (Math.random() - 0.5) * 0.4,
-            vy: (Math.random() - 0.5) * 0.4,
-            size: Math.random() * 2
+            vx: (Math.random() - 0.5) * 0.3,
+            vy: (Math.random() - 0.5) * 0.3,
+            size: 1.5
         });
     }
 }
@@ -26,7 +26,7 @@ function initParticles() {
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = '#00d2ff';
-    ctx.strokeStyle = 'rgba(0, 210, 255, 0.15)';
+    ctx.strokeStyle = 'rgba(0, 210, 255, 0.1)';
     particles.forEach((p, i) => {
         p.x += p.vx; p.y += p.vy;
         if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
@@ -37,7 +37,7 @@ function animate() {
         for(let j=i+1; j<particles.length; j++) {
             let p2 = particles[j];
             let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-            if(dist < 110) {
+            if(dist < 100) {
                 ctx.beginPath();
                 ctx.moveTo(p.x, p.y);
                 ctx.lineTo(p2.x, p2.y);
@@ -47,67 +47,46 @@ function animate() {
     });
     requestAnimationFrame(animate);
 }
-window.addEventListener('resize', initParticles);
 initParticles(); animate();
+window.onresize = initParticles;
 
-// --- LÓGICA DE ACCESO Y ROLES ---
+// --- INICIO DE SESIÓN ---
 const loginButton = document.getElementById('login-button');
 const emailInput = document.getElementById('email');
-const loginMessage = document.getElementById('login-message');
 
 loginButton.addEventListener('click', async () => {
     const email = emailInput.value.toLowerCase().trim();
-    if (!email) return;
-
-    loginMessage.textContent = 'Verificando...';
+    if(!email) return alert("Ingresa tu correo");
 
     const { data, error } = await _supabase
         .from('autorizados')
-        .select('email, rol')
+        .select('*')
         .eq('email', email)
         .single();
 
     if (data) {
-        localStorage.setItem('currentUser', email);
-        localStorage.setItem('userRole', data.rol);
-        entrarAMenu(email, data.rol);
+        localStorage.setItem('userSST', JSON.stringify(data));
+        mostrarMenu(data);
     } else {
-        loginMessage.textContent = 'Usuario no autorizado';
-        loginMessage.style.color = '#ff4d4d';
+        alert("Usuario no autorizado en el sistema de SST");
     }
 });
 
-function entrarAMenu(email, rol) {
-    const loginSec = document.getElementById('login-section');
-    const appSec = document.getElementById('app-section');
-
-    // Desvanecimiento suave
-    loginSec.style.opacity = '0';
-    setTimeout(() => {
-        loginSec.style.display = 'none';
-        appSec.style.display = 'block';
-        appSec.style.opacity = '1';
-        
-        document.getElementById('user-email').textContent = email;
-        
-        if (rol === 'admin') {
-            document.getElementById('user-role').textContent = 'ADMIN';
-            // Mostrar todas las tarjetas para admin
-            document.querySelectorAll('.admin-only').forEach(el => {
-                el.style.display = 'flex'; // Usamos flex para que el icono y texto se alineen
-                el.style.flexDirection = 'column';
-            });
-        }
-    }, 400);
+function mostrarMenu(user) {
+    document.getElementById('login-section').style.display = 'none';
+    document.getElementById('app-section').style.display = 'block';
+    document.getElementById('user-email').textContent = user.email;
+    
+    if(user.rol === 'admin') {
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'flex');
+    }
 }
 
-// Cerrar sesión
-document.getElementById('logout-button').addEventListener('click', () => {
+document.getElementById('logout-button').onclick = () => {
     localStorage.clear();
     location.reload();
-});
+};
 
-// Auto-login si ya inició sesión
-const savedUser = localStorage.getItem('currentUser');
-const savedRole = localStorage.getItem('userRole');
-if (savedUser) entrarAMenu(savedUser, savedRole);
+// Auto-login
+const sesion = localStorage.getItem('userSST');
+if(sesion) mostrarMenu(JSON.parse(sesion));
