@@ -1,52 +1,26 @@
-/* ... (Mantén tus estilos previos de root, body, container) ... */
-
-/* 1. SIDEBAR CON SCROLL */
-.sidebar {
-    width: 250px;
-    background: rgba(0, 0, 0, 0.5);
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex; flex-direction: column;
-    padding: 20px;
-    text-align: center;
-    max-height: 100vh; /* Limita la altura */
-}
-
-.sidebar-menu {
-    flex: 1;
-    overflow-y: auto; /* ACTIVA EL SCROLL VERTICAL */
-    margin-top: 10px;
-    margin-bottom: 10px;
-    padding-right: 5px; /* Espacio para la barra */
-}
-
-/* Estilo de la barra de scroll (Webkit) */
-.sidebar-menu::-webkit-scrollbar { width: 5px; }
-.sidebar-menu::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 5px; }
-.sidebar-menu::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); }
-
-/* ... (Mantén estilos del dashboard-layout, content-area, etc.) ... */
-
-/* 2. ESTILOS PARA EL MÓDULO DE TRABAJADORES */
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-}
+/* ... Tus estilos anteriores ... */
 
 .worker-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 15px;
+    margin-top: 15px;
 }
 
 .worker-card {
     background: rgba(255,255,255,0.08);
     border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
     padding: 15px;
-    border-radius: 10px;
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 12px;
+    transition: 0.2s;
+}
+
+.worker-card:hover {
+    background: rgba(0,210,255,0.15);
+    transform: translateY(-2px);
 }
 
 .w-avatar {
@@ -59,5 +33,8 @@
     font-size: 1.2em;
 }
 
-.w-info h4 { margin: 0; color: white; }
-.w-info p { margin: 2px 0; font-size: 0.85em; color: #ccc; }
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
