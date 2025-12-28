@@ -1,68 +1,66 @@
-// --- Configuración de Supabase ---
-const SUPABASE_URL = 'https://pyvasykgetphdjvbijqe.supabase.co';
-const SUPABASE_KEY = 'sb_publishable__UMvHXVhw5-se2Lik_A3pQ_TIRd8P-N';
+// 1. ANIMACIÓN DE GALAXIA/ÁTOMOS
+const canvas = document.getElementById('canvas-bg');
+const ctx = canvas.getContext('2d');
+let particles = [];
 
-// Inicializar el cliente (usando el nombre correcto de la librería)
-const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// --- Elementos del DOM ---
-const loginSection = document.getElementById('login-section');
-const appSection = document.getElementById('app-section');
-const emailInput = document.getElementById('email');
-const loginButton = document.getElementById('login-button');
-const loginMessage = document.getElementById('login-message');
-const userEmailSpan = document.getElementById('user-email');
-
-// --- Lógica de Inicio de Sesión ---
-loginButton.addEventListener('click', async () => {
-    const emailIngresado = emailInput.value.toLowerCase().trim();
-    
-    if (!emailIngresado) {
-        alert("Por favor escribe un correo");
-        return;
+function initParticles() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    particles = [];
+    for(let i=0; i<100; i++) {
+        particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            vx: (Math.random() - 0.5) * 0.5,
+            vy: (Math.random() - 0.5) * 0.5,
+            size: Math.random() * 2
+        });
     }
-
-    loginMessage.textContent = 'Buscando en base de datos de SST...';
-    loginMessage.style.backgroundColor = '#fff3cd';
-
-    try {
-        // Consultar si el correo existe en tu tabla 'autorizados'
-        const { data, error } = await _supabase
-            .from('autorizados')
-            .select('email')
-            .eq('email', emailIngresado);
-
-        if (error) throw error;
-
-        // Si data tiene algo, es que el correo está en tu lista de Supabase
-        if (data && data.length > 0) {
-            localStorage.setItem('currentUser', emailIngresado);
-            mostrarApp(emailIngresado);
-        } else {
-            loginMessage.textContent = 'Acceso Denegado. Correo no autorizado.';
-            loginMessage.style.backgroundColor = '#f8d7da';
-        }
-    } catch (err) {
-        console.error("Error detallado:", err);
-        loginMessage.textContent = 'Error: ' + err.message;
-        loginMessage.style.backgroundColor = '#f8d7da';
-    }
-});
-
-function mostrarApp(email) {
-    loginSection.style.display = 'none';
-    appSection.style.display = 'block';
-    userEmailSpan.textContent = email;
 }
 
-// Cerrar sesión
-document.getElementById('logout-button')?.addEventListener('click', () => {
-    localStorage.removeItem('currentUser');
-    location.reload();
-});
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#00d2ff';
+    ctx.strokeStyle = 'rgba(0, 210, 255, 0.1)';
+    
+    particles.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy;
+        if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
+        if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
+        
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+        ctx.fill();
 
-// Revisar si ya estaba logueado
-const sesionGuardada = localStorage.getItem('currentUser');
-if (sesionGuardada) {
-    mostrarApp(sesionGuardada);
+        // Entrelazar puntos cercanos (átomos)
+        for(let j=i+1; j<particles.length; j++) {
+            let p2 = particles[j];
+            let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+            if(dist < 100) {
+                ctx.beginPath();
+                ctx.moveTo(p.x, p.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.stroke();
+            }
+        }
+    });
+    requestAnimationFrame(animate);
+}
+initParticles(); animate();
+
+// 2. LÓGICA DE PERMISOS (ADMIN)
+async function verificarUsuario(email) {
+    const { data, error } = await _supabase
+        .from('autorizados')
+        .select('rol')
+        .eq('email', email)
+        .single();
+
+    if (data) {
+        if (data.rol === 'admin') {
+            document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'flex');
+            console.log("Acceso de Administrador concedido");
+        }
+        mostrarApp(email);
+    }
 }
