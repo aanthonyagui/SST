@@ -1,56 +1,98 @@
-/* Centrado absoluto para el panel principal */
+/* FONDO Y BASE */
 body {
     margin: 0;
     overflow: hidden;
     background: #050505;
-    font-family: 'Segoe UI', sans-serif;
-    color: #ffffff;
+    font-family: 'Segoe UI', Arial, sans-serif;
     display: flex;
     justify-content: center;
-    align-items: center; /* Centra verticalmente */
+    align-items: center;
     height: 100vh;
-    width: 100vw;
 }
 
+#canvas-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+
+/* PANEL ESTILO PRIMERAS VERSIONES (Sólido y Elegante) */
 .container {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 28px;
-    padding: 40px;
+    background: #ffffff; /* Fondo blanco sólido como el inicio */
+    color: #333;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     width: 90%;
-    max-width: 420px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-    z-index: 10;
-    position: relative;
-}
-
-/* Ajuste del botón Cerrar Sesión para que no estorbe */
-#logout-button {
-    margin-top: 25px;
-    background: rgba(231, 76, 60, 0.2);
-    border: 1px solid #e74c3c;
-    color: #e74c3c;
-    padding: 10px;
-    font-size: 0.85em;
-    width: auto; /* No ocupa todo el ancho */
-    padding-left: 20px;
-    padding-right: 20px;
-    align-self: center;
-    transition: all 0.3s;
-}
-
-#logout-button:hover {
-    background: #e74c3c;
-    color: white;
-}
-
-/* Estilo para los campos de texto */
-input[type="email"] {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
+    max-width: 400px;
     text-align: center;
-    margin-bottom: 20px;
+    z-index: 10;
+}
+
+/* MODO OSCURO AUTOMÁTICO PARA EL PANEL */
+@media (prefers-color-scheme: dark) {
+    .container {
+        background: #1e1e1e;
+        color: #f4f4f4;
+    }
+}
+
+/* BOTONES Y INPUTS (Estilo Industrial) */
+input[type="email"] {
+    width: 100%;
+    padding: 12px;
+    margin: 15px 0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    background: #007bff;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #0056b3;
+}
+
+/* GRID DE MENÚ */
+.menu-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.menu-card {
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 15px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #333;
+}
+
+@media (prefers-color-scheme: dark) {
+    .menu-card { background: #2d2d2d; border-color: #444; color: #eee; }
+}
+
+.menu-card i { font-size: 24px; margin-bottom: 8px; color: #007bff; }
+
+#logout-button {
+    background: #dc3545;
+    margin-top: 20px;
 }
