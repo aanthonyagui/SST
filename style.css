@@ -1,40 +1,84 @@
-/* ... Tus estilos anteriores ... */
+:root { --primary: #00d2ff; --text: #ffffff; }
 
-.worker-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 15px;
-    margin-top: 15px;
+body { 
+    margin: 0; overflow: hidden; background: #000; /* Fondo negro base */
+    font-family: 'Segoe UI', sans-serif; color: var(--text); 
+    display: flex; justify-content: center; align-items: center; height: 100vh; 
 }
 
-.worker-card {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 12px;
-    padding: 15px;
+/* EL FONDO DE ÁTOMOS */
+#canvas-bg { 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    z-index: 0; /* Detrás de todo */
+    pointer-events: none; /* No interfiere con clics */
+}
+
+/* CONTENEDOR INICIAL (LOGIN) - TRANSPARENTE */
+.container { 
+    position: relative; z-index: 10;
+    background: rgba(30, 30, 30, 0.6); /* Semi-transparente */
+    backdrop-filter: blur(12px); 
+    -webkit-backdrop-filter: blur(12px); 
+    border: 1px solid rgba(255, 255, 255, 0.15); 
+    border-radius: 20px; padding: 30px; 
+    width: 90%; max-width: 400px; text-align: center; 
+}
+
+/* DASHBOARD GRANDE (SIDEBAR + CONTENIDO) */
+.dashboard-layout {
+    position: relative; z-index: 10;
     display: flex;
-    align-items: center;
-    gap: 12px;
-    transition: 0.2s;
+    width: 95vw; height: 90vh;
+    background: rgba(20, 20, 20, 0.75); /* Oscuro pero transparente para ver fondo */
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    overflow: hidden;
 }
 
-.worker-card:hover {
-    background: rgba(0,210,255,0.15);
-    transform: translateY(-2px);
+/* SIDEBAR IZQUIERDA */
+.sidebar {
+    width: 260px;
+    background: rgba(0, 0, 0, 0.4);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex; flex-direction: column;
+    padding: 20px;
 }
 
-.w-avatar {
-    width: 45px; height: 45px;
-    background: var(--primary);
-    color: black;
-    font-weight: bold;
-    border-radius: 50%;
-    display: flex; justify-content: center; align-items: center;
-    font-size: 1.2em;
+.sidebar-menu {
+    flex: 1;
+    overflow-y: auto; /* SCROLL ACTIVADO */
+    margin: 20px 0;
+    padding-right: 5px;
+}
+.sidebar-menu::-webkit-scrollbar { width: 4px; }
+.sidebar-menu::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+
+/* CONTENIDO DERECHA */
+.content-area {
+    flex: 1; padding: 30px; overflow-y: auto;
 }
 
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+/* ELEMENTOS GENERALES */
+.menu-item-row {
+    display: flex; align-items: center; padding: 12px; margin-bottom: 8px;
+    background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer; transition:0.2s;
 }
+.menu-item-row:hover { background: rgba(0,210,255,0.2); border-left: 3px solid var(--primary); }
+.menu-item-row i { margin-right: 15px; color: var(--primary); width: 20px; text-align: center; }
+
+/* ESTILOS DE TRABAJADORES */
+.worker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
+.worker-card { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; display: flex; align-items: center; gap: 12px; }
+.w-avatar { width: 40px; height: 40px; background: var(--primary); color: #000; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* INPUTS Y BOTONES */
+input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: white; box-sizing: border-box;}
+button { width: 100%; padding: 12px; border-radius: 8px; border: none; background: #007bff; color: white; font-weight: bold; cursor: pointer; }
+.btn-small { width: auto; padding: 8px 12px; margin: 0 2px; }
+img { object-fit: contain; }
+
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 100; }
+.menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.menu-card { background: rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
