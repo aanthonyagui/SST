@@ -1,415 +1,62 @@
-/* =========================================
-   1. VARIABLES Y CONFIGURACIÓN BASE
-   ========================================= */
-:root {
-    --primary: #00d2ff;       /* Azul Cian Neón */
-    --text: #ffffff;          /* Blanco */
-    --bg-dark: #050505;       /* Fondo casi negro */
-    --glass-bg: rgba(30, 30, 30, 0.65); /* Vidrio semitransparente */
-    --glass-border: rgba(255, 255, 255, 0.15);
-    --input-bg: rgba(0, 0, 0, 0.5);
-}
-
-body {
-    margin: 0;
-    overflow: hidden; /* Evita scroll en la página principal */
-    background: var(--bg-dark);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: var(--text);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
-
-/* El lienzo de estrellas/átomos (va al fondo) */
-#canvas-bg {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    pointer-events: none; /* Permite clics a través del canvas */
-}
-
-/* Scrollbar personalizado general */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-}
-::-webkit-scrollbar-thumb {
-    background: var(--primary);
-    border-radius: 3px;
-}
-
-/* =========================================
-   2. CONTENEDORES INICIALES (LOGIN)
-   ========================================= */
-.container {
-    position: relative;
-    z-index: 10;
-    background: var(--glass-bg);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border: 1px solid var(--glass-border);
-    border-radius: 20px;
-    padding: 30px;
-    width: 90%;
-    max-width: 400px;
-    text-align: center;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-}
-
-/* =========================================
-   3. DASHBOARD PRINCIPAL (LAYOUT)
-   ========================================= */
-.dashboard-layout {
-    position: relative;
-    z-index: 10;
-    display: flex;
-    width: 96vw;
-    height: 92vh;
-    background: rgba(20, 20, 20, 0.80); /* Oscuro pero transparente para ver fondo */
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
-}
-
-/* --- BARRA LATERAL (SIDEBAR) --- */
-.sidebar {
-    width: 260px;
-    background: rgba(0, 0, 0, 0.4);
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
-    transition: transform 0.3s ease; /* Para animación móvil */
-}
-
-.user-info-side {
-    margin-bottom: 15px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    font-size: 0.9em;
-    color: #ccc;
-    text-align: center;
-}
-
-.sidebar-menu {
-    flex: 1;
-    overflow-y: auto; /* Scroll interno del menú */
-    margin-bottom: 10px;
-    padding-right: 5px;
-}
-
-.sidebar-footer {
-    display: flex;
-    gap: 8px;
-    margin-top: auto;
-    padding-top: 10px;
-    border-top: 1px solid rgba(255,255,255,0.1);
-}
-
-/* Items del Menú */
-.menu-item-row {
-    display: flex;
-    align-items: center;
-    padding: 12px 15px;
-    margin-bottom: 8px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: 0.2s;
-    user-select: none;
-}
-.menu-item-row:hover {
-    background: rgba(0, 210, 255, 0.15);
-    border-left: 3px solid var(--primary);
-    padding-left: 12px; /* Compensar borde */
-}
-.menu-item-row i {
-    margin-right: 15px;
-    color: var(--primary);
-    width: 20px;
-    text-align: center;
-}
-
-/* --- ÁREA DE CONTENIDO (DERECHA) --- */
-.content-area {
-    flex: 1;
-    padding: 25px;
-    overflow-y: auto; /* Scroll del contenido */
-    position: relative;
-}
-
-/* =========================================
-   4. ESTILOS ESPECÍFICOS MÓDULO TRABAJADORES
-   ========================================= */
-
-/* Pestañas (Tabs) */
-.header-tools {
-    display: flex;
-    flex-direction: column;
-}
-
-.tab-btn {
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.2);
-    color: #aaa;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.9em;
-}
-.tab-btn:hover { background: rgba(255,255,255,0.1); }
-.tab-btn.active {
-    background: var(--primary);
-    color: #000;
-    border-color: var(--primary);
-    font-weight: bold;
-    box-shadow: 0 0 10px rgba(0, 210, 255, 0.4);
-}
-
-/* Tarjetas de Trabajadores (Grid) */
-.worker-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 15px;
-    margin-top: 15px;
-}
-.worker-card {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 15px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    cursor: pointer;
-    transition: 0.2s;
-}
-.worker-card:hover {
-    background: rgba(0, 210, 255, 0.1);
-    transform: translateY(-3px);
-    border-color: var(--primary);
-}
-.w-avatar {
-    width: 50px;
-    height: 50px;
-    background: var(--primary);
-    color: #000;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    font-size: 1.2em;
-    overflow: hidden;
-}
-
-/* Formulario Ficha Técnica */
-.form-scroll {
-    max-height: 75vh;
-    overflow-y: auto;
-    padding-right: 10px;
-}
-
-.seccion-form {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-}
-.seccion-form h4 {
-    margin-top: 0;
-    color: var(--primary);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 8px;
-    margin-bottom: 15px;
-    font-size: 1.1em;
-}
-
-.foto-perfil {
-    width: 130px;
-    height: 130px;
-    object-fit: cover;
-    border-radius: 10px;
-    border: 2px solid #555;
-    margin-bottom: 10px;
-    background: #222;
-}
-
-/* Grilla de Inputs */
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    width: 100%;
-}
-
-/* Caja Multi-Select (Servicios Básicos) */
-.multi-select-box {
-    background: rgba(0,0,0,0.4);
-    padding: 15px;
-    border-radius: 8px;
-    grid-column: span 2;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-    gap: 10px;
-    border: 1px solid rgba(255,255,255,0.1);
-}
-.multi-select-box label {
-    font-size: 0.9em;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #ddd;
-}
-.multi-select-box input[type="checkbox"] {
-    width: auto;
-    margin: 0;
-}
-
-/* =========================================
-   5. COMPONENTES UI GENERALES
-   ========================================= */
-input, select, textarea {
-    width: 100%;
-    padding: 12px;
-    margin: 5px 0;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: var(--input-bg);
-    color: white;
-    box-sizing: border-box;
-    font-family: inherit;
-}
-input:focus, select:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 8px rgba(0, 210, 255, 0.3);
-}
-
-button {
-    width: 100%;
-    padding: 12px;
-    border-radius: 10px;
-    border: none;
-    background: #007bff;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.2s;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-}
-button:hover { filter: brightness(1.2); }
-button:disabled { opacity: 0.6; cursor: not-allowed; }
-
-.btn-small { width: auto; padding: 8px 12px; font-size: 0.9em; }
-
-/* Selección de Empresa */
-.menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
-.menu-card {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 20px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    transition: 0.2s;
-}
-.menu-card:hover { background: rgba(0, 210, 255, 0.2); border-color: var(--primary); }
-.menu-card img { width: 70px; height: 70px; object-fit: contain; margin-bottom: 10px; }
-
-/* Modal */
-.modal {
-    position: fixed; top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.9);
-    display: flex; justify-content: center; align-items: center;
-    z-index: 1000;
-}
-
-/* =========================================
-   6. RESPONSIVE DESIGN (MÓVIL)
-   ========================================= */
-
-/* Elementos ocultos por defecto en PC */
-#menu-toggle { display: none; }
-#sidebar-overlay { 
-    display: none; 
-    position: fixed; top: 0; left: 0; 
-    width: 100%; height: 100%; 
-    background: rgba(0,0,0,0.8); 
-    z-index: 90; 
-    backdrop-filter: blur(4px);
-}
-
-/* Reglas para Pantallas Pequeñas (Celulares < 768px) */
+/* --- RESPONSIVE MÓVIL OPTIMIZADO --- */
 @media (max-width: 768px) {
-    body { height: 100%; overflow: auto; background: #000; }
-    
+    body {
+        height: auto; /* IMPORTANTE: Permitir que el body crezca */
+        overflow-y: auto; /* Permitir scroll general */
+        background: #000;
+        display: block; /* Quitar flex centrado */
+    }
+
+    /* El layout deja de ser una caja flotante */
     .dashboard-layout {
-        width: 100vw;
-        height: 100vh;
+        width: 100%;
+        height: auto; /* Altura automática según contenido */
+        min-height: 100vh;
         border-radius: 0;
         border: none;
-        display: block; /* Cambia Flex por Block para apilar */
+        display: block;
+        margin: 0;
     }
 
-    /* Sidebar Flotante Oculto */
+    /* Ajuste del Sidebar (Menú) */
     .sidebar {
-        position: fixed;
+        position: fixed; /* Fijo para que siempre salga desde el borde */
         top: 0; left: 0;
-        height: 100%;
-        width: 280px;
-        z-index: 100;
-        background: #111;
-        box-shadow: 5px 0 20px rgba(0,0,0,0.8);
-        transform: translateX(-100%); /* Escondido a la izquierda */
+        height: 100vh;
+        width: 80%; /* Ocupa el 80% del ancho */
+        max-width: 300px;
+        z-index: 200;
+        transform: translateX(-100%);
+        box-shadow: 10px 0 30px rgba(0,0,0,0.9);
     }
-
-    /* Clase que activa el Sidebar */
     .sidebar.active { transform: translateX(0); }
 
-    /* Botón Hamburguesa */
+    /* Ajuste del contenido para permitir scroll */
+    .content-area {
+        height: auto;
+        padding: 15px;
+        overflow: visible; /* Dejar que el contenido fluya */
+        padding-bottom: 80px; /* Espacio para que el botón de guardar no tape el final */
+    }
+
+    /* Ajuste de formulario en móvil */
+    .form-scroll {
+        max-height: none; /* Quitar límite de altura interno */
+        overflow: visible;
+    }
+    
+    .seccion-form { padding: 15px; }
+    .worker-grid { grid-template-columns: 1fr; } /* Tarjetas a 1 columna */
+    
+    /* Botón Hamburguesa Flotante y Visible */
     #menu-toggle {
         display: inline-block;
-        background: transparent;
-        border: 1px solid rgba(255,255,255,0.2);
-        color: var(--primary);
-        font-size: 1.4rem;
-        padding: 8px 12px;
-        margin-bottom: 15px;
-        width: auto;
+        position: sticky;
+        top: 10px;
+        z-index: 95;
+        background: rgba(0,0,0,0.8);
+        padding: 10px 15px;
+        border-radius: 5px;
+        margin-bottom: 10px;
     }
-
-    .content-area {
-        padding: 15px;
-        height: 100vh;
-    }
-
-    /* Ajustes Formulario en Móvil */
-    .form-grid { grid-template-columns: 1fr; } /* Inputs a 1 columna */
-    .multi-select-box { grid-column: span 1; }
-    .foto-perfil { width: 100px; height: 100px; }
-    .header-tools { align-items: flex-start; }
-    #tab-container { flex-wrap: wrap; }
 }
