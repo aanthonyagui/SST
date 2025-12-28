@@ -1,25 +1,18 @@
-/* LOGOS EN LA SELECCIÓN DE EMPRESA (Más grandes) */
-.menu-card img { 
-    width: 80px;      /* Aumentado de 45px a 80px */
-    height: 80px;     /* Aumentado de 45px a 80px */
-    object-fit: contain; 
-    margin-bottom: 12px;
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); /* Sombra para que resalte */
-}
+:root { --primary: #00d2ff; --text: #ffffff; }
+body { margin: 0; overflow: hidden; background: #050505; font-family: 'Segoe UI', sans-serif; color: var(--text); display: flex; justify-content: center; align-items: center; height: 100vh; }
+#canvas-bg { position: fixed; top: 0; left: 0; z-index: -1; }
+.container { background: rgba(30, 30, 30, 0.75); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 20px; padding: 25px; width: 90%; max-width: 400px; text-align: center; z-index: 10; }
+input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; }
+button { width: 100%; padding: 12px; border-radius: 10px; border: none; background: #007bff; color: white; font-weight: bold; cursor: pointer; margin-bottom: 5px; }
+.menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+.menu-card { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 15px; cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: 0.2s; }
+.menu-card:hover { background: rgba(0, 210, 255, 0.2); border-color: var(--primary); }
 
-/* LOGO EN EL ENCABEZADO DEL MENÚ (Panel de Control) */
-#header-empresa img {
-    width: 100px;     /* Logo principal más grande */
-    height: auto;
-    max-height: 100px;
-    object-fit: contain;
-    margin-bottom: 15px;
-    border-radius: 10px; /* Opcional, por si el logo es cuadrado */
-}
+/* Ajuste de logos grandes */
+.menu-card img { width: 80px; height: 80px; object-fit: contain; margin-bottom: 8px; }
+#header-empresa img { width: 100px; height: auto; max-height: 100px; object-fit: contain; margin-bottom: 10px; }
+#header-empresa b { font-size: 1.3em; color: var(--primary); }
 
-#header-empresa b {
-    font-size: 1.4rem; /* Nombre de la empresa más grande */
-    display: block;
-    margin-top: 5px;
-    color: var(--primary);
-}
+.menu-card i { font-size: 24px; margin-bottom: 8px; color: var(--primary); }
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+#logout-button { background: #dc3545; }
