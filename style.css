@@ -1,15 +1,15 @@
 /* =========================================
-   STYLE.CSS - DISEÑO NEÓN & GLASS (RECUPERADO)
+   STYLE.CSS - DISEÑO NEÓN PREMIUM (RESTAURADO)
    ========================================= */
 :root {
-    --primary: #00d2ff;       /* Azul Neón */
-    --danger: #e74c3c;        /* Rojo Neón */
-    --success: #2ecc71;       /* Verde Neón */
-    --warning: #f1c40f;       /* Amarillo */
+    --primary: #00d2ff;       /* Azul Neón Intenso */
+    --danger: #ff0055;        /* Rojo Neón */
+    --success: #00ff99;       /* Verde Neón */
+    --warning: #ffcc00;       /* Amarillo Neón */
     --text: #ffffff;          /* Blanco */
-    --bg-dark: #050505;       /* Fondo */
-    --glass-bg: rgba(30, 30, 30, 0.85); /* Vidrio */
-    --border: rgba(255, 255, 255, 0.15);
+    --bg-dark: #050505;       /* Fondo Negro Profundo */
+    --glass: rgba(20, 20, 20, 0.75); /* Vidrio Semitransparente */
+    --border: 1px solid rgba(0, 210, 255, 0.3); /* Borde Neón Sutil */
 }
 
 * { box-sizing: border-box; }
@@ -24,199 +24,209 @@ body {
 
 #canvas-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
 
-/* CONTENEDORES */
+/* --- CONTENEDORES CON EFECTO VIDRIO --- */
 .container {
     position: relative; z-index: 10;
-    background: var(--glass-bg);
-    border: 1px solid var(--primary);
-    box-shadow: 0 0 30px rgba(0, 210, 255, 0.15);
+    background: var(--glass);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: var(--border);
+    box-shadow: 0 0 30px rgba(0, 210, 255, 0.15); /* Resplandor Azul */
     border-radius: 20px; padding: 40px; width: 90%; max-width: 400px;
     text-align: center; margin: auto;
 }
 
 .dashboard-layout {
     position: relative; z-index: 10;
-    display: flex; width: 95vw; height: 92vh;
-    background: rgba(15, 15, 15, 0.95);
-    border: 1px solid var(--border);
+    display: flex; width: 96vw; height: 94vh;
+    background: rgba(10, 10, 10, 0.85); /* Fondo App Oscuro */
+    backdrop-filter: blur(25px);
+    border: var(--border);
     border-radius: 15px; overflow: hidden;
     box-shadow: 0 0 50px rgba(0,0,0,0.9);
 }
 
-/* SIDEBAR */
+/* --- SIDEBAR (MENÚ LATERAL) --- */
 .sidebar {
     width: 260px; background: rgba(0,0,0,0.4);
-    border-right: 1px solid var(--border);
+    border-right: var(--border);
     display: flex; flex-direction: column; padding: 20px;
 }
-.sidebar-menu { flex: 1; overflow-y: auto; margin: 15px 0; }
+.sidebar-menu { flex: 1; overflow-y: auto; margin: 20px 0; }
+
 .menu-item-row {
-    display: flex; align-items: center; padding: 12px; margin-bottom: 5px;
-    background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer; transition: 0.2s;
+    display: flex; align-items: center; padding: 12px 15px; margin-bottom: 8px;
+    background: rgba(255,255,255,0.03); border-radius: 10px; 
+    cursor: pointer; transition: 0.3s; border: 1px solid transparent;
 }
-.menu-item-row:hover { background: rgba(0,210,255,0.15); border-left: 3px solid var(--primary); padding-left: 15px; }
-.menu-item-row i { width: 25px; color: var(--primary); text-align: center; margin-right: 10px; }
+.menu-item-row:hover { 
+    background: rgba(0, 210, 255, 0.15); 
+    border-color: var(--primary);
+    box-shadow: 0 0 15px rgba(0, 210, 255, 0.2);
+}
+.menu-item-row i { margin-right: 15px; color: var(--primary); width: 25px; text-align: center; font-size: 1.1em; }
 
-/* CONTENIDO */
-.content-area { flex: 1; padding: 20px; overflow-y: auto; position: relative; }
+/* --- CONTENIDO PRINCIPAL --- */
+.content-area { flex: 1; padding: 25px; overflow-y: auto; position: relative; }
 
-/* --- BOTONES Y PESTAÑAS (ESTILO NEÓN RECUPERADO) --- */
-.header-tools { margin-bottom: 15px; }
+/* --- BOTONES Y PESTAÑAS (ESTILO BOTÓN FLOTANTE) --- */
+.header-tools { margin-bottom: 20px; }
 
 #tab-container {
     display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; align-items: center;
 }
 
 .tab-btn {
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.3);
-    color: #ccc;
-    padding: 8px 15px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: 0.3s;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #ccc; padding: 10px 20px; border-radius: 12px;
+    cursor: pointer; transition: 0.3s;
     display: flex; align-items: center; gap: 8px;
-    font-size: 0.9em; white-space: nowrap;
+    font-size: 0.9em; white-space: nowrap; font-weight: 500;
 }
-
-.tab-btn:hover { border-color: var(--primary); color: white; box-shadow: 0 0 10px rgba(0,210,255,0.2); }
+.tab-btn:hover { border-color: var(--primary); color: white; background: rgba(0, 210, 255, 0.1); }
 
 .tab-btn.active {
     background: var(--primary);
-    color: #000;
-    border-color: var(--primary);
+    color: #000; border-color: var(--primary);
     font-weight: bold;
-    box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
+    box-shadow: 0 0 15px rgba(0, 210, 255, 0.5); /* Resplandor activo */
 }
 
-/* Badge Contador */
-.badge {
-    background: rgba(0,0,0,0.6);
-    color: white;
-    border-radius: 12px;
-    padding: 2px 8px;
-    font-size: 0.8em;
-}
+.badge { background: rgba(0,0,0,0.6); color: white; border-radius: 50%; padding: 3px 8px; font-size: 0.8em; margin-left: 5px; }
 
-/* --- GRID TRABAJADORES --- */
-.worker-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 15px; margin-top: 15px;
-}
-.worker-card {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid var(--border);
-    border-radius: 12px; padding: 15px;
-    display: flex; align-items: center; gap: 15px;
-    cursor: pointer; transition: 0.3s;
-}
-.worker-card:hover {
-    border-color: var(--primary);
-    transform: translateY(-5px);
-    background: rgba(255,255,255,0.08);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-}
-.w-avatar {
-    width: 55px; height: 55px; flex-shrink: 0;
-    border-radius: 50%; object-fit: cover;
-    border: 2px solid var(--primary);
-    background: #222; display: flex; align-items: center; justify-content: center;
-    font-weight: bold; font-size: 1.2em; color: var(--primary);
-}
-.w-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-
-/* --- FORMULARIOS --- */
-.form-section {
-    background: rgba(0,0,0,0.3); border: 1px solid var(--border);
-    border-radius: 12px; padding: 20px; margin-bottom: 20px;
-}
-.form-title {
-    color: var(--primary); border-bottom: 1px solid rgba(255,255,255,0.1);
-    padding-bottom: 8px; margin-bottom: 15px; font-weight: bold;
-    text-transform: uppercase; font-size: 0.95em; letter-spacing: 1px;
-}
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-
-input, select {
-    width: 100%; padding: 12px; margin-bottom: 5px;
-    background: rgba(0,0,0,0.5); border: 1px solid #444;
-    color: white; border-radius: 8px; transition: 0.3s;
-}
-input:focus, select:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 8px rgba(0, 210, 255, 0.3);
-    outline: none;
-}
-
-button {
-    padding: 12px 20px; border: none; border-radius: 8px;
-    font-weight: bold; cursor: pointer; transition: 0.3s;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-}
-button:hover { filter: brightness(1.2); transform: scale(1.02); }
-
-.btn-small { padding: 8px 12px; font-size: 0.9em; width: auto; }
-
-/* --- MENÚ DESPLEGABLE FLOTANTE --- */
+/* --- MENÚ DESPLEGABLE (BONITO Y FLOTANTE) --- */
 .dropdown { position: relative; display: inline-block; }
 
 .dropdown-content {
     display: none; position: absolute; right: 0; top: 120%;
-    background-color: #1a1a1a; min-width: 220px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-    border: 1px solid var(--primary); border-radius: 10px;
-    z-index: 3000; animation: fadeIn 0.2s ease;
+    background-color: #151515; min-width: 240px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+    border: 1px solid var(--primary); border-radius: 12px;
+    z-index: 5000; animation: slideDown 0.2s ease;
+    overflow: hidden;
 }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
 .dropdown-content a {
-    color: white; padding: 12px 15px; text-decoration: none;
-    display: flex; align-items: center; gap: 10px;
-    border-bottom: 1px solid #333; font-size: 0.95em; cursor: pointer; transition: 0.2s;
+    color: white; padding: 15px 20px; text-decoration: none;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.95em; cursor: pointer; transition: 0.2s;
 }
-.dropdown-content a:hover { background: var(--primary); color: black; }
+.dropdown-content a:hover { background: rgba(0, 210, 255, 0.2); padding-left: 25px; }
+.dropdown-content a:last-child { border-bottom: none; }
 .show { display: block; }
 
-@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+/* --- TARJETAS DE TRABAJADORES --- */
+.worker-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 15px; margin-top: 15px;
+}
+.worker-card {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 15px; padding: 15px;
+    display: flex; align-items: center; gap: 15px;
+    cursor: pointer; transition: 0.3s; position: relative; overflow: hidden;
+}
+.worker-card:hover {
+    border-color: var(--primary);
+    background: rgba(255,255,255,0.08);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+}
+.worker-card::before { /* Brillo lateral */
+    content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px;
+    background: var(--primary); opacity: 0; transition: 0.3s;
+}
+.worker-card:hover::before { opacity: 1; }
 
-/* RESPONSIVE MÓVIL */
+.w-avatar {
+    width: 60px; height: 60px; flex-shrink: 0;
+    border-radius: 50%; object-fit: cover;
+    border: 2px solid var(--primary);
+    background: #222; overflow: hidden;
+}
+.w-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+/* --- FORMULARIOS --- */
+.seccion-form {
+    background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 15px; padding: 20px; margin-bottom: 20px;
+}
+.seccion-form h4 {
+    margin-top: 0; color: var(--primary);
+    border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 20px;
+    text-transform: uppercase; letter-spacing: 1px; font-size: 0.9em;
+}
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+input, select {
+    width: 100%; padding: 12px 15px; margin-bottom: 10px;
+    background: rgba(0,0,0,0.4); border: 1px solid #444;
+    color: white; border-radius: 10px; font-size: 1em; transition: 0.3s;
+}
+input:focus, select:focus {
+    border-color: var(--primary); background: rgba(0,0,0,0.6);
+    box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); outline: none;
+}
+
+/* BOTONES DE ACCIÓN */
+button {
+    padding: 12px 20px; border: none; border-radius: 10px;
+    font-weight: bold; cursor: pointer; transition: 0.3s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    text-transform: uppercase; font-size: 0.85em; letter-spacing: 0.5px;
+}
+button:hover { filter: brightness(1.2); transform: scale(1.02); }
+.btn-small { padding: 8px 15px; font-size: 0.8em; width: auto; text-transform: none; }
+
+/* SELECCIÓN EMPRESA */
+.menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+.menu-card {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 15px; padding: 25px; cursor: pointer; transition: 0.3s;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.menu-card:hover { border-color: var(--primary); background: rgba(0, 210, 255, 0.1); box-shadow: 0 0 20px rgba(0,210,255,0.2); }
+.menu-card img { width: 70px; height: 70px; object-fit: contain; margin-bottom: 15px; }
+
+/* RESPONSIVE (MÓVIL) */
 #menu-toggle, #sidebar-overlay { display: none; }
 
 @media (max-width: 768px) {
     body { display: block; height: auto; min-height: 100vh; overflow-y: auto; background: #000; }
     .container { margin: 10vh auto; width: 90%; }
-    .dashboard-layout { width: 100%; height: auto; min-height: 100vh; border: none; border-radius: 0; display: block; }
+    .dashboard-layout { width: 100%; height: auto; min-height: 100vh; border: none; border-radius: 0; display: block; margin: 0; }
     
     .sidebar {
         position: fixed; top: 0; left: 0; height: 100vh; width: 85%;
-        z-index: 400; background: #111; transform: translateX(-100%);
-        box-shadow: 10px 0 30px black; transition: 0.3s;
+        z-index: 400; background: #080808; transform: translateX(-100%);
+        box-shadow: 10px 0 50px black; border-right: 1px solid #333;
     }
     .sidebar.active { transform: translateX(0); }
     .sidebar-footer { position: sticky; bottom: 0; background: #111; padding: 15px; }
     
     #menu-toggle {
         display: inline-block; position: sticky; top: 10px; z-index: 90;
-        background: rgba(0,0,0,0.8); color: var(--primary); padding: 8px 12px;
-        margin-bottom: 10px; width: auto; border: 1px solid var(--primary); border-radius: 8px;
+        background: rgba(0,0,0,0.8); color: var(--primary); padding: 10px 15px;
+        margin-bottom: 15px; width: auto; border: 1px solid var(--primary); border-radius: 10px;
+        backdrop-filter: blur(5px);
     }
     
-    .content-area { padding: 10px; padding-bottom: 100px; overflow: visible; }
+    .content-area { padding: 15px; padding-bottom: 120px; overflow: visible; }
     .form-grid { grid-template-columns: 1fr; }
     .desktop-text { display: none; } /* Solo iconos en botones superiores */
     
-    /* MENÚ FLOTANTE SUPERPUESTO (ESTILO APP) */
+    /* MENÚ FLOTANTE SUPERPUESTO (ESTILO POPUP MÓVIL) */
     .dropdown-content {
         position: fixed; top: 50%; left: 50%;
         transform: translate(-50%, -50%);
         width: 85%; max-width: 300px;
         background: rgba(20, 20, 20, 0.98);
         border: 1px solid var(--primary);
-        box-shadow: 0 0 50px rgba(0,0,0,0.9);
-        padding: 10px 0;
+        box-shadow: 0 0 100px rgba(0, 210, 255, 0.3);
+        padding: 10px 0; border-radius: 15px;
     }
-    /* Fondo oscuro al abrir menú */
-    .dropdown.show::before {
+    .dropdown.show::before { /* Fondo oscuro al abrir */
         content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
         background: rgba(0,0,0,0.8); z-index: -1; backdrop-filter: blur(5px);
     }
