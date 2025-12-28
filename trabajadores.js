@@ -1,4 +1,4 @@
-// trabajadores.js - Versión Final Completa (Con PDF y Logo)
+// trabajadores.js - Módulo de Gestión de Personal y PDF (Supabase)
 
 export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     // 1. ESTRUCTURA HTML
@@ -7,7 +7,6 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             <h2 style="margin:0;"><i class="fas fa-users"></i> Nómina: ${empresa.nombre}</h2>
             
             <div id="tab-container" style="display:flex; gap:5px; margin-top:10px; align-items:center;">
-                
                 <button class="tab-btn active" id="tab-activos" onclick="cambiarVista('activos')">
                     <i class="fas fa-user-check"></i> 
                     <span class="desktop-text">Activos</span> 
@@ -31,10 +30,9 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                         <i class="fas fa-caret-down"></i>
                     </button>
                     <div id="dropdown-print" class="dropdown-content">
-                        <a onclick="imprimirDoc('ficha')"><i class="fas fa-file-pdf"></i> Ficha Socioeconómica</a>
+                        <a onclick="imprimirDoc('ficha')"><i class="fas fa-file-pdf"></i> Descargar Ficha</a>
                         <a onclick="imprimirDoc('ats')"><i class="fas fa-hard-hat"></i> Generar ATS</a>
                         <a onclick="imprimirDoc('kardex')"><i class="fas fa-clipboard-list"></i> Kardex EPP</a>
-                        <a onclick="imprimirDoc('induccion')"><i class="fas fa-chalkboard-teacher"></i> Inducción</a>
                     </div>
                 </div>
             </div>
@@ -84,12 +82,12 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                 </div>
 
                 <details open class="seccion-form">
-                    <summary>Datos Personales y Contacto</summary>
+                    <summary>Datos Personales</summary>
                     <div class="form-grid" style="margin-top:10px;">
                          <select id="t-sexo"><option value="Hombre">Hombre</option><option value="Mujer">Mujer</option></select>
                          <select id="t-civil"><option value="Soltero">Soltero</option><option value="Casado">Casado</option><option value="Union Libre">Unión Libre</option><option value="Divorciado">Divorciado</option><option value="Viudo">Viudo</option></select>
-                         <select id="t-sangre"><option value="O+">O+</option><option value="O-">O-</option><option value="A+">A+</option><option value="B+">B+</option><option value="AB+">AB+</option></select>
-                         <input type="text" id="t-nacionalidad" value="ECUATORIANA">
+                         <select id="t-sangre"><option value="O+">O+</option><option value="O-">O-</option><option value="A+">A+</option><option value="B+">B+</option></select>
+                         <input type="text" id="t-nacionalidad" value="ECUATORIANA" placeholder="Nacionalidad">
                          <input type="text" id="t-profesion" placeholder="Profesión">
                          <input type="text" id="t-celular" placeholder="Celular">
                          <input type="email" id="t-correo" placeholder="Correo">
@@ -106,7 +104,6 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                             <label><input type="checkbox" name="serv" value="Agua"> Agua</label>
                             <label><input type="checkbox" name="serv" value="Internet"> Internet</label>
                             <label><input type="checkbox" name="serv" value="TV Cable"> TV Cable</label>
-                            <label><input type="checkbox" name="serv" value="Alcantarillado"> Alcantarillado</label>
                         </div>
                     </div>
                 </details>
@@ -133,12 +130,12 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
 
                 <div class="seccion-form" style="text-align:center; border:1px dashed #555;">
                     <h4 style="margin-bottom:10px;">Firma del Trabajador</h4>
-                    <img id="preview-firma" src="" style="display:none; height:80px; margin:0 auto 10px auto; filter: invert(1);">
+                    <img id="preview-firma" src="" style="display:none; height:80px; margin:0 auto 10px auto; background:white; padding:5px; border-radius:5px;">
                     <button type="button" onclick="document.getElementById('t-firma').click()" class="btn-small" style="background:#444; margin:0 auto;">
                         <i class="fas fa-signature"></i> Cargar Firma
                     </button>
                     <input type="file" id="t-firma" accept="image/*" style="display:none;">
-                    <p style="font-size:0.7em; color:#888; margin-top:5px;">Sube una foto clara de la firma en fondo blanco.</p>
+                    <p style="font-size:0.7em; color:#888; margin-top:5px;">Subir foto de la firma (fondo blanco)</p>
                 </div>
 
                 <div style="margin-top:20px; padding-bottom:60px; display:flex; gap:10px;">
@@ -157,67 +154,61 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     listarTrabajadores('PASIVO');
 
     // 2. GESTIÓN DEL MENÚ DESPLEGABLE
-    window.toggleDropdown = () => {
-        document.getElementById("dropdown-print").classList.toggle("show");
-    };
-    
-    // Cerrar menú si se hace clic fuera
-    window.onclick = function(event) {
-        if (!event.target.matches('#btn-nombre-trabajador') && !event.target.matches('#btn-nombre-trabajador *')) {
-            const dropdowns = document.getElementsByClassName("dropdown-content");
-            for (let i = 0; i < dropdowns.length; i++) {
-                if (dropdowns[i].classList.contains('show')) dropdowns[i].classList.remove('show');
-            }
+    window.toggleDropdown = () => document.getElementById("dropdown-print").classList.toggle("show");
+    window.onclick = (e) => {
+        if (!e.target.matches('#btn-nombre-trabajador') && !e.target.matches('#btn-nombre-trabajador *')) {
+            const drops = document.getElementsByClassName("dropdown-content");
+            for (let i = 0; i < drops.length; i++) if (drops[i].classList.contains('show')) drops[i].classList.remove('show');
         }
-    }
+    };
 
-    // 3. FUNCIÓN MAESTRA DE IMPRESIÓN (Aquí está lo que pediste)
+    // 3. IMPRIMIR PDF (CONEXIÓN SUPABASE)
     window.imprimirDoc = async (tipo) => {
         const id = document.getElementById('t-id').value;
-        if (!id) return alert("Primero selecciona un trabajador.");
+        if (!id) return alert("Selecciona un trabajador.");
 
-        const btnNombre = document.getElementById('btn-nombre-trabajador');
-        const textoOriginal = btnNombre.innerHTML;
-        btnNombre.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Procesando...`;
+        const btn = document.getElementById('btn-nombre-trabajador');
+        const txt = btn.innerHTML;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Generando...`;
 
         try {
-            // Obtener datos frescos de la BD
+            // Consulta directa a Supabase para tener los datos más recientes
             const { data: t, error } = await supabase.from('trabajadores').select('*').eq('id', id).single();
             if (error) throw error;
 
             if (tipo === 'ficha') {
                 await generarFichaPDF(t, empresa);
             } else {
-                alert(`El módulo de ${tipo.toUpperCase()} está en construcción.`);
+                alert(`Módulo ${tipo} en construcción.`);
             }
         } catch (err) {
             console.error(err);
-            alert("Error al generar: " + err.message);
+            alert("Error: " + err.message);
         } finally {
-            btnNombre.innerHTML = textoOriginal;
+            btn.innerHTML = txt;
         }
     };
 
-    // 4. GENERADOR DE PDF (CON LOGO EMPRESA)
+    // 4. GENERADOR PDFMAKE (ESTRUCTURA GOLDMINS)
     async function generarFichaPDF(t, empresa) {
-        // Convertir imágenes a Base64 para que funcionen offline
-        const fotoPerfil = t.foto_url ? await getBase64ImageFromUrl(t.foto_url) : null;
-        const firmaTrab = t.firma_url ? await getBase64ImageFromUrl(t.firma_url) : null;
-        const logoEmpresa = empresa.logo_url ? await getBase64ImageFromUrl(empresa.logo_url) : null;
+        // Cargar imágenes de forma segura (sin que bloqueen si fallan)
+        const logo = await safeImageLoad(empresa.logo_url);
+        const foto = await safeImageLoad(t.foto_url);
+        const firma = await safeImageLoad(t.firma_url);
 
         const docDefinition = {
             pageSize: 'A4',
             pageMargins: [40, 40, 40, 40],
             content: [
-                // Cabecera con Logo
+                // Cabecera
                 {
                     columns: [
-                        { image: logoEmpresa || 'placeholder', width: 60, fit: [60, 60] },
+                        { image: logo || 'pixel', width: 60, fit: [60, 60] },
                         {
                             text: [
-                                { text: empresa.nombre.toUpperCase() + '\n', fontSize: 14, bold: true, color: '#1f4e79' },
-                                { text: 'GESTIÓN DE SEGURIDAD Y SALUD\n', fontSize: 10, bold: true },
-                                { text: 'FICHA SOCIOECONÓMICA', fontSize: 16, bold: true, color: '#c00000' }
+                                { text: (empresa.nombre || 'EMPRESA').toUpperCase() + '\n', fontSize: 14, bold: true, color: '#1f4e79' },
+                                { text: 'GESTIÓN DE TALENTO HUMANO\n', fontSize: 10, bold: true },
+                                { text: 'FICHA SOCIOECONÓMICA', fontSize: 16, bold: true, color: '#c00000', margin: [0, 5, 0, 0] }
                             ],
                             alignment: 'center', margin: [0, 5, 0, 0]
                         },
@@ -227,39 +218,55 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                 { canvas: [{ type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 2, lineColor: '#1f4e79' }] },
                 { text: '\n' },
 
-                // Tabla de Datos
+                // Sección 1: Datos Personales
                 {
                     style: 'tableExample',
-                    color: '#333',
                     table: {
                         widths: [100, '*', 100, '*'],
                         body: [
                             [{ text: 'DATOS PERSONALES', style: 'headerRow', colSpan: 4 }, {}, {}, {}],
                             [
-                                { rowSpan: 4, image: fotoPerfil || 'placeholder', fit: [90, 110], alignment: 'center' },
-                                { text: 'Cédula:', bold: true }, { text: t.cedula || '', colSpan: 2 }, {}
+                                { rowSpan: 4, image: foto || 'pixel', fit: [90, 110], alignment: 'center' },
+                                { text: 'Cédula:', bold: true }, { text: t.cedula || '' }, {}
                             ],
                             [{}, { text: 'Nombres:', bold: true }, { text: t.nombre || '', colSpan: 2 }, {}],
                             [{}, { text: 'Cargo:', bold: true }, { text: t.cargo || '', colSpan: 2 }, {}],
                             [{}, { text: 'Edad:', bold: true }, { text: (t.edad ? t.edad + ' años' : ''), colSpan: 2 }, {}],
                             
-                            [{ text: 'F. Nacimiento:', bold: true }, { text: t.fecha_nacimiento || '' }, { text: 'Sangre:', bold: true }, { text: t.tipo_sangre || '' }],
-                            [{ text: 'Estado Civil:', bold: true }, { text: t.estado_civil || '' }, { text: 'Nacionalidad:', bold: true }, { text: t.nacionalidad || '' }],
-                            [{ text: 'Dirección:', bold: true }, { text: t.direccion || '', colSpan: 3 }, {}, {}],
-                            [{ text: 'Celular:', bold: true }, { text: t.celular || '' }, { text: 'Correo:', bold: true }, { text: t.correo || '', fontSize: 8 }]
+                            [{ text: 'F. Nacimiento:', bold: true }, t.fecha_nacimiento || '', { text: 'Tipo Sangre:', bold: true }, t.tipo_sangre || ''],
+                            [{ text: 'Estado Civil:', bold: true }, t.estado_civil || '', { text: 'Nacionalidad:', bold: true }, t.nacionalidad || ''],
+                            [{ text: 'Celular:', bold: true }, t.celular || '', { text: 'Correo:', bold: true }, { text: t.correo || '', fontSize: 8 }],
+                            [{ text: 'Dirección:', bold: true }, { text: t.direccion || '', colSpan: 3 }, {}, {}]
                         ]
-                    }
+                    },
+                    layout: 'lightHorizontalLines'
                 },
                 { text: '\n' },
 
-                // Emergencias
+                // Sección 2: Vivienda y Tallas
+                {
+                    style: 'tableExample',
+                    table: {
+                        widths: ['*', '*', '*', '*'],
+                        body: [
+                            [{ text: 'VIVIENDA Y DOTACIÓN', style: 'headerRow', colSpan: 4 }, {}, {}, {}],
+                            [{ text: 'Vivienda:', bold: true }, t.tipo_vivienda || '', { text: 'Servicios:', bold: true }, { text: t.servicios_basicos || '-', fontSize: 8 }],
+                            [{ text: 'Talla Camisa:', bold: true }, t.talla_camisa || '', { text: 'Talla Pantalón:', bold: true }, t.talla_pantalon || ''],
+                            [{ text: 'Talla Zapatos:', bold: true }, t.talla_zapatos || '', {}, {}]
+                        ]
+                    },
+                    layout: 'lightHorizontalLines'
+                },
+                { text: '\n' },
+
+                // Sección 3: Emergencia
                 {
                     style: 'tableExample',
                     table: {
                         widths: ['*', '*', '*'],
                         body: [
-                            [{ text: 'EN CASO DE EMERGENCIA', style: 'headerRow', colSpan: 3 }, {}, {}],
-                            [{ text: 'Nombre', bold: true }, { text: 'Parentesco', bold: true }, { text: 'Teléfono', bold: true }],
+                            [{ text: 'CONTACTOS DE EMERGENCIA', style: 'headerRow', colSpan: 3 }, {}, {}],
+                            [{ text: 'Nombre', bold: true, fillColor: '#eee' }, { text: 'Parentesco', bold: true, fillColor: '#eee' }, { text: 'Teléfono', bold: true, fillColor: '#eee' }],
                             [t.emergencia_nombre || '-', t.emergencia_parentesco || '-', t.emergencia_telefono || '-'],
                             [t.emergencia2_nombre || '-', t.emergencia2_parentesco || '-', t.emergencia2_telefono || '-']
                         ]
@@ -272,129 +279,14 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                     columns: [
                         {
                             stack: [
-                                t.firma_url ? { image: firmaTrab, fit: [100, 50], alignment: 'center' } : { text: '\n\n' },
-                                { canvas: [{ type: 'line', x1: 10, y1: 0, x2: 150, y2: 0, lineWidth: 1 }] },
-                                { text: 'FIRMA DEL TRABAJADOR', alignment: 'center', fontSize: 8, bold: true },
+                                firma ? { image: firma, fit: [100, 60], alignment: 'center' } : { text: '\n\n' },
+                                { canvas: [{ type: 'line', x1: 20, y1: 0, x2: 180, y2: 0, lineWidth: 1 }] },
+                                { text: 'FIRMA DEL TRABAJADOR', alignment: 'center', fontSize: 9, bold: true },
                                 { text: t.cedula, alignment: 'center', fontSize: 8 }
                             ]
                         },
                         {
                             stack: [
-                                { text: '\n\n' },
-                                { canvas: [{ type: 'line', x1: 10, y1: 0, x2: 150, y2: 0, lineWidth: 1 }] },
-                                { text: 'REVISADO POR (SST)', alignment: 'center', fontSize: 8, bold: true }
-                            ]
-                        }
-                    ]
-                }
-            ],
-            styles: {
-                headerRow: { bold: true, fontSize: 10, fillColor: '#f2f2f2', alignment: 'left' },
-                tableExample: { fontSize: 9, margin: [0, 5, 0, 15] }
-            },
-            images: {
-                placeholder: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='
-            }
-        };
-        pdfMake.createPdf(docDefinition).download(`Ficha_${t.nombre}.pdf`);
-    }
-
-    // 5. GESTIÓN DE VISTAS
-    window.cambiarVista = (vista) => {
-        document.querySelectorAll('.vista-seccion').forEach(v => v.style.display = 'none');
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        
-        if(vista === 'activos') {
-            document.getElementById('vista-activos').style.display = 'block';
-            document.getElementById('tab-activos').classList.add('active');
-        } else if(vista === 'pasivos') {
-            document.getElementById('vista-pasivos').style.display = 'block';
-            document.getElementById('tab-pasivos').classList.add('active');
-        }
-        
-        if(vista !== 'formulario') {
-            document.getElementById('tab-trabajador-activo').style.display = 'none';
-        }
-    };
-
-    window.nuevaFicha = () => {
-        document.getElementById('form-trabajador').reset();
-        document.getElementById('t-id').value = '';
-        document.getElementById('t-estado').value = 'ACTIVO';
-        document.getElementById('preview-foto').src = 'https://via.placeholder.com/150?text=FOTO';
-        document.getElementById('preview-firma').style.display = 'none';
-        
-        document.getElementById('btn-dar-baja').style.display = 'none';
-        document.getElementById('btn-reactivar').style.display = 'none';
-        document.getElementById('titulo-formulario').innerText = "Nuevo Ingreso";
-        
-        document.getElementById('tab-trabajador-activo').style.display = 'none';
-        document.querySelectorAll('.vista-seccion').forEach(v => v.style.display = 'none');
-        document.getElementById('vista-formulario').style.display = 'block';
-    };
-
-    // 6. LISTADO Y CARGA
-    async function listarTrabajadores(estado) {
-        const gridId = estado === 'ACTIVO' ? 'grid-activos' : 'grid-pasivos';
-        const countId = estado === 'ACTIVO' ? 'count-activos' : 'count-pasivos';
-        
-        const { data } = await supabase.from('trabajadores')
-            .select('id, nombre, cargo, foto_url')
-            .eq('empresa_id', empresa.id).eq('estado', estado).order('nombre');
-
-        document.getElementById(countId).innerText = data ? data.length : 0;
-        const grid = document.getElementById(gridId);
-        grid.innerHTML = '';
-
-        data?.forEach(t => {
-            const div = document.createElement('div');
-            div.className = 'worker-card';
-            div.innerHTML = `
-                <div class="w-avatar">${t.foto_url ? `<img src="${t.foto_url}" style="width:100%; height:100%; object-fit:cover;">` : t.nombre.charAt(0)}</div>
-                <div style="flex:1;">
-                    <h4 style="margin:0; font-size:1em;">${t.nombre}</h4>
-                    <small style="color:#aaa;">${t.cargo}</small>
-                </div>`;
-            div.onclick = () => abrirFicha(t.id);
-            grid.appendChild(div);
-        });
-    }
-
-    async function abrirFicha(id) {
-        const { data: t } = await supabase.from('trabajadores').select('*').eq('id', id).single();
-        if(!t) return;
-
-        // Configurar Pestaña con Nombre
-        const primerNombre = t.nombre.split(' ')[0];
-        document.getElementById('lbl-nombre-trab').innerText = primerNombre;
-        document.getElementById('tab-trabajador-activo').style.display = 'inline-block';
-        document.getElementById('titulo-formulario').innerText = `Ficha de: ${t.nombre}`;
-
-        // Llenar Formulario
-        document.getElementById('t-id').value = t.id;
-        document.getElementById('t-cedula').value = t.cedula;
-        document.getElementById('t-nombre').value = t.nombre;
-        document.getElementById('t-nacimiento').value = t.fecha_nacimiento;
-        document.getElementById('t-cargo').value = t.cargo;
-        document.getElementById('t-estado').value = t.estado;
-        
-        if(t.fecha_nacimiento) {
-             const hoy = new Date(); const nac = new Date(t.fecha_nacimiento);
-             let edad = hoy.getFullYear() - nac.getFullYear();
-             if (hoy < new Date(hoy.getFullYear(), nac.getMonth(), nac.getDate())) edad--;
-             document.getElementById('t-edad').value = edad + ' años';
-        }
-
-        document.getElementById('t-sexo').value = t.sexo || 'Hombre';
-        document.getElementById('t-civil').value = t.estado_civil || '';
-        document.getElementById('t-celular').value = t.celular || '';
-        document.getElementById('t-correo').value = t.correo || '';
-        document.getElementById('t-direccion').value = t.direccion || '';
-        document.getElementById('t-nacionalidad').value = t.nacionalidad || 'ECUATORIANA';
-        document.getElementById('t-profesion').value = t.profesion || '';
-        document.getElementById('t-vivienda').value = t.tipo_vivienda || 'Propia';
-        
-        // Tallas
-        document.getElementById('t-camisa').value = t.talla_camisa || '';
-        document.getElementById('t-pantalon').value = t.talla_pantalon || '';
-        document.getElementById('
+                                { text: '\n\n\n' }, /* Espacio para firma manual */
+                                { canvas: [{ type: 'line', x1: 20, y1: 0, x2: 180, y2: 0, lineWidth: 1 }] },
+                                {
