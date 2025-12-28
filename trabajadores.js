@@ -1,50 +1,60 @@
-// trabajadores.js - VERSIÓN EXPANDIDA CON CAMPOS PDF GOLDMINS
+// trabajadores.js - VERSIÓN FINAL CON BOTONES Y ESTILOS RECUPERADOS
 
 export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     contenedor.innerHTML = `
         <div class="header-tools">
             <h2 style="margin:0;"><i class="fas fa-users"></i> Nómina: ${empresa.nombre}</h2>
             
-            <div id="tab-container" style="display:flex; gap:5px; margin-top:10px; align-items:center;">
+            <div id="tab-container">
                 <button class="tab-btn active" id="tab-activos" onclick="cambiarVista('activos')">
-                    <i class="fas fa-user-check"></i> <span class="desktop-text">Activos</span> 
+                    <i class="fas fa-user-check"></i> <span class="desktop-text">Activos</span>
                     <span id="count-activos" class="badge" style="background:var(--success); color:black;">0</span>
                 </button>
+                
                 <button class="tab-btn" id="tab-pasivos" onclick="cambiarVista('pasivos')">
-                    <i class="fas fa-user-times"></i> <span class="desktop-text">Retirados</span> 
+                    <i class="fas fa-user-times"></i> <span class="desktop-text">Retirados</span>
                 </button>
+                
                 <button class="tab-btn" onclick="nuevaFicha()">
                     <i class="fas fa-plus"></i> <span class="desktop-text">Nuevo</span>
                 </button>
 
-                <div class="dropdown" id="tab-trabajador-activo" style="display:none;">
-                    <button class="tab-btn active" onclick="toggleDropdown()" id="btn-nombre-trabajador" style="border-color:#f1c40f; color:#f1c40f;">
-                        <i class="fas fa-cog"></i> <span id="lbl-nombre-trab">OPCIONES</span>
+                <div class="dropdown" id="dropdown-trabajador" style="display:none;">
+                    <button class="tab-btn active" style="border-color:var(--warning); color:var(--warning); box-shadow:none;" onclick="toggleDrop()">
+                        <i class="fas fa-user-cog"></i> <span id="lbl-nombre-trab">OPCIONES</span> <i class="fas fa-caret-down"></i>
                     </button>
-                    <div id="dropdown-print" class="dropdown-content">
+                    
+                    <div id="drop-content" class="dropdown-content">
                         <div style="text-align:center; padding:10px; color:#888; font-size:0.8em; border-bottom:1px solid #444;">GENERAR DOCUMENTOS</div>
-                        <a onclick="imprimirDoc('ficha')"><i class="fas fa-file-pdf"></i> Ficha Socioeconómica</a>
-                        <a onclick="imprimirDoc('ats')"><i class="fas fa-hard-hat"></i> Generar ATS</a>
-                        <a onclick="imprimirDoc('kardex')"><i class="fas fa-clipboard-list"></i> Kardex EPP</a>
-                        <a onclick="toggleDropdown()" style="color:#e74c3c;"><i class="fas fa-times"></i> Cancelar</a>
+                        <a onclick="imprimirDoc('ficha')"><i class="fas fa-file-pdf" style="color:var(--danger);"></i> Ficha Socioeconómica</a>
+                        <a onclick="imprimirDoc('ats')"><i class="fas fa-hard-hat" style="color:var(--warning);"></i> Generar ATS</a>
+                        <a onclick="imprimirDoc('kardex')"><i class="fas fa-clipboard-list" style="color:var(--success);"></i> Kardex EPP</a>
+                        <a onclick="imprimirDoc('induccion')"><i class="fas fa-chalkboard-teacher"></i> Inducción</a>
+                        <a onclick="toggleDrop()" style="color:#aaa; justify-content:center; border-top:1px solid #444;"><i class="fas fa-times"></i> Cerrar</a>
                     </div>
                 </div>
             </div>
         </div>
         <hr style="border:0; border-top:1px solid rgba(255,255,255,0.2); margin:15px 0;">
 
-        <div id="vista-activos" class="vista-seccion">
-            <input type="text" id="buscador-activos" placeholder="Buscar trabajador..." style="width:100%; padding:10px; margin-bottom:10px;">
+        <div id="vista-activos">
+            <input type="text" id="buscador-activos" placeholder="Buscar trabajador activo..." style="width:100%; padding:12px; border-radius:30px; border:1px solid #444; background:rgba(0,0,0,0.5); color:white; margin-bottom:15px;">
             <div id="grid-activos" class="worker-grid">Cargando...</div>
         </div>
-        <div id="vista-pasivos" class="vista-seccion" style="display:none;">
+        <div id="vista-pasivos" style="display:none;">
+            <input type="text" id="buscador-pasivos" placeholder="Buscar trabajador retirado..." style="width:100%; padding:12px; border-radius:30px; border:1px solid var(--danger); background:rgba(0,0,0,0.5); color:white; margin-bottom:15px;">
             <div id="grid-pasivos" class="worker-grid"></div>
         </div>
 
-        <div id="vista-formulario" class="vista-seccion" style="display:none;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                <h3 style="color:#00d2ff; margin:0;">Ficha Personal</h3>
-                <button class="btn-small" style="background:#555;" onclick="cambiarVista('activos')">Cerrar</button>
+        <div id="vista-formulario" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 style="margin:0; color:var(--primary);">Ficha Personal</h3>
+                
+                <div style="display:flex; gap:10px;">
+                    <button id="btn-baja" class="btn-small" style="background:var(--danger); display:none;"><i class="fas fa-user-slash"></i> <span class="desktop-text">Dar Baja</span></button>
+                    <button id="btn-alta" class="btn-small" style="background:var(--success); color:black; display:none;"><i class="fas fa-user-check"></i> <span class="desktop-text">Reactivar</span></button>
+                    <button class="btn-small" style="background:#555;" onclick="cambiarVista('activos')"><i class="fas fa-times"></i></button>
+                </div>
             </div>
 
             <form id="form-trabajador" class="form-scroll">
@@ -57,16 +67,16 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                         <div style="text-align:center; flex:0 0 120px; margin:0 auto;">
                             <img id="preview-foto" src="https://via.placeholder.com/150" class="foto-perfil">
                             <input type="file" id="t-foto" hidden accept="image/*">
-                            <button type="button" onclick="document.getElementById('t-foto').click()" class="btn-small" style="margin-top:5px;">Foto</button>
+                            <button type="button" onclick="document.getElementById('t-foto').click()" class="btn-small" style="margin-top:10px; width:100%; background:#333; border:1px solid #555;">Cambiar Foto</button>
                         </div>
                         <div class="form-grid" style="flex:1;">
                             <input id="t-cedula" placeholder="Cédula" required maxlength="10">
                             <input id="t-nombre" placeholder="Apellidos y Nombres" required>
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
-                                <div><label style="font-size:0.7em">Fecha Nacimiento</label><input type="date" id="t-nacimiento"></div>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                                <div><label style="font-size:0.7em; color:#aaa;">Fecha Nacimiento</label><input type="date" id="t-nacimiento"></div>
                                 <input id="t-lugar" placeholder="Lugar Nacimiento">
                             </div>
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                                 <select id="t-sexo"><option>Hombre</option><option>Mujer</option></select>
                                 <select id="t-civil"><option>Soltero</option><option>Casado</option><option>Unión Libre</option><option>Divorciado</option></select>
                             </div>
@@ -74,7 +84,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                             <input id="t-discapacidad" placeholder="Discapacidad (NO / %)">
                             <input id="t-religion" placeholder="Religión">
                             <input id="t-celular" placeholder="Celular">
-                            <input id="t-correo" type="email" placeholder="Correo">
+                            <input id="t-correo" type="email" placeholder="Correo Electrónico">
                             <input id="t-licencia" placeholder="Tipo Licencia (A, B...)">
                         </div>
                     </div>
@@ -83,12 +93,12 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                 <div class="seccion-form">
                     <h4><i class="fas fa-briefcase"></i> Información Laboral</h4>
                     <div class="form-grid">
-                        <select id="t-cargo" required><option>Cargando...</option></select>
+                        <select id="t-cargo" required><option>Cargando cargos...</option></select>
                         <input id="t-profesion" placeholder="Profesión">
                         <input id="t-sueldo" placeholder="Sueldo Mensual ($)">
-                        <div><label style="font-size:0.7em">Fecha Afiliación IESS</label><input type="date" id="t-afiliacion"></div>
-                        <input id="t-banco" placeholder="Banco (Pichincha...)">
-                        <input id="t-cuenta" placeholder="Nº Cuenta Ahorros">
+                        <div><label style="font-size:0.7em; color:#aaa;">Fecha Afiliación IESS</label><input type="date" id="t-afiliacion"></div>
+                        <input id="t-banco" placeholder="Banco">
+                        <input id="t-cuenta" placeholder="Nº Cuenta">
                     </div>
                 </div>
 
@@ -97,8 +107,8 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                     <div class="form-grid">
                         <input id="t-direccion" placeholder="Dirección Domiciliaria" style="grid-column:1/-1">
                         <select id="t-vivienda"><option>Propia</option><option>Arrendada</option><option>Familiar</option></select>
-                        <input id="t-material" placeholder="Material Paredes (Cemento...)">
-                        <input id="t-cubierta" placeholder="Material Techo (Zinc, Losa...)">
+                        <input id="t-material" placeholder="Material Paredes">
+                        <input id="t-cubierta" placeholder="Material Techo">
                         <input id="t-habitaciones" placeholder="Nº Habitaciones">
                         <input id="t-seguridad" placeholder="Seguridad Sector (Buena/Mala)">
                     </div>
@@ -133,16 +143,16 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                         <input id="t-pantalon" placeholder="Pantalón">
                         <input id="t-zapatos" placeholder="Zapatos">
                     </div>
-                    <div style="text-align:center; border:1px dashed #555; padding:10px;">
-                        <img id="preview-firma" src="" style="height:60px; display:none; margin:0 auto 5px; background:white; padding:5px;">
+                    <div style="text-align:center; border:1px dashed #555; padding:10px; border-radius:10px;">
+                        <img id="preview-firma" src="" style="height:60px; display:none; margin:0 auto 5px; background:white; padding:5px; border-radius:5px;">
                         <button type="button" onclick="document.getElementById('t-firma').click()" class="btn-small" style="background:#444;">Cargar Firma</button>
                         <input type="file" id="t-firma" hidden accept="image/*">
                     </div>
                 </div>
 
-                <div style="display:flex; gap:10px; padding-bottom:60px;">
-                    <button type="submit" id="btn-guardar">GUARDAR CAMBIOS</button>
-                    <button type="button" onclick="cambiarVista('activos')" style="background:#555;">CANCELAR</button>
+                <div style="display:flex; gap:10px; padding-bottom:80px; margin-top:20px;">
+                    <button type="submit" id="btn-guardar" style="background:var(--primary); color:black; flex:1;">GUARDAR CAMBIOS</button>
+                    <button type="button" onclick="cambiarVista('activos')" style="background:#555; flex:1;">CANCELAR</button>
                 </div>
             </form>
         </div>
@@ -150,12 +160,12 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
 
     // --- LÓGICA ---
     
-    // Menú "Bonito"
-    window.toggleDropdown = () => {
-        const d = document.getElementById("dropdown-print");
-        const p = document.getElementById("tab-trabajador-activo");
+    // Toggle Menú
+    window.toggleDrop = () => {
+        const d = document.getElementById("drop-content");
+        const p = document.getElementById("dropdown-trabajador");
         d.classList.toggle("show");
-        if(d.classList.contains("show")) p.classList.add("show"); // Activa fondo oscuro CSS
+        if(d.classList.contains("show")) p.classList.add("show");
         else p.classList.remove("show");
     };
 
@@ -176,16 +186,28 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     window.cambiarVista = (v) => {
         document.querySelectorAll('.vista-seccion').forEach(e=>e.style.display='none');
         document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-        if(v==='activos') { document.getElementById('vista-activos').style.display='block'; document.getElementById('tab-activos').classList.add('active'); }
-        if(v==='pasivos') { document.getElementById('vista-pasivos').style.display='block'; document.getElementById('tab-pasivos').classList.add('active'); }
-        if(v!=='formulario') document.getElementById('tab-trabajador-activo').style.display='none';
+        
+        if(v==='activos') { 
+            document.getElementById('vista-activos').style.display='block'; 
+            document.getElementById('tab-activos').classList.add('active'); 
+        }
+        if(v==='pasivos') { 
+            document.getElementById('vista-pasivos').style.display='block'; 
+            document.getElementById('tab-pasivos').classList.add('active'); 
+        }
+        if(v!=='formulario') document.getElementById('dropdown-trabajador').style.display='none';
     };
 
     window.nuevaFicha = () => {
         document.getElementById('form-trabajador').reset();
         document.getElementById('t-id').value='';
+        document.getElementById('t-estado').value='ACTIVO';
         document.getElementById('preview-foto').src='https://via.placeholder.com/150';
         document.getElementById('preview-firma').style.display='none';
+        
+        document.getElementById('btn-baja').style.display='none';
+        document.getElementById('btn-alta').style.display='none';
+        
         cambiarVista('xxx');
         document.getElementById('vista-formulario').style.display='block';
     };
@@ -195,9 +217,13 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         const { data } = await supabase.from('trabajadores').select('*').eq('empresa_id', empresa.id).eq('estado', estado).order('nombre');
         const grid = document.getElementById(gridId); grid.innerHTML='';
         if(estado==='ACTIVO') document.getElementById('count-activos').innerText = data?.length||0;
+        
         data?.forEach(t=>{
             const d = document.createElement('div'); d.className='worker-card';
-            d.innerHTML=`<div class="w-avatar"><img src="${t.foto_url || 'https://via.placeholder.com/50'}" style="width:100%; height:100%; object-fit:cover;"></div><div><h4 style="margin:0">${t.nombre}</h4><small style="color:#aaa">${t.cargo}</small></div>`;
+            d.innerHTML=`
+                <div class="w-avatar"><img src="${t.foto_url || 'https://via.placeholder.com/50'}" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div><h4 style="margin:0">${t.nombre}</h4><small style="color:#aaa">${t.cargo}</small></div>
+            `;
             d.onclick=()=>abrir(t);
             grid.appendChild(d);
         });
@@ -213,6 +239,20 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         
         // Especiales
         document.getElementById('t-id').value = t.id;
+        document.getElementById('t-estado').value = t.estado;
+        
+        // Botones Estado
+        const btnBaja = document.getElementById('btn-baja');
+        const btnAlta = document.getElementById('btn-alta');
+        if(t.estado === 'ACTIVO') {
+            btnBaja.style.display = 'flex'; btnAlta.style.display = 'none';
+            btnBaja.onclick = () => cambiarEstado(t.id, 'PASIVO');
+        } else {
+            btnBaja.style.display = 'none'; btnAlta.style.display = 'flex';
+            btnAlta.onclick = () => cambiarEstado(t.id, 'ACTIVO');
+        }
+
+        // Emergencia
         document.getElementById('t-emer-nom').value = t.emergencia_nombre;
         document.getElementById('t-emer-par').value = t.emergencia_parentesco;
         document.getElementById('t-emer-tel').value = t.emergencia_telefono;
@@ -229,10 +269,20 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         document.getElementById('preview-foto').src = t.foto_url || 'https://via.placeholder.com/150';
         if(t.firma_url) { document.getElementById('preview-firma').src=t.firma_url; document.getElementById('preview-firma').style.display='block'; }
 
+        // Mostrar Nombre en Menú
         document.getElementById('lbl-nombre-trab').innerText = t.nombre.split(' ')[0];
-        document.getElementById('tab-trabajador-activo').style.display='inline-block';
+        document.getElementById('dropdown-trabajador').style.display='inline-block';
+        
         cambiarVista('xxx');
         document.getElementById('vista-formulario').style.display='block';
+    }
+
+    // CAMBIAR ESTADO (DAR BAJA)
+    async function cambiarEstado(id, nuevoEstado) {
+        if(!confirm(`¿Seguro deseas cambiar a ${nuevoEstado}?`)) return;
+        await supabase.from('trabajadores').update({ estado: nuevoEstado }).eq('id', id);
+        alert("Estado actualizado");
+        document.getElementById('tab-activos').click(); // Recargar
     }
 
     // GUARDAR
@@ -359,7 +409,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             images: { pixel: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=' },
             styles: { h: { fontSize:11, bold:true, color:'#00d2ff', fillColor:'#111' } }
         };
-        pdfMake.createPdf(doc).download('Ficha.pdf');
+        pdfMake.createPdf(doc).download(`Ficha_${tr.nombre}.pdf`);
     };
 
     async function base64(u){ if(!u)return null; try{const r=await fetch(u);const b=await r.blob();return new Promise(res=>{const f=new FileReader();f.onload=()=>res(f.result);f.readAsDataURL(b)})}catch{return null}}
