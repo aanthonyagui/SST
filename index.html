@@ -3,54 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SST Pro - Minería</title>
+    <title>SST Pro Minería</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <canvas id="canvas-bg"></canvas>
+
     <div class="container">
         <div id="login-section">
             <img src="logo-sst.png" style="width: 80px;" alt="Logo">
             <h2>SST Dashboard</h2>
+            <p>Minería Segura</p>
             <input type="email" id="email" placeholder="Correo autorizado">
-            <button id="login-button">Ingresar</button>
+            <button id="login-button">Ingresar al Sistema</button>
             <p id="login-message"></p>
         </div>
 
         <div id="app-section" style="display:none;">
             <h3>Panel de Control</h3>
-            <p>Bienvenido: <b id="user-email"></b></p>
+            <p>Usuario: <b id="user-email"></b> <span id="user-role" style="color:gold; font-size:0.8em;"></span></p>
+            
             <div class="menu-grid">
-                <div class="menu-card" id="btn-indices" onclick="abrirModulo('indices')">
-    <i class="fas fa-chart-line"></i>
-    <span>Índices de Gestión</span>
-</div>
-<div class="menu-card admin-only" id="btn-config" onclick="abrirModulo('config')" style="display:none;">
-    <i class="fas fa-tools"></i>
-    <span>Configuración y Recursos</span>
-</div>
                 <div class="menu-card" onclick="alert('Módulo Trabajadores')">
                     <i class="fas fa-users"></i>
                     <span>Trabajadores</span>
                 </div>
-                <div class="menu-card" onclick="alert('Módulo Accidentes')">
+                <div class="menu-card" onclick="alert('Reportar Accidente')">
                     <i class="fas fa-ambulance"></i>
-                    <span>Reportar Accidentes</span>
+                    <span>Reportar Accidente</span>
                 </div>
-                <div class="menu-card" onclick="alert('Módulo Inspecciones')">
+                <div class="menu-card" onclick="alert('Inspecciones')">
                     <i class="fas fa-clipboard-check"></i>
                     <span>Inspecciones</span>
                 </div>
-                <div class="menu-card" onclick="alert('Módulo Horarios')">
+                <div class="menu-card" onclick="alert('Horarios')">
                     <i class="fas fa-calendar-alt"></i>
-                    <span>Horario y Charlas</span>
+                    <span>Horarios y Charlas</span>
+                </div>
+                
+                <div class="menu-card admin-only" style="display:none;" onclick="alert('Índices de Gestión')">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Índices de Gestión</span>
+                </div>
+                <div class="menu-card admin-only" style="display:none;" onclick="alert('Configuración')">
+                    <i class="fas fa-tools"></i>
+                    <span>Configuración</span>
                 </div>
             </div>
+            
             <button id="logout-button" style="margin-top: 20px; background: #e74c3c;">Cerrar Sesión</button>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
 </body>
