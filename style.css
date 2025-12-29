@@ -1,18 +1,18 @@
 /* =========================================
-   STYLE.CSS - TU VERSIÓN ORIGINAL MEJORADA
+   STYLE.CSS - TU ESTILO ORIGINAL + FIX MÓVIL
    ========================================= */
 :root {
-    --primary: #00d2ff;       /* Azul Neón */
-    --danger: #e74c3c;        /* Rojo */
-    --success: #2ecc71;       /* Verde */
-    --text: #ffffff;          /* Blanco */
-    --bg-dark: #050505;       /* Fondo */
-    --glass-bg: rgba(30, 30, 30, 0.65);
+    --primary: #00d2ff;
+    --danger: #ff4444;
+    --success: #00C851;
+    --warning: #ffbb33;
+    --text: #ffffff;
+    --bg-dark: #050505;
+    --glass-bg: rgba(30, 30, 30, 0.85);
     --glass-border: rgba(255, 255, 255, 0.15);
     --input-bg: rgba(0, 0, 0, 0.5);
 }
 
-/* RESET */
 * { box-sizing: border-box; }
 
 body {
@@ -28,7 +28,7 @@ body {
 #canvas-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
 
 /* Scrollbars */
-::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
 ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
 
@@ -36,7 +36,6 @@ body {
 .container {
     position: relative; z-index: 10;
     background: var(--glass-bg);
-    backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
     border: 1px solid var(--glass-border);
     border-radius: 20px; padding: 30px; width: 90%; max-width: 400px;
     text-align: center; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
@@ -45,8 +44,7 @@ body {
 .dashboard-layout {
     position: relative; z-index: 10;
     display: flex; width: 96vw; height: 92vh;
-    background: rgba(20, 20, 20, 0.85);
-    backdrop-filter: blur(20px);
+    background: rgba(20, 20, 20, 0.9);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 15px; overflow: hidden;
     box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
@@ -59,93 +57,100 @@ body {
     display: flex; flex-direction: column; padding: 20px;
     transition: transform 0.3s ease;
 }
-.user-info-side { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.9em; color: #ccc; text-align: center; }
-.sidebar-menu { flex: 1; overflow-y: auto; margin-bottom: 10px; padding-right: 5px; }
+.sidebar-menu { flex: 1; overflow-y: auto; margin-bottom: 10px; }
 .sidebar-footer { display: flex; gap: 8px; margin-top: auto; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); }
 
 .menu-item-row {
     display: flex; align-items: center; padding: 12px 15px; margin-bottom: 8px;
-    background: rgba(255, 255, 255, 0.05); border-radius: 10px; cursor: pointer; transition: 0.2s; user-select: none;
+    background: rgba(255, 255, 255, 0.05); border-radius: 10px; cursor: pointer; transition: 0.2s;
 }
 .menu-item-row:hover { background: rgba(0, 210, 255, 0.15); border-left: 3px solid var(--primary); padding-left: 12px; }
 .menu-item-row i { margin-right: 15px; color: var(--primary); width: 20px; text-align: center; }
 
 /* CONTENIDO */
-.content-area { flex: 1; padding: 25px; overflow-y: auto; position: relative; }
+.content-area { flex: 1; padding: 20px; overflow-y: auto; position: relative; }
 
-/* PESTAÑAS Y BOTONES */
+/* --- AQUÍ ESTÁ EL ARREGLO DE LOS BOTONES --- */
 .header-tools { display: flex; flex-direction: column; }
-.tab-btn {
-    background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #aaa;
-    padding: 8px 15px; border-radius: 5px; cursor: pointer; transition: 0.3s;
-    display: inline-flex; align-items: center; gap: 8px; font-size: 0.9em; white-space: nowrap;
-}
-.tab-btn:hover { background: rgba(255,255,255,0.1); }
-.tab-btn.active { background: var(--primary); color: #000; border-color: var(--primary); font-weight: bold; box-shadow: 0 0 10px rgba(0, 210, 255, 0.4); }
-.badge { background: rgba(0,0,0,0.3); color: white; border-radius: 10px; padding: 2px 6px; font-size: 0.8em; }
 
-/* DROPDOWN (MENÚ FLOTANTE) */
-.dropdown { position: relative; display: inline-block; }
-.dropdown-content {
-    display: none; position: absolute; right: 0; top: 100%;
-    background-color: #222; min-width: 200px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.9);
-    border: 1px solid #444; border-radius: 8px; z-index: 2000;
+/* Contenedor de botones: Forzamos fila única con scroll */
+#tab-container {
+    display: flex; 
+    gap: 8px; 
+    overflow-x: auto; 
+    padding-bottom: 5px; 
+    align-items: center;
+    white-space: nowrap; /* Evita que bajen de línea */
+    -webkit-overflow-scrolling: touch; /* Scroll suave en iPhone */
 }
-.dropdown-content a {
-    color: white; padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px;
-    border-bottom: 1px solid #333; font-size: 0.9em; cursor: pointer;
+
+/* Estilo Base Botón */
+.tab-btn {
+    background: rgba(255,255,255,0.05); 
+    border: 1px solid rgba(255,255,255,0.1); 
+    color: #aaa;
+    padding: 8px 12px; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    transition: 0.2s;
+    display: inline-flex; 
+    align-items: center; 
+    gap: 6px; 
+    font-size: 0.9em; 
+    white-space: nowrap;
+    height: 40px; /* Altura fija para uniformidad */
 }
-.dropdown-content a:hover { background: var(--primary); color: black; }
-.show { display: block; }
+
+/* Colores Específicos (Como en tu foto) */
+.btn-activos.active { background: rgba(46, 204, 113, 0.2); border-color: var(--success); color: var(--success); }
+.btn-pasivos.active { background: rgba(231, 76, 60, 0.2); border-color: var(--danger); color: var(--danger); }
+.btn-nuevo { font-weight: bold; border-color: #555; }
+.btn-nombre { border-color: var(--warning); color: var(--warning); background: rgba(241, 196, 15, 0.1); }
+
+.badge { 
+    background: #222; color: white; border-radius: 50%; 
+    width: 20px; height: 20px; 
+    display: flex; justify-content: center; align-items: center; 
+    font-size: 0.75em; font-weight: bold;
+}
+/* Colores de badges */
+.bg-green { background: var(--success); color: black; }
+.bg-red { background: var(--danger); color: white; }
 
 /* GRID TRABAJADORES */
-.worker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; margin-top: 15px; }
+.worker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-top: 15px; }
 .worker-card {
-    background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 15px;
-    cursor: pointer; transition: 0.2s; border-left: 3px solid transparent;
+    cursor: pointer; transition: 0.2s;
 }
-.worker-card:hover { background: rgba(0, 210, 255, 0.1); transform: translateY(-3px); border-color: var(--primary); }
+.worker-card:hover { background: rgba(255,255,255,0.08); border-color: var(--primary); }
 .w-avatar {
-    width: 50px; height: 50px; background: var(--primary); color: #000;
+    width: 50px; height: 50px; flex-shrink: 0; background: #222;
     border-radius: 50%; display: flex; justify-content: center; align-items: center;
-    font-weight: bold; font-size: 1.2em; overflow: hidden;
+    font-weight: bold; overflow: hidden; border: 2px solid #444;
 }
 .w-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
 /* FORMULARIOS */
-.seccion-form { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 12px; margin-bottom: 20px; }
-.seccion-form h4 { margin-top: 0; color: var(--primary); border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 8px; margin-bottom: 15px; font-size: 1.1em; }
-.foto-perfil { width: 120px; height: 120px; object-fit: cover; border-radius: 10px; border: 2px solid #555; margin-bottom: 10px; background: #222; }
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
-.multi-select-box {
-    background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px;
-    grid-column: span 2; display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; border: 1px solid rgba(255,255,255,0.1);
-}
+.seccion-form { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+.foto-perfil { width: 120px; height: 120px; object-fit: cover; border-radius: 10px; border: 2px solid #555; background: #222; margin-bottom: 10px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.multi-select-box { background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; margin-top: 10px; }
 
-input, select, textarea {
-    width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px;
+input, select {
+    width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.2); background: var(--input-bg); color: white;
-    box-sizing: border-box; font-family: inherit;
 }
-input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 8px rgba(0, 210, 255, 0.3); }
-
 button {
-    width: 100%; padding: 12px; border-radius: 10px; border: none;
+    width: 100%; padding: 12px; border-radius: 8px; border: none;
     background: #007bff; color: white; font-weight: bold; cursor: pointer;
-    transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px;
 }
-button:hover { filter: brightness(1.2); }
 .btn-small { width: auto; padding: 8px 12px; font-size: 0.9em; }
 
-/* SELECCIÓN EMPRESA */
-.menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
-.menu-card {
-    background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px; padding: 20px; cursor: pointer; display: flex; flex-direction: column; align-items: center;
-}
-.menu-card img { width: 70px; height: 70px; object-fit: contain; margin-bottom: 10px; }
+/* MENÚ DESPLEGABLE */
+.dropdown { position: relative; display: inline-block; }
+.dropdown-content { display: none; } /* Oculto por defecto */
 
 /* RESPONSIVE MÓVIL */
 #menu-toggle, #sidebar-overlay { display: none; }
@@ -156,50 +161,46 @@ button:hover { filter: brightness(1.2); }
     .dashboard-layout { width: 100%; height: auto; min-height: 100vh; border: none; border-radius: 0; display: block; margin: 0; }
     
     .sidebar {
-        position: fixed; top: 0; left: 0; height: 100vh; width: 80%; max-width: 300px;
-        z-index: 200; background: #111; transform: translateX(-100%);
-        box-shadow: 10px 0 30px rgba(0,0,0,0.9);
+        position: fixed; top: 0; left: 0; height: 100vh; width: 85%; max-width: 300px;
+        z-index: 300; background: #111; transform: translateX(-100%);
+        box-shadow: 10px 0 30px black;
     }
     .sidebar.active { transform: translateX(0); }
     .sidebar-footer { background: #1a1a1a; padding: 15px; position: sticky; bottom: 0; }
     
-    .content-area { height: auto; padding: 15px; overflow: visible; padding-bottom: 100px; }
+    .content-area { height: auto; padding: 15px; padding-bottom: 100px; overflow: visible; }
     .form-grid { grid-template-columns: 1fr; }
-    .multi-select-box { grid-column: span 1; }
-    .worker-grid { grid-template-columns: 1fr; }
-    .desktop-text { display: none; }
-    #tab-container { overflow-x: auto; padding-bottom: 5px; }
     
     #menu-toggle {
         display: inline-block; position: sticky; top: 10px; z-index: 95;
         background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.3);
-        color: var(--primary); font-size: 1.4rem; padding: 8px 12px;
-        margin-bottom: 15px; border-radius: 5px;
+        color: var(--primary); padding: 8px 12px; margin-bottom: 10px; border-radius: 5px; font-size: 1.4rem;
     }
     #sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 90; }
 
-    /* --- FIX: MENÚ DESPLEGABLE FLOTANTE Y BONITO EN MÓVIL --- */
+    /* --- MENÚ FLOTANTE CENTRADO (TIPO APP) --- */
     .dropdown-content {
-        position: fixed; /* Flota sobre toda la pantalla */
-        top: 50%; left: 50%;
-        transform: translate(-50%, -50%); /* Centrado perfecto */
-        width: 85%; max-width: 300px;
-        background: rgba(25, 25, 25, 0.98); /* Fondo casi sólido */
-        border: 1px solid var(--primary); /* Borde neón */
-        box-shadow: 0 0 50px rgba(0,0,0,0.9); /* Sombra intensa */
-        z-index: 9999; /* Encima de todo */
-        border-radius: 15px;
-        padding: 10px 0;
+        display: none; position: fixed; 
+        top: 50%; left: 50%; transform: translate(-50%, -50%);
+        width: 80%; max-width: 300px;
+        background: #1a1a1a; border: 1px solid var(--warning);
+        border-radius: 15px; box-shadow: 0 0 50px rgba(0,0,0,0.9);
+        z-index: 9999; padding: 10px 0;
+        text-align: center;
     }
-    /* Fondo oscuro detrás para que resalte */
-    .dropdown.show::before {
-        content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(0,0,0,0.8); z-index: -1;
-        backdrop-filter: blur(5px);
-    }
+    .dropdown-content.show { display: block; animation: popUp 0.2s; }
+    
     .dropdown-content a {
-        padding: 15px; font-size: 1.1em; text-align: center; justify-content: center;
-        border-bottom: 1px solid #333;
+        display: block; padding: 15px; color: white; text-decoration: none;
+        border-bottom: 1px solid #333; font-size: 1.1em;
     }
     .dropdown-content a:last-child { border-bottom: none; }
+    
+    /* Fondo oscuro al abrir menú */
+    .dropdown.show-bg::before {
+        content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.8); z-index: 9998; backdrop-filter: blur(3px);
+    }
 }
+
+@keyframes popUp { from { transform: translate(-50%, -40%); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; } }
