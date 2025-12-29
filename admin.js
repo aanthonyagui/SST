@@ -1,4 +1,4 @@
-// admin.js - PANEL DE CONFIGURACIÓN AVANZADA
+// admin.js - PANEL DE CONFIGURACIÓN AVANZADA CORREGIDO
 export async function cargarModuloAdmin(contenedor, supabase, empresa) {
     contenedor.innerHTML = `
         <div class="header-tools">
@@ -42,11 +42,9 @@ export async function cargarModuloAdmin(contenedor, supabase, empresa) {
         if (seccion === 'empresa') renderEmpresa(subWs);
     };
 
-    // --- 1. ORGANIGRAMA POR DEPARTAMENTOS ---
+    // --- 1. ORGANIGRAMA ---
     async function renderOrganigrama(ws) {
         const { data: cargos } = await supabase.from('cargos').select('*').order('departamento');
-        
-        // Agrupar cargos por departamento
         const departamentos = {};
         cargos?.forEach(c => {
             const dep = c.departamento || 'SIN CLASIFICAR';
@@ -83,31 +81,28 @@ export async function cargarModuloAdmin(contenedor, supabase, empresa) {
         }
     }
 
-    window.nuevoCargo = async () => {
-        const dep = prompt("Departamento (Ej: PLANTA, MINA, ADMINISTRACIÓN):");
-        const nom = prompt("Nombre del Cargo:");
-        if (dep && nom) {
-            await supabase.from('cargos').insert([{ nombre: nom.toUpperCase(), departamento: dep.toUpperCase() }]);
-            seccionAdmin('organigrama');
-        }
-    };
-
-    // --- 2. GESTIÓN DE USUARIOS Y ROLES ---
+    // --- 2. USUARIOS Y ROLES ---
     async function renderUsuarios(ws) {
-        const { data: users } = await supabase.from('autorizados').select('*').order('email');
+        ws.innerHTML = '<p>Cargando usuarios...</p>';
+        const { data: users, error } = await supabase.from('autorizados').select('*').order('email');
+        
+        if (error) return ws.innerHTML = `<p style="color:red">Error: ${error.message}</p>`;
+
         ws.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                 <h3 style="margin:0; color:#f1c40f;">Usuarios del Sistema</h3>
                 <button onclick="nuevoUsuario()" style="width:auto; padding:8px 15px; background:#f1c40f; color:black;">+ AUTORIZAR</button>
             </div>
-            <table style="width:100%; border-collapse:collapse; font-size:0.9em;">
-                <thead><tr style="border-bottom:1px solid #444; color:#aaa; text-align:left;">
-                    <th style="padding:10px;">CORREO</th>
-                    <th>ROL</th>
-                    <th>ACCIÓN</th>
-                </tr></thead>
-                <tbody id="body-users"></tbody>
-            </table>
+            <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; font-size:0.9em; text-align:left;">
+                    <thead><tr style="border-bottom:1px solid #444; color:#aaa;">
+                        <th style="padding:10px;">CORREO</th>
+                        <th>ROL</th>
+                        <th>ACCIÓN</th>
+                    </tr></thead>
+                    <tbody id="body-users"></tbody>
+                </table>
+            </div>
         `;
 
         const tbody = document.getElementById('body-users');
@@ -128,33 +123,60 @@ export async function cargarModuloAdmin(contenedor, supabase, empresa) {
         });
     }
 
-    window.cambiarRol = async (id, nuevoRol) => {
-        const { error } = await supabase.from('autorizados').update({ rol: nuevoRol }).eq('id', id);
-        if(!error) alert("Rol actualizado correctamente.");
-    };
-
-    // --- 3. DATOS DE EMPRESA (FULL) ---
+    // --- 3. DATOS DE EMPRESA ---
     async function renderEmpresa(ws) {
+        // Refrescar datos de empresa desde la BD
+        const { data: empData } = await supabase.from('empresas').select('*').eq('id', empresa.id).single();
+        
         ws.innerHTML = `
             <h3 style="color:#2ecc71; margin-bottom:20px;">Datos Institucionales</h3>
             <div class="seccion-form">
                 <label>Nombre de la Empresa:</label>
-                <input type="text" id="edit-emp-nombre" value="${empresa.nombre || ''}">
+                <input type="text" id="edit-emp-nombre" value="${empData.nombre || ''}">
                 
                 <label>RUC:</label>
-                <input type="text" id="edit-emp-ruc" value="${empresa.ruc || ''}" placeholder="Ej: 0791755220001">
+                <input type="text" id="edit-emp-ruc" value="${empData.ruc || ''}" placeholder="Ej: 0791755220001">
 
                 <label>Ubicación / Dirección:</label>
-                <input type="text" id="edit-emp-ubicacion" value="${empresa.ubicacion || ''}" placeholder="Ej: Zaruma, El Oro">
+                <input type="text" id="edit-emp-ubicacion" value="${empData.ubicacion || ''}" placeholder="Ej: Zaruma, El Oro">
 
                 <label>URL Logo:</label>
-                <input type="text" id="edit-emp-logo" value="${empresa.logo_url || ''}">
-                <img src="${empresa.logo_url}" style="height:50px; margin-top:5px; background:white; padding:5px; border-radius:5px;">
+                <input type="text" id="edit-emp-logo" value="${empData.logo_url || ''}">
+                <div style="text-align:center; margin-top:10px;">
+                    <img src="${empData.logo_url}" style="height:60px; background:white; padding:5px; border-radius:5px;" onerror="this.src='https://via.placeholder.com/100?text=SIN+LOGO'">
+                </div>
 
-                <button onclick="actualizarEmpresaFull()" style="background:#2ecc71; color:black; margin-top:20px; font-weight:bold;">GUARDAR CAMBIOS</button>
+                <button onclick="actualizarEmpresaFull()" style="background:#2ecc71; color:black; margin-top:20px; font-weight:bold; width:100%;">GUARDAR CAMBIOS</button>
             </div>
         `;
     }
+
+    // --- FUNCIONES GLOBALES (Window) ---
+    window.nuevoCargo = async () => {
+        const dep = prompt("Departamento (Ej: PLANTA, MINA, ADMINISTRACIÓN):");
+        const nom = prompt("Nombre del Cargo:");
+        if (dep && nom) {
+            await supabase.from('cargos').insert([{ nombre: nom.toUpperCase(), departamento: dep.toUpperCase() }]);
+            seccionAdmin('organigrama');
+        }
+    };
+
+    window.eliminarCargo = async (id) => { if(confirm("¿Eliminar cargo?")) { await supabase.from('cargos').delete().eq('id', id); seccionAdmin('organigrama'); } };
+
+    window.nuevoUsuario = async () => {
+        const email = prompt("Ingrese el correo electrónico a autorizar:").toLowerCase().trim();
+        if (email) {
+            await supabase.from('autorizados').insert([{ email, rol: 'usuario' }]);
+            seccionAdmin('usuarios');
+        }
+    };
+
+    window.cambiarRol = async (id, nuevoRol) => {
+        const { error } = await supabase.from('autorizados').update({ rol: nuevoRol }).eq('id', id);
+        if(!error) alert("Rol actualizado.");
+    };
+
+    window.eliminarUsuario = async (id) => { if(confirm("¿Quitar acceso?")) { await supabase.from('autorizados').delete().eq('id', id); seccionAdmin('usuarios'); } };
 
     window.actualizarEmpresaFull = async () => {
         const datos = {
@@ -164,12 +186,7 @@ export async function cargarModuloAdmin(contenedor, supabase, empresa) {
             logo_url: document.getElementById('edit-emp-logo').value
         };
         const { error } = await supabase.from('empresas').update(datos).eq('id', empresa.id);
-        if(!error) {
-            alert("Información actualizada. La página se recargará.");
-            location.reload();
-        }
+        if(!error) { alert("Información actualizada."); location.reload(); }
+        else { alert("Error al actualizar: " + error.message); }
     };
-
-    window.eliminarCargo = async (id) => { if(confirm("¿Eliminar cargo?")) { await supabase.from('cargos').delete().eq('id', id); seccionAdmin('organigrama'); } };
-    window.eliminarUsuario = async (id) => { if(confirm("¿Quitar acceso?")) { await supabase.from('autorizados').delete().eq('id', id); seccionAdmin('usuarios'); } };
 }
