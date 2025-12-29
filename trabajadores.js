@@ -1,10 +1,7 @@
-// trabajadores.js - VERSIÓN FINAL: MODULARIZADA (PDFs Y EXCEL SEPARADOS)
-
-// 1. Importamos los módulos externos
+// trabajadores.js - IMPORTACIÓN MODULAR
 import { generarPDF_Ficha } from './pdfFicha.js';
 import { generarPDF_Kardex } from './pdfKardex.js';
 import { abrirATS } from './pdfATS.js';
-import { generarExcel } from './excelGenerator.js'; // <--- NUEVA IMPORTACIÓN
 
 let listaCargosCache = []; 
 
@@ -12,7 +9,6 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     const { data: cargosBD } = await supabase.from('cargos').select('*');
     listaCargosCache = cargosBD || [];
 
-    // --- HTML DEL MÓDULO ---
     contenedor.innerHTML = `
         <style>
             #vista-formulario input[type="text"], 
@@ -158,10 +154,16 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         cambiarVista('xxx'); document.getElementById('vista-formulario').style.display = 'block';
     };
 
-    // --- FUNCIÓN EXCEL ACTUALIZADA: LLAMA AL ARCHIVO MODULAR ---
     window.descargarExcel = async (estado) => {
-        toggleMenuMas();
-        await generarExcel(estado, supabase, empresa);
+        toggleMenuMas(); if (typeof XLSX === 'undefined') return alert("ERROR: LIBRERÍA XLSX NO CARGADA.");
+        const mensaje = estado === 'ACTIVO' ? 'DESCARGANDO ACTIVOS...' : 'DESCARGANDO PASIVOS...'; alert(mensaje); 
+        const { data, error } = await supabase.from('trabajadores').select('*').eq('empresa_id', empresa.id).eq('estado', estado);
+        if(error) return alert("ERROR AL DESCARGAR: " + error.message);
+        if(!data || data.length === 0) return alert("NO HAY TRABAJADORES " + estado + "S PARA DESCARGAR.");
+        const columnasExcluidas = ['id', 'empresa_id', 'foto_url', 'firma_url', 'tipo_vivienda', 'vivienda', 'servicios_basicos', 'motivo_salida', 'religion', 'discapacidad', 'carnet_conadis', 'banco', 'cuenta', 'sueldo', 'licencia', 'material_paredes', 'material_cubierta', 'habitaciones', 'seguridad_sector', 'conyuge'];
+        const dataFiltrada = data.map(trabajador => { const copia = { ...trabajador }; columnasExcluidas.forEach(col => delete copia[col]); return copia; });
+        const ws = XLSX.utils.json_to_sheet(dataFiltrada); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "TRABAJADORES");
+        const date = new Date().toISOString().split('T')[0]; XLSX.writeFile(wb, `NOMINA_${estado}_${empresa.nombre}_${date}.xlsx`);
     };
 
     async function abrir(t) {
@@ -263,6 +265,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         if (!id) return;
 
         if (tipo === 'ficha') {
+            // Llamada al módulo externo
             await generarPDF_Ficha(id, supabase, empresa);
         }
         else if (tipo === 'kardex') {
