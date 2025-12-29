@@ -76,7 +76,7 @@ async function cargarDashboard(empresa) {
     document.getElementById('user-email').textContent = usuarioActual.email;
     document.getElementById('workspace').innerHTML = '<h2>Bienvenido</h2><p>Seleccione una opción del menú izquierdo.</p>';
 
-    // Cargar Menú
+    // Cargar Menú dinámico desde Supabase
     const { data: menus } = await _supabase.from('config_menus').select('*');
     const menuDiv = document.getElementById('menu-dinamico');
     menuDiv.innerHTML = '';
@@ -94,6 +94,7 @@ async function cargarDashboard(empresa) {
             
             if(window.innerWidth <= 768) toggleMenu();
 
+            // Lógica de detección de módulos corregida
             if(titulo.includes('trabajador') || titulo.includes('personal') || titulo.includes('rrhh') || titulo.includes('socio')) {
                 cargarModuloTrabajadores(ws, _supabase, empresaActual);
             } 
@@ -108,7 +109,7 @@ async function cargarDashboard(empresa) {
     });
 }
 
-// FUNCIONES ADMIN
+// FUNCIONES ADMIN (BOTONES INFERIORES)
 document.getElementById('admin-add-company').onclick = async () => {
     const n = prompt("Nombre Empresa:"); const l = prompt("URL Logo:");
     if(n && l) { await _supabase.from('empresas').insert([{nombre:n, logo_url:l}]); mostrarSeleccionEmpresa(); }
@@ -121,7 +122,7 @@ document.getElementById('admin-add-menu').onclick = () => {
         const d = document.createElement('div'); d.className='menu-card'; d.innerHTML=`<i class="fas ${icon}"></i>`;
         d.onclick=async()=>{
             const t = prompt("Título:");
-            if(t){ await _supabase.from('config_menus').insert([{titulo:t, icono:icon, solo_admin:confirm("¿Admin?"), color:'#00d2ff'}]); location.reload(); }
+            if(t){ await _supabase.from('config_menus').insert([{titulo:t, icono:icon, solo_admin:confirm("¿Es solo para Admin?"), color:'#00d2ff'}]); location.reload(); }
         };
         l.appendChild(d);
     });
@@ -144,5 +145,6 @@ window.toggleMenu = () => {
 window.regresarAEmpresas = () => mostrarSeleccionEmpresa();
 document.getElementById('logout-button').onclick = () => { localStorage.clear(); location.reload(); };
 
+// Restaurar sesión si existe
 const sesion = localStorage.getItem('userSST');
 if(sesion){ usuarioActual = JSON.parse(sesion); mostrarSeleccionEmpresa(); }
