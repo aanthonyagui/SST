@@ -1,4 +1,4 @@
-// trabajadores.js - VERSIÓN FINAL: CORRECCIÓN TOTAL DE TIPOS DE DATOS (NULL SAFE)
+// trabajadores.js - VERSIÓN FINAL: MENÚ "+" CON EXCEL + FICHA COMPLETA
 
 let listaCargosCache = []; 
 
@@ -22,9 +22,21 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                     <span id="count-pasivos" class="badge bg-red">0</span>
                 </button>
                 
-                <button class="tab-btn" id="btn-nuevo" onclick="nuevaFicha()">
-                    <i class="fas fa-plus"></i> <span class="desktop-text">Nuevo</span>
-                </button>
+                <div class="dropdown" id="cont-opciones-mas">
+                    <button class="tab-btn" onclick="toggleMenuMas()" style="background:rgba(255,255,255,0.1);">
+                        <i class="fas fa-plus"></i> <span class="desktop-text">Opciones</span> <i class="fas fa-caret-down"></i>
+                    </button>
+                    <div id="menu-mas" class="dropdown-content">
+                        <div style="padding:10px; color:#aaa; font-size:0.8em;">GESTIÓN</div>
+                        <a onclick="nuevaFicha()"><i class="fas fa-user-plus" style="color:var(--primary)"></i> Ficha Socioeconómica</a>
+                        <hr style="border-color:#333; margin:5px 0;">
+                        <div style="padding:10px; color:#aaa; font-size:0.8em;">REPORTES EXCEL</div>
+                        <a onclick="descargarExcel('ACTIVO')"><i class="fas fa-file-excel" style="color:#00C851"></i> Descargar Activos</a>
+                        <a onclick="descargarExcel('PASIVO')"><i class="fas fa-file-excel" style="color:#ff4444"></i> Descargar Pasivos</a>
+                        <hr style="border-color:#333; margin:5px 0;">
+                        <a onclick="toggleMenuMas()" style="color:#666;"><i class="fas fa-times"></i> Cerrar</a>
+                    </div>
+                </div>
 
                 <div class="dropdown" id="cont-nombre" style="display:none;">
                     <button class="tab-btn btn-nombre" onclick="toggleMenuNombre()">
@@ -219,22 +231,36 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     let trabajadorSeleccionadoId = null;
     let datosAccionTemp = {}; 
 
-    // Llenar select de cargos dinámicamente
     const selForm = document.getElementById('t-cargo');
     listaCargosCache.forEach(c => selForm.innerHTML += `<option value="${c.nombre}">${c.nombre}</option>`);
 
-    // --- FUNCIÓN SALVAVIDAS: Devuelve NULL si el campo está vacío ---
-    // Esto arregla el error "invalid input syntax"
     const obtenerValor = (id) => {
         const elemento = document.getElementById(id);
         if (!elemento) return null;
-        const valor = elemento.value.trim(); // Quita espacios en blanco
+        const valor = elemento.value.trim();
         return valor === "" ? null : valor;
+    };
+
+    // --- NUEVO: FUNCIÓN TOGGLE PARA EL BOTÓN "+" ---
+    window.toggleMenuMas = () => {
+        const menu = document.getElementById('menu-mas');
+        const cont = document.getElementById('cont-opciones-mas');
+        // Cerramos el otro menú por si acaso
+        document.getElementById('menu-descargas').classList.remove('show');
+        document.getElementById('cont-nombre').classList.remove('show-bg');
+
+        menu.classList.toggle('show');
+        if(menu.classList.contains('show')) cont.classList.add('show-bg');
+        else cont.classList.remove('show-bg');
     };
 
     window.toggleMenuNombre = () => {
         const menu = document.getElementById('menu-descargas');
         const cont = document.getElementById('cont-nombre');
+        // Cerramos el menú "+"
+        document.getElementById('menu-mas').classList.remove('show');
+        document.getElementById('cont-opciones-mas').classList.remove('show-bg');
+
         menu.classList.toggle('show');
         if(menu.classList.contains('show')) cont.classList.add('show-bg');
         else cont.classList.remove('show-bg');
@@ -252,8 +278,9 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         if(vista==='pasivos'){ document.getElementById('vista-pasivos').style.display='block'; document.getElementById('tab-pasivos').classList.add('active'); }
     };
 
-    // --- NUEVA FICHA ---
+    // --- NUEVA FICHA (Opción del menú) ---
     window.nuevaFicha = () => {
+        toggleMenuMas(); // Cerrar el menú
         document.getElementById('form-trabajador').reset();
         document.getElementById('t-id').value = '';
         document.getElementById('t-estado').value = 'ACTIVO';
@@ -274,6 +301,38 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         
         cambiarVista('xxx');
         document.getElementById('vista-formulario').style.display = 'block';
+    };
+
+    // --- NUEVO: FUNCIÓN DESCARGAR EXCEL ---
+    window.descargarExcel = async (estado) => {
+        toggleMenuMas(); // Cerrar menú
+        
+        if (typeof XLSX === 'undefined') {
+            return alert("Error: Librería XLSX no cargada. Asegúrate de agregar el script en index.html");
+        }
+
+        const mensaje = estado === 'ACTIVO' ? 'Descargando Activos...' : 'Descargando Pasivos...';
+        const originalText = document.getElementById('titulo-ficha').innerText; // Usamos un lugar visible o alerta
+        alert(mensaje); // Simple feedback
+
+        // Obtener datos
+        const { data, error } = await supabase
+            .from('trabajadores')
+            .select('*')
+            .eq('empresa_id', empresa.id)
+            .eq('estado', estado);
+
+        if(error) return alert("Error al descargar: " + error.message);
+        if(!data || data.length === 0) return alert("No hay trabajadores " + estado + "s para descargar.");
+
+        // Generar Excel
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Trabajadores");
+        
+        // Nombre del archivo con fecha
+        const date = new Date().toISOString().split('T')[0];
+        XLSX.writeFile(wb, `Nomina_${estado}_${empresa.nombre}_${date}.xlsx`);
     };
 
     // --- ABRIR TRABAJADOR ---
@@ -363,7 +422,6 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             return alert("INGRESE FECHA DE INGRESO");
         }
 
-        // Cambio de cargo -> Modal
         if (id && cargoViejo && cargoNuevo !== cargoViejo) {
             trabajadorSeleccionadoId = id;
             abrirModalAccion('CAMBIO_CARGO', { cargoNuevo: cargoNuevo, cargoViejo: cargoViejo });
@@ -382,8 +440,6 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
 
         const serv = Array.from(document.querySelectorAll('input[name="serv"]:checked')).map(c=>c.value).join(',');
 
-        // --- CONSTRUCCIÓN DEL OBJETO CON LIMPIEZA AUTOMÁTICA (obtenerValor) ---
-        // Esto evita enviar "" a campos que esperan número o fecha
         const datos = {
             empresa_id: empresa.id,
             cedula: obtenerValor('t-cedula'),
@@ -393,14 +449,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             celular: obtenerValor('t-celular'),
             correo: obtenerValor('t-correo'),
             profesion: obtenerValor('t-profesion'),
-            
-            // CAMPOS NUMÉRICOS Y FECHAS QUE DABAN ERROR
             sueldo: obtenerValor('t-sueldo'),
-            afiliacion: obtenerValor('t-afiliacion'),
-            cuenta: obtenerValor('t-cuenta'),
-            habitaciones: obtenerValor('t-habitaciones'),
-            
-            banco: obtenerValor('t-banco'),
             direccion: obtenerValor('t-direccion'),
             sexo: obtenerValor('t-sexo'),
             estado_civil: obtenerValor('t-civil'),
@@ -411,9 +460,13 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             religion: obtenerValor('t-religion'),
             discapacidad: obtenerValor('t-discapacidad'),
             licencia: obtenerValor('t-licencia'),
+            afiliacion: obtenerValor('t-afiliacion'),
+            banco: obtenerValor('t-banco'),
+            cuenta: obtenerValor('t-cuenta'),
             vivienda: obtenerValor('t-vivienda'),
             material_paredes: obtenerValor('t-material'),
             material_cubierta: obtenerValor('t-cubierta'),
+            habitaciones: obtenerValor('t-habitaciones'),
             servicios_basicos: serv,
             emergencia_nombre: obtenerValor('t-emer-nom'),
             emergencia_telefono: obtenerValor('t-emer-tel'),
@@ -443,7 +496,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         const trabajadorId = data[0].id;
         document.getElementById('t-id').value = trabajadorId;
 
-        // --- HISTORIAL ---
+        // Historial
         if (!id) {
             await supabase.from('historial_laboral').insert({
                 trabajador_id: trabajadorId, 
@@ -558,7 +611,6 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         }
     };
 
-    // Funciones PDF
     window.imprimirDoc = (tipo) => {
         const nombre = document.getElementById('t-nombre').value;
         alert(`Generando documento ${tipo.toUpperCase()} para ${nombre} (En desarrollo)`);
