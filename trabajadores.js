@@ -1,4 +1,4 @@
-// trabajadores.js - VERSIÓN FINAL: KARDEX EPP, FICHA Y ATS
+// trabajadores.js - VERSIÓN FINAL: KARDEX CON FOTO Y 10 FILAS
 
 let listaCargosCache = []; 
 
@@ -228,6 +228,14 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         if (tipo === 'BAJA') { titulo.innerText = "DAR DE BAJA"; desc.innerText = `FINALIZAR CONTRATO DE ${nombre}`; inputs.innerHTML = `<label>FECHA DE SALIDA:</label><input type="date" id="acc-fecha-salida" value="${new Date().toISOString().split('T')[0]}" style="width:100%; padding:10px; margin-bottom:10px;"><label>MOTIVO:</label><input type="text" id="acc-motivo" placeholder="EJ: RENUNCIA VOLUNTARIA" style="width:100%; padding:10px;">`; }
         else if (tipo === 'REACTIVAR') { titulo.innerText = "REACTIVAR"; desc.innerText = `REINGRESO DE ${nombre}`; let options = listaCargosCache.map(c => `<option value="${c.nombre.toUpperCase()}" ${c.nombre.toUpperCase()===cargoActual?'selected':''}>${c.nombre.toUpperCase()}</option>`).join(''); inputs.innerHTML = `<label>FECHA REINGRESO:</label><input type="date" id="acc-fecha-ingreso" value="${new Date().toISOString().split('T')[0]}" style="width:100%; padding:10px; margin-bottom:10px;"><label>CARGO:</label><select id="acc-cargo-nuevo" style="width:100%; padding:10px;">${options}</select>`; }
         else if (tipo === 'CAMBIO_CARGO') { const cViejo = datosAccionTemp.cargoViejo; const cNuevo = datosAccionTemp.cargoNuevo; titulo.innerText = "CAMBIO DE CARGO"; desc.innerText = `DE ${cViejo} A ${cNuevo}`; inputs.innerHTML = `<label>FECHA FIN (${cViejo}):</label><input type="date" id="acc-fecha-salida" value="${new Date().toISOString().split('T')[0]}" style="width:100%; padding:10px; margin-bottom:10px;"><label>FECHA INICIO (${cNuevo}):</label><input type="date" id="acc-fecha-ingreso" value="${new Date().toISOString().split('T')[0]}" style="width:100%; padding:10px; margin-bottom:10px;"><label>MOTIVO:</label><input type="text" id="acc-motivo" placeholder="EJ: ASCENSO" style="width:100%; padding:10px;">`; }
+        
+        // --- NUEVO CASO: SELECCIÓN DE AÑO PARA KARDEX ---
+        else if (tipo === 'GENERAR_KARDEX') {
+            titulo.innerText = "GENERAR KARDEX";
+            desc.innerText = "Seleccione el año para el reporte:";
+            inputs.innerHTML = `<label style="display:block; margin-bottom:5px; color:#aaa;">AÑO DEL DOCUMENTO:</label><input type="number" id="acc-anio" value="${new Date().getFullYear()}" style="width:100%; padding:10px; font-size:1.2em; text-align:center; font-weight:bold;">`;
+        }
+
         modal.style.display = 'flex';
     };
 
@@ -236,6 +244,14 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         if (tipo === 'BAJA') { const fecha = document.getElementById('acc-fecha-salida').value; const motivo = document.getElementById('acc-motivo').value; if(!fecha || !motivo) return alert("COMPLETE LOS CAMPOS"); const motivoMayus = motivo.toUpperCase(); await supabase.from('trabajadores').update({ estado: 'PASIVO', fecha_salida: fecha }).eq('id', id); await supabase.from('historial_laboral').update({ fecha_fin: fecha, motivo: motivoMayus }).eq('trabajador_id', id).is('fecha_fin', null); alert("BAJA REGISTRADA."); document.getElementById('modal-acciones').style.display = 'none'; recargarListas(); cambiarVista('pasivos'); }
         else if (tipo === 'REACTIVAR') { const fecha = document.getElementById('acc-fecha-ingreso').value; const cargo = document.getElementById('acc-cargo-nuevo').value; await supabase.from('trabajadores').update({ estado: 'ACTIVO', fecha_ingreso: fecha, fecha_salida: null, cargo: cargo }).eq('id', id); await supabase.from('historial_laboral').insert({ trabajador_id: id, cargo: cargo, fecha_inicio: fecha, motivo: 'REINGRESO' }); alert("REACTIVADO."); document.getElementById('modal-acciones').style.display = 'none'; recargarListas(); cambiarVista('activos'); }
         else if (tipo === 'CAMBIO_CARGO') { const fSalida = document.getElementById('acc-fecha-salida').value; const fEntrada = document.getElementById('acc-fecha-ingreso').value; const motivo = document.getElementById('acc-motivo').value; const motivoMayus = motivo ? motivo.toUpperCase() : 'CAMBIO DE CARGO'; await procesarGuardadoFinal({ tipo: 'CAMBIO_CARGO', fechaSalida: fSalida, fechaEntrada: fEntrada, cargoNuevo: datosAccionTemp.cargoNuevo, motivoSalida: motivoMayus }); }
+        
+        // --- NUEVA ACCIÓN: CONFIRMAR GENERACIÓN KARDEX ---
+        else if (tipo === 'GENERAR_KARDEX') {
+            const anio = document.getElementById('acc-anio').value;
+            if(!anio) return alert("Por favor ingrese un año válido.");
+            document.getElementById('modal-acciones').style.display = 'none';
+            await generarPDF_Kardex(id, anio);
+        }
     };
 
     const getBase64ImageFromURL = (url) => { return new Promise((resolve) => { const img = new Image(); img.crossOrigin = "Anonymous"; img.onload = () => { const canvas = document.createElement("canvas"); canvas.width = img.width; canvas.height = img.height; const ctx = canvas.getContext("2d"); ctx.drawImage(img, 0, 0); resolve(canvas.toDataURL("image/png")); }; img.onerror = () => resolve(null); img.src = url; }); };
@@ -243,21 +259,26 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     window.imprimirDoc = async (tipo) => {
         toggleMenuNombre(); const id = document.getElementById('t-id').value; if (!id) return;
         if (tipo === 'ficha') await generarPDF_Ficha(id);
-        else if (tipo === 'kardex') await generarPDF_Kardex(id); // <--- NUEVA OPCIÓN
+        else if (tipo === 'kardex') abrirModalAccion('GENERAR_KARDEX'); 
         else if (tipo === 'ats') window.open('./ATS.pdf', '_blank'); 
         else alert(`GENERANDO ${tipo.toUpperCase()}... (EN DESARROLLO)`);
     };
 
-    // --- NUEVA FUNCIÓN: GENERAR KARDEX EPP (SEGÚN TU IMAGEN) ---
-    async function generarPDF_Kardex(id) {
-        alert("GENERANDO KARDEX DE EPP...");
+    // --- NUEVA FUNCIÓN: GENERAR KARDEX EPP (MODIFICADO) ---
+    async function generarPDF_Kardex(id, anio) {
+        alert(`GENERANDO KARDEX ${anio}...`);
         const { data: t } = await supabase.from('trabajadores').select('*').eq('id', id).single();
         const logoUrl = empresa.logo_url;
-        const [logoBase64] = await Promise.all([logoUrl ? getBase64ImageFromURL(logoUrl) : null]);
+        
+        // Cargar Logo y Foto
+        const [logoBase64, fotoBase64] = await Promise.all([
+            logoUrl ? getBase64ImageFromURL(logoUrl) : null,
+            t.foto_url ? getBase64ImageFromURL(t.foto_url) : null
+        ]);
 
-        // Filas vacías para el registro manual (1 a 15)
+        // Filas vacías (10 filas)
         const filasVacias = [];
-        for (let i = 1; i <= 15; i++) {
+        for (let i = 1; i <= 10; i++) {
             filasVacias.push([
                 { text: i.toString(), alignment: 'center' }, 
                 { text: '', alignment: 'center' }, // Cantidad
@@ -271,7 +292,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         const docDefinition = {
             pageSize: 'A4', pageMargins: [30, 30, 30, 30],
             content: [
-                // 1. ENCABEZADO PERSONALIZADO
+                // 1. ENCABEZADO
                 {
                     table: {
                         widths: [60, '*', 70],
@@ -294,29 +315,45 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                                 { 
                                     text: [
                                         { text: 'AÑO\n', fontSize: 12, bold: true },
-                                        { text: new Date().getFullYear().toString(), fontSize: 14, bold: true }
+                                        { text: anio.toString(), fontSize: 14, bold: true }
                                     ], 
                                     alignment: 'center', margin: [0, 10, 0, 0],
                                     rowSpan: 2, border: [false, false, false, false]
                                 }
                             ],
-                            [ {}, {}, {} ] // Fila dummy para el rowspan
+                            [ {}, {}, {} ]
                         ]
                     }
                 },
                 { canvas: [{ type: 'line', x1: 0, y1: 5, x2: 535, y2: 5, lineWidth: 2, lineColor: '#000' }] },
                 { text: '\n' },
 
-                // 2. DATOS DEL TRABAJADOR
+                // 2. DATOS DEL TRABAJADOR (CON FOTO Y TALLAS)
                 {
-                    text: [
-                        { text: 'APELLIDOS Y NOMBRES: ', bold: true }, t.cedula + ' ' + t.nombre + '\n',
-                        { text: 'CARGO: ', bold: true }, t.cargo + '\n\n'
-                    ],
-                    fontSize: 10
+                    columns: [
+                        // Columna de Texto
+                        {
+                            width: '*',
+                            text: [
+                                { text: 'APELLIDOS Y NOMBRES: ', bold: true }, t.cedula + ' ' + t.nombre + '\n',
+                                { text: 'CARGO: ', bold: true }, t.cargo + '\n',
+                                { text: 'TALLAS: ', bold: true }, `CAMISA: ${t.talla_camisa||'-'} | PANTALÓN: ${t.talla_pantalon||'-'} | ZAPATOS: ${t.talla_zapatos||'-'}`
+                            ],
+                            fontSize: 10,
+                            margin: [0, 10, 0, 0]
+                        },
+                        // Columna de Foto
+                        {
+                            width: 80,
+                            image: fotoBase64 || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+                            fit: [80, 100],
+                            alignment: 'right'
+                        }
+                    ]
                 },
+                { text: '\n' },
 
-                // 3. TABLA DE REGISTRO DE EPP
+                // 3. TABLA (10 FILAS)
                 {
                     table: {
                         headerRows: 1,
@@ -336,22 +373,11 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                     layout: {
                         hLineWidth: function (i, node) { return 0.5; },
                         vLineWidth: function (i, node) { return 0.5; },
-                        paddingTop: function(i) { return 8; }, // Más espacio para escribir
+                        paddingTop: function(i) { return 8; },
                         paddingBottom: function(i) { return 8; }
                     }
-                },
-                { text: '\n' },
-
-                // 4. PIE DE PÁGINA (TALLAS Y CÓDIGO)
-                {
-                    columns: [
-                        { text: 'CÓDIGO: SSO', fontSize: 10, bold: true },
-                        { 
-                            text: `TALLAS: PANTALON: ${t.talla_pantalon||'N/A'}; BOTAS: ${t.talla_zapatos||'N/A'}; CAMISETA: ${t.talla_camisa||'N/A'}`, 
-                            fontSize: 10, alignment: 'right' 
-                        }
-                    ]
                 }
+                // SE ELIMINÓ EL PIE DE PÁGINA CON CÓDIGO
             ],
             styles: {
                 tableHeader: { bold: true, fontSize: 8, color: 'black', alignment: 'center', fillColor: '#eeeeee' }
