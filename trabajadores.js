@@ -1,4 +1,4 @@
-// trabajadores.js - VERSIÓN FINAL: FICHA GENERADA + ATS ESTÁTICO + PROTECCIÓN IMÁGENES
+// trabajadores.js - VERSIÓN: SIN PROTECCIÓN DE IMÁGENES + ATS LINK DIRECTO
 
 let listaCargosCache = []; 
 
@@ -54,9 +54,9 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                         <div style="padding:10px; color:#aaa; font-size:0.8em;">DOCUMENTOS</div>
                         <a onclick="imprimirDoc('ficha')"><i class="fas fa-file-pdf" style="color:var(--danger)"></i> Ficha PDF</a>
                         <a onclick="imprimirDoc('ats')"><i class="fas fa-file-pdf" style="color:var(--warning)"></i> ATS</a>
-                        <a onclick="imprimirDoc('carnet')"><i class="fas fa-id-card" style="color:#f39c12"></i> Carnet</a>
                         <a onclick="imprimirDoc('kardex')"><i class="fas fa-clipboard-list" style="color:var(--success)"></i> Kardex</a>
                         <a onclick="imprimirDoc('induccion')"><i class="fas fa-chalkboard-teacher"></i> Inducción</a>
+                        <a onclick="imprimirDoc('carnet')"><i class="fas fa-id-card" style="color:#f39c12"></i> Carnet</a>
                         <hr style="border-color:#333; margin:5px 0;">
                         <a onclick="toggleMenuNombre()" style="color:#666;"><i class="fas fa-times"></i> Cerrar</a>
                     </div>
@@ -227,11 +227,9 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
 
                 <div style="margin-top:20px;">
                     <button type="submit" id="btn-guardar" style="width:100%; margin-bottom:10px;">GUARDAR CAMBIOS</button>
-                    
                     <button type="button" id="btn-dar-baja" style="width:100%; background:var(--danger); display:none;" onclick="abrirModalAccion('BAJA')">
                         DAR DE BAJA
                     </button>
-                    
                     <button type="button" id="btn-reactivar" style="width:100%; background:var(--success); color:black; display:none;" onclick="abrirModalAccion('REACTIVAR')">
                         REACTIVAR TRABAJADOR
                     </button>
@@ -269,11 +267,14 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         </div>
     `;
 
-    // ================== LÓGICA DE NEGOCIO ==================
+    // =========================================================
+    // LÓGICA DE NEGOCIO
+    // =========================================================
+
     let trabajadorSeleccionadoId = null;
     let datosAccionTemp = {}; 
 
-    // Llenar select de cargos
+    // Llenar select de cargos dinámicamente
     const selForm = document.getElementById('t-cargo');
     listaCargosCache.forEach(c => selForm.innerHTML += `<option value="${c.nombre.toUpperCase()}">${c.nombre.toUpperCase()}</option>`);
 
@@ -402,13 +403,13 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         recargarListas(); 
     }
 
-    // ================== PDF (FIX IMÁGENES + ATS ENLACE) ==================
+    // ================== PDF (IMAGENES SIN PROTECCIÓN) + ATS ==================
     const getBase64ImageFromURL = (url) => {
         return new Promise((resolve) => {
             if (!url) { resolve(null); return; }
             const img = new Image(); img.crossOrigin = "Anonymous"; img.src = url;
             img.onload = () => { const c = document.createElement("canvas"); c.width = img.width; c.height = img.height; const x = c.getContext("2d"); x.drawImage(img, 0, 0); resolve(c.toDataURL("image/png")); };
-            img.onerror = () => { resolve(null); }; // SI FALLA, RETORNA NULL Y NO BLOQUEA
+            img.onerror = () => { resolve(null); }; 
         });
     };
 
@@ -425,10 +426,10 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         alert("GENERANDO FICHA...");
         const { data: t } = await supabase.from('trabajadores').select('*').eq('id', id).single();
         
-        // Carga Segura de Imágenes (No bloquea si falla)
-        const [logoBase64, fotoBase64] = await Promise.all([getBase64ImageFromURL(empresa.logo_url), getBase64ImageFromURL(t.foto_url)]);
-        // Pixel transparente por si no hay imagen
-        const emptyImg = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+        // SIN PROTECCIÓN: Intenta cargar, si falla es null y pdfmake lo maneja (o falla si el usuario prefiere)
+        const logoUrl = empresa.logo_url;
+        const fotoUrl = t.foto_url;
+        const [logoBase64, fotoBase64] = await Promise.all([getBase64ImageFromURL(logoUrl), getBase64ImageFromURL(fotoUrl)]);
 
         let hijos = []; try { hijos = JSON.parse(t.datos_hijos || '[]'); } catch { }
         const filasHijos = hijos.map(h => [h.nombre, 'HIJO/A', h.fecha, 'ESTUDIANTE']);
@@ -436,12 +437,16 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
 
         const ext = t.datos_extra || {}; 
 
+        // Definimos el objeto imagen. Si es null, pdfmake fallará si lo ponemos directo en 'image:'.
+        // Usamos un condicional ternario simple dentro de la definición:
+        // Si hay foto -> muestra imagen. Si no -> muestra texto vacío.
+        
         const docDefinition = {
             pageSize: 'A4', pageMargins: [40, 40, 40, 40],
             content: [
                 {
                     columns: [
-                        { image: logoBase64 || emptyImg, width: 80, height: 50, fit: [80, 50] },
+                        logoBase64 ? { image: logoBase64, width: 80, height: 50, fit: [80, 50] } : { text: '', width: 80 },
                         { text: 'FICHA SOCIO-ECONOMICA', style: 'header', alignment: 'center', margin: [0, 15, 0, 0] },
                         { text: '', width: 80 }
                     ]
@@ -454,8 +459,9 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                     table: {
                         widths: ['15%', '35%', '15%', '35%'],
                         body: [
-                            [{ image: fotoBase64 || emptyImg, width: 70, height: 80, rowSpan: 6, alignment: 'center', fit: [70, 80] }, 
-                             { text: 'Nombres:', bold: true }, t.nombre || '', { text: 'Empresa:', bold: true }, empresa.nombre],
+                            [
+                                fotoBase64 ? { image: fotoBase64, width: 70, height: 80, rowSpan: 6, alignment: 'center', fit: [70, 80] } : { text: 'SIN FOTO', rowSpan: 6, alignment: 'center', margin: [0, 30] }, 
+                                { text: 'Nombres:', bold: true }, t.nombre || '', { text: 'Empresa:', bold: true }, empresa.nombre],
                             ['', { text: 'Cédula:', bold: true }, t.cedula || '', { text: 'Tipo Contrato:', bold: true }, 'INDEFINIDO'],
                             ['', { text: 'Nacionalidad:', bold: true }, t.nacionalidad || '', { text: 'Cargo:', bold: true }, t.cargo || ''],
                             ['', { text: 'Lugar Nac:', bold: true }, t.lugar_nacimiento || '', { text: 'Medio Transp:', bold: true }, ext['t-transporte'] || ''],
