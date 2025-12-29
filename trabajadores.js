@@ -1,10 +1,10 @@
 // =========================================================
-    // GENERACIÓN DE PDF - FICHA SOCIOECONÓMICA MEJORADA
+    // GENERACIÓN DE PDF Y DOCUMENTOS - VERSIÓN FINAL
     // =========================================================
 
-    // 1. Convertidor de Imágenes (Más robusto)
+    // 1. Convertidor de Imágenes
     const getBase64ImageFromURL = (url) => {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (!url) { resolve(null); return; }
             const img = new Image();
             img.setAttribute('crossOrigin', 'anonymous');
@@ -21,42 +21,61 @@
         });
     };
 
-    // Imagen placeholder (Gris) para cuando no hay foto
+    // Imagen placeholder (Gris)
     const placeholderImg = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
 
+    // 2. Función Principal de Impresión / Apertura
     window.imprimirDoc = async (tipo) => {
-        toggleMenuNombre(); 
+        toggleMenuNombre(); // Cierra el menú desplegable
+        
         const id = document.getElementById('t-id').value;
-        if (!id) return;
+        if (!id) return alert("Por favor, selecciona un trabajador primero.");
 
         if (tipo === 'ficha') {
             await generarPDF_Ficha(id);
-        } else if (tipo === 'carnet') {
+        } 
+        else if (tipo === 'ats') {
+            // --- LÓGICA PARA ABRIR EL PDF EXISTENTE ---
+            // Asegúrate de que ATS.pdf esté en la carpeta raíz de tu proyecto en GitHub
+            const rutaPDF = './ATS.pdf'; 
+            window.open(rutaPDF, '_blank');
+        } 
+        else if (tipo === 'carnet') {
             alert("El módulo de Carnet está en desarrollo.");
-        } else {
-            alert(`Generando documento: ${tipo.toUpperCase()}`);
+        } 
+        else {
+            alert(`Opción ${tipo.toUpperCase()} no implementada aún.`);
         }
     };
 
+    // 3. Generador de Ficha Socioeconómica (SIN FOTO DE FIRMA)
     async function generarPDF_Ficha(id) {
         const btnTexto = document.getElementById('lbl-nombre-trab');
         const textoOriginal = btnTexto.innerText;
         btnTexto.innerText = "⏳ GENERANDO...";
 
         try {
-            // A. Obtener datos frescos
+            // A. Obtener datos
             const { data: t, error } = await supabase.from('trabajadores').select('*').eq('id', id).single();
             if (error || !t) throw new Error("No se pudieron cargar los datos");
 
-            // B. Preparar Imágenes
+            // B. Preparar Imágenes (YA NO DESCARGAMOS LA FIRMA)
             const logoUrl = empresa.logo_url;
-            const [logoBase64, fotoBase64, firmaBase64] = await Promise.all([
+            
+            // Solo descargamos Logo y Foto de Perfil
+            const [logoBase64, fotoBase64] = await Promise.all([
                 getBase64ImageFromURL(logoUrl),
-                getBase64ImageFromURL(t.foto_url),
-                getBase64ImageFromURL(t.firma_url)
+                getBase64ImageFromURL(t.foto_url)
             ]);
 
-            // C. Parsear Hijos
+            // C. Calcular edad hijos (Lógica auxiliar)
+            const calcularEdad = (fecha) => {
+                if(!fecha) return '-';
+                const diff = Date.now() - new Date(fecha).getTime();
+                return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25)) + ' AÑOS';
+            };
+
+            // D. Parsear Hijos
             let hijos = [];
             try { hijos = JSON.parse(t.datos_hijos || '[]'); } catch { }
             
@@ -64,80 +83,49 @@
                 [
                     { text: 'NOMBRES Y APELLIDOS', style: 'tableHeader' },
                     { text: 'FECHA NACIMIENTO', style: 'tableHeader' },
-                    { text: 'EDAD', style: 'tableHeader' } // Calcularemos la edad del hijo
+                    { text: 'EDAD', style: 'tableHeader' }
                 ]
             ];
 
             if (hijos.length > 0) {
                 hijos.forEach(h => {
-                    let edadHijo = '-';
-                    if(h.fecha) {
-                        const diff = Date.now() - new Date(h.fecha).getTime();
-                        edadHijo = Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25)) + ' AÑOS';
-                    }
                     bodyHijos.push([ 
                         { text: h.nombre, style: 'tableCell' }, 
                         { text: h.fecha, style: 'tableCell', alignment: 'center' }, 
-                        { text: edadHijo, style: 'tableCell', alignment: 'center' } 
+                        { text: calcularEdad(h.fecha), style: 'tableCell', alignment: 'center' } 
                     ]);
                 });
             } else {
                 bodyHijos.push([{ text: 'NO REGISTRA CARGAS FAMILIARES', colSpan: 3, alignment: 'center', color: '#888', italics: true }, {}, {}]);
             }
 
-            // D. Definición del Documento (ESTILO FORMULARIO OFICIAL)
+            // E. Definición del Documento
             const docDefinition = {
                 pageSize: 'A4',
                 pageMargins: [30, 30, 30, 30],
-                background: function(currentPage, pageSize) {
-                    return null; // Aquí podrías poner una marca de agua si quisieras
-                },
                 content: [
-                    // --- 1. ENCABEZADO TIPO ISO ---
+                    // --- ENCABEZADO ---
                     {
                         table: {
                             widths: [60, '*', 70],
                             body: [
                                 [
-                                    { 
-                                        image: logoBase64 || placeholderImg, 
-                                        width: 50, height: 50, fit: [50, 50], 
-                                        alignment: 'center', margin: [0, 5, 0, 0],
-                                        rowSpan: 2
-                                    },
-                                    { 
-                                        text: empresa.nombre.toUpperCase(), 
-                                        style: 'headerCompany', 
-                                        alignment: 'center',
-                                        margin: [0, 10, 0, 0]
-                                    },
-                                    { 
-                                        text: [
-                                            { text: 'CÓDIGO: ', bold: true }, 'SST-F-001\n',
-                                            { text: 'VERSIÓN: ', bold: true }, '02\n',
-                                            { text: 'FECHA: ', bold: true }, new Date().toISOString().split('T')[0]
-                                        ], 
-                                        style: 'headerMeta', 
-                                        rowSpan: 2 
-                                    }
+                                    { image: logoBase64 || placeholderImg, width: 50, height: 50, fit: [50, 50], alignment: 'center', margin: [0, 5, 0, 0], rowSpan: 2 },
+                                    { text: empresa.nombre.toUpperCase(), style: 'headerCompany', alignment: 'center', margin: [0, 10, 0, 0] },
+                                    { text: [{ text: 'CÓDIGO: ', bold: true }, 'SST-F-001\n', { text: 'VERSIÓN: ', bold: true }, '02\n', { text: 'FECHA: ', bold: true }, new Date().toISOString().split('T')[0]], style: 'headerMeta', rowSpan: 2 }
                                 ],
-                                [
-                                    {}, // Span del logo
-                                    { text: 'FICHA SOCIOECONÓMICA DEL TRABAJADOR', style: 'headerTitle', alignment: 'center' },
-                                    {}  // Span de la meta
-                                ]
+                                [ {}, { text: 'FICHA SOCIOECONÓMICA DEL TRABAJADOR', style: 'headerTitle', alignment: 'center' }, {} ]
                             ]
                         },
-                        layout: 'noBorders' // Haremos bordes manuales si queremos, o usamos tabla simple
+                        layout: 'noBorders'
                     },
                     { canvas: [{ type: 'line', x1: 0, y1: 5, x2: 535, y2: 5, lineWidth: 2, lineColor: '#004aad' }] },
                     { text: '\n' },
 
-                    // --- 2. DATOS PERSONALES (LAYOUT CON FOTO A LA DERECHA) ---
+                    // --- DATOS PERSONALES ---
                     { text: '1. INFORMACIÓN PERSONAL', style: 'sectionHeader' },
                     {
                         columns: [
-                            // Columna de Datos (Texto)
                             {
                                 width: '*',
                                 table: {
@@ -152,27 +140,18 @@
                                         [{ text: 'CORREO:', style: 'label' }, { text: t.correo || 'NO REGISTRA', style: 'value' }],
                                         [{ text: 'DIRECCIÓN:', style: 'label' }, { text: t.direccion, style: 'value' }]
                                     ]
-                                },
-                                layout: 'lightHorizontalLines'
+                                }, layout: 'lightHorizontalLines'
                             },
-                            // Columna de Foto
                             {
-                                width: 100,
-                                stack: [
-                                    { 
-                                        image: fotoBase64 || placeholderImg, 
-                                        width: 90, height: 110, fit: [90, 110], 
-                                        alignment: 'center',
-                                        background: '#eeeeee'
-                                    },
+                                width: 100, stack: [
+                                    { image: fotoBase64 || placeholderImg, width: 90, height: 110, fit: [90, 110], alignment: 'center', background: '#eeeeee' },
                                     { text: 'FOTO ACTUALIZADA', fontSize: 7, alignment: 'center', margin: [0, 2, 0, 0] }
                                 ]
                             }
-                        ],
-                        columnGap: 10
+                        ], columnGap: 10
                     },
 
-                    // --- 3. INFORMACIÓN LABORAL ---
+                    // --- INFORMACIÓN LABORAL ---
                     { text: '2. PERFIL LABORAL Y ACADÉMICO', style: 'sectionHeader', margin: [0, 10, 0, 5] },
                     {
                         table: {
@@ -183,11 +162,10 @@
                                 [{ text: 'DISCAPACIDAD:', style: 'label' }, { text: t.discapacidad || 'NO', style: 'value' }, { text: 'LICENCIA:', style: 'label' }, { text: t.licencia || 'NO', style: 'value' }],
                                 [{ text: 'BANCO:', style: 'label' }, { text: t.banco || 'N/A', style: 'value' }, { text: 'CUENTA:', style: 'label' }, { text: t.cuenta || 'N/A', style: 'value' }]
                             ]
-                        },
-                        layout: 'lightHorizontalLines'
+                        }, layout: 'lightHorizontalLines'
                     },
 
-                    // --- 4. VIVIENDA ---
+                    // --- VIVIENDA ---
                     { text: '3. SITUACIÓN DE VIVIENDA', style: 'sectionHeader', margin: [0, 10, 0, 5] },
                     {
                         table: {
@@ -197,36 +175,26 @@
                                 [{ text: 'PAREDES:', style: 'label' }, { text: t.material_paredes || '-', style: 'value' }, { text: 'TECHO:', style: 'label' }, { text: t.material_cubierta || '-', style: 'value' }],
                                 [{ text: 'SERVICIOS:', style: 'label' }, { text: t.servicios_basicos || 'NO REGISTRA', style: 'value', colSpan: 3 }, {}, {}]
                             ]
-                        },
-                        layout: 'lightHorizontalLines'
+                        }, layout: 'lightHorizontalLines'
                     },
 
-                    // --- 5. CARGA FAMILIAR ---
+                    // --- CARGA FAMILIAR ---
                     { text: '4. CARGA FAMILIAR', style: 'sectionHeader', margin: [0, 10, 0, 5] },
                     {
-                        table: {
-                            headerRows: 1,
-                            widths: ['*', 'auto', 'auto'],
-                            body: bodyHijos
-                        },
-                        layout: {
-                            fillColor: function (rowIndex) { return (rowIndex === 0) ? '#eeeeee' : null; },
-                            hLineWidth: function (i, node) { return (i === 0 || i === node.table.body.length) ? 1 : 0.5; }
-                        }
+                        table: { headerRows: 1, widths: ['*', 'auto', 'auto'], body: bodyHijos },
+                        layout: { fillColor: function (rowIndex) { return (rowIndex === 0) ? '#eeeeee' : null; }, hLineWidth: function (i, node) { return (i === 0 || i === node.table.body.length) ? 1 : 0.5; } }
                     },
 
-                    // --- 6. DOTACIÓN Y EMERGENCIA ---
+                    // --- DOTACIÓN Y EMERGENCIA ---
                     { text: '5. TALLAS Y CONTACTO DE EMERGENCIA', style: 'sectionHeader', margin: [0, 10, 0, 5] },
                     {
                         table: {
                             widths: ['33%', '33%', '33%'],
-                            body: [
-                                [
-                                    { text: `CAMISA: ${t.talla_camisa||'-'}`, alignment: 'center', style: 'value' },
-                                    { text: `PANTALÓN: ${t.talla_pantalon||'-'}`, alignment: 'center', style: 'value' },
-                                    { text: `ZAPATOS: ${t.talla_zapatos||'-'}`, alignment: 'center', style: 'value' }
-                                ]
-                            ]
+                            body: [[
+                                { text: `CAMISA: ${t.talla_camisa||'-'}`, alignment: 'center', style: 'value' },
+                                { text: `PANTALÓN: ${t.talla_pantalon||'-'}`, alignment: 'center', style: 'value' },
+                                { text: `ZAPATOS: ${t.talla_zapatos||'-'}`, alignment: 'center', style: 'value' }
+                            ]]
                         }
                     },
                     { text: '\n' },
@@ -237,16 +205,12 @@
                                 [{ text: 'EMERGENCIA 1:', style: 'label', fillColor: '#f9f9f9' }, { text: t.emergencia_nombre, style: 'value', fillColor: '#f9f9f9' }, { text: 'TELÉFONO:', style: 'label', fillColor: '#f9f9f9' }, { text: t.emergencia_telefono, style: 'value', fillColor: '#f9f9f9' }],
                                 [{ text: 'EMERGENCIA 2:', style: 'label' }, { text: t.emergencia2_nombre || '-', style: 'value' }, { text: 'TELÉFONO:', style: 'label' }, { text: t.emergencia2_telefono || '-', style: 'value' }]
                             ]
-                        },
-                        layout: 'noBorders'
+                        }, layout: 'noBorders'
                     },
 
-                    // --- 7. DECLARACIÓN Y FIRMAS ---
+                    // --- 7. DECLARACIÓN Y FIRMAS (MODIFICADO: SIN IMAGEN) ---
                     { text: '\n\n' },
-                    { 
-                        text: 'Declaro que la información proporcionada es verídica y autorizo a la empresa el uso de mis datos para fines laborales y de seguridad social.', 
-                        style: 'smallText', alignment: 'justify', margin: [0, 0, 0, 20] 
-                    },
+                    { text: 'Declaro que la información proporcionada es verídica y autorizo a la empresa el uso de mis datos para fines laborales y de seguridad social.', style: 'smallText', alignment: 'justify', margin: [0, 0, 0, 20] },
                     {
                         table: {
                             widths: ['50%', '50%'],
@@ -254,7 +218,8 @@
                                 [
                                     {
                                         stack: [
-                                            { image: firmaBase64 || placeholderImg, width: 120, height: 60, fit: [120, 60], alignment: 'center' },
+                                            // AQUI QUITAMOS LA IMAGEN Y PONEMOS ESPACIO EN BLANCO
+                                            { text: '\n\n\n\n', fontSize: 10 }, 
                                             { text: '_______________________________', alignment: 'center' },
                                             { text: 'FIRMA DEL TRABAJADOR', style: 'label', alignment: 'center' },
                                             { text: t.cedula, style: 'smallText', alignment: 'center' }
@@ -262,7 +227,7 @@
                                     },
                                     {
                                         stack: [
-                                            { text: '\n\n', fontSize: 10 },
+                                            { text: '\n\n\n\n', fontSize: 10 },
                                             { text: '_______________________________', alignment: 'center' },
                                             { text: 'DEPARTAMENTO SST / RRHH', style: 'label', alignment: 'center' },
                                             { text: 'Revisado y Aprobado', style: 'smallText', alignment: 'center' }
