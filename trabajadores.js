@@ -1,4 +1,7 @@
-// trabajadores.js - VERSIÓN FINAL: KARDEX CON FOTO Y 10 FILAS
+// trabajadores.js - IMPORTACIÓN MODULAR
+import { generarPDF_Ficha } from './pdfFicha.js';
+import { generarPDF_Kardex } from './pdfKardex.js';
+import { abrirATS } from './pdfATS.js';
 
 let listaCargosCache = []; 
 
@@ -229,7 +232,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         else if (tipo === 'REACTIVAR') { titulo.innerText = "REACTIVAR"; desc.innerText = `REINGRESO DE ${nombre}`; let options = listaCargosCache.map(c => `<option value="${c.nombre.toUpperCase()}" ${c.nombre.toUpperCase()===cargoActual?'selected':''}>${c.nombre.toUpperCase()}</option>`).join(''); inputs.innerHTML = `<label>FECHA REINGRESO:</label><input type="date" id="acc-fecha-ingreso" value="${new Date().toISOString().split('T')[0]}" style="width:100%; padding:10px; margin-bottom:10px;"><label>CARGO:</label><select id="acc-cargo-nuevo" style="width:100%; padding:10px;">${options}</select>`; }
         else if (tipo === 'CAMBIO_CARGO') { const cViejo = datosAccionTemp.cargoViejo; const cNuevo = datosAccionTemp.cargoNuevo; titulo.innerText = "CAMBIO DE CARGO"; desc.innerText = `DE ${cViejo} A ${cNuevo}`; inputs.innerHTML = `<label>FECHA FIN (${cViejo}):</label><input type="date" id="acc-fecha-salida" value="${new Date().toISOString().split('T')[0]}" style="width:100%; padding:10px; margin-bottom:10px;"><label>FECHA INICIO (${cNuevo}):</label><input type="date" id="acc-fecha-ingreso" value="${new Date().toISOString().split('T')[0]}" style="width:100%; padding:10px; margin-bottom:10px;"><label>MOTIVO:</label><input type="text" id="acc-motivo" placeholder="EJ: ASCENSO" style="width:100%; padding:10px;">`; }
         
-        // --- NUEVO CASO: SELECCIÓN DE AÑO PARA KARDEX ---
+        // MODAL PARA AÑO DE KARDEX
         else if (tipo === 'GENERAR_KARDEX') {
             titulo.innerText = "GENERAR KARDEX";
             desc.innerText = "Seleccione el año para el reporte:";
@@ -245,349 +248,36 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         else if (tipo === 'REACTIVAR') { const fecha = document.getElementById('acc-fecha-ingreso').value; const cargo = document.getElementById('acc-cargo-nuevo').value; await supabase.from('trabajadores').update({ estado: 'ACTIVO', fecha_ingreso: fecha, fecha_salida: null, cargo: cargo }).eq('id', id); await supabase.from('historial_laboral').insert({ trabajador_id: id, cargo: cargo, fecha_inicio: fecha, motivo: 'REINGRESO' }); alert("REACTIVADO."); document.getElementById('modal-acciones').style.display = 'none'; recargarListas(); cambiarVista('activos'); }
         else if (tipo === 'CAMBIO_CARGO') { const fSalida = document.getElementById('acc-fecha-salida').value; const fEntrada = document.getElementById('acc-fecha-ingreso').value; const motivo = document.getElementById('acc-motivo').value; const motivoMayus = motivo ? motivo.toUpperCase() : 'CAMBIO DE CARGO'; await procesarGuardadoFinal({ tipo: 'CAMBIO_CARGO', fechaSalida: fSalida, fechaEntrada: fEntrada, cargoNuevo: datosAccionTemp.cargoNuevo, motivoSalida: motivoMayus }); }
         
-        // --- NUEVA ACCIÓN: CONFIRMAR GENERACIÓN KARDEX ---
+        // CONFIRMAR KARDEX
         else if (tipo === 'GENERAR_KARDEX') {
             const anio = document.getElementById('acc-anio').value;
             if(!anio) return alert("Por favor ingrese un año válido.");
             document.getElementById('modal-acciones').style.display = 'none';
-            await generarPDF_Kardex(id, anio);
+            // Llamada al módulo externo
+            await generarPDF_Kardex(id, anio, supabase, empresa);
         }
     };
 
-    const getBase64ImageFromURL = (url) => { return new Promise((resolve) => { const img = new Image(); img.crossOrigin = "Anonymous"; img.onload = () => { const canvas = document.createElement("canvas"); canvas.width = img.width; canvas.height = img.height; const ctx = canvas.getContext("2d"); ctx.drawImage(img, 0, 0); resolve(canvas.toDataURL("image/png")); }; img.onerror = () => resolve(null); img.src = url; }); };
-
+    // FUNCIÓN DE IMPRESIÓN CENTRALIZADA
     window.imprimirDoc = async (tipo) => {
-        toggleMenuNombre(); const id = document.getElementById('t-id').value; if (!id) return;
-        if (tipo === 'ficha') await generarPDF_Ficha(id);
-        else if (tipo === 'kardex') abrirModalAccion('GENERAR_KARDEX'); 
-        else if (tipo === 'ats') window.open('./ATS.pdf', '_blank'); 
-        else alert(`GENERANDO ${tipo.toUpperCase()}... (EN DESARROLLO)`);
-    };
+        toggleMenuNombre(); 
+        const id = document.getElementById('t-id').value; 
+        if (!id) return;
 
-    // --- NUEVA FUNCIÓN: GENERAR KARDEX EPP (MODIFICADO) ---
-    async function generarPDF_Kardex(id, anio) {
-        alert(`GENERANDO KARDEX ${anio}...`);
-        const { data: t } = await supabase.from('trabajadores').select('*').eq('id', id).single();
-        const logoUrl = empresa.logo_url;
-        
-        // Cargar Logo y Foto
-        const [logoBase64, fotoBase64] = await Promise.all([
-            logoUrl ? getBase64ImageFromURL(logoUrl) : null,
-            t.foto_url ? getBase64ImageFromURL(t.foto_url) : null
-        ]);
-
-        // Filas vacías (10 filas)
-        const filasVacias = [];
-        for (let i = 1; i <= 10; i++) {
-            filasVacias.push([
-                { text: i.toString(), alignment: 'center' }, 
-                { text: '', alignment: 'center' }, // Cantidad
-                { text: '', alignment: 'center' }, // Detalle
-                { text: '', alignment: 'center' }, // Fecha
-                { text: '', alignment: 'center' }, // Firma
-                { text: '', alignment: 'center' }  // Observación
-            ]);
+        if (tipo === 'ficha') {
+            // Llamada al módulo externo
+            await generarPDF_Ficha(id, supabase, empresa);
         }
-
-        const docDefinition = {
-            pageSize: 'A4', pageMargins: [30, 30, 30, 30],
-            content: [
-                // 1. ENCABEZADO
-                {
-                    table: {
-                        widths: [60, '*', 70],
-                        body: [
-                            [
-                                { 
-                                    image: logoBase64 || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 
-                                    width: 50, height: 50, fit: [50, 50], 
-                                    alignment: 'center', margin: [0, 5, 0, 0],
-                                    rowSpan: 2, border: [false, false, false, false]
-                                },
-                                { 
-                                    text: [
-                                        { text: empresa.nombre.toUpperCase() + '\n', bold: true, fontSize: 16, color: '#000' },
-                                        { text: 'KARDEX DE EPP', bold: true, fontSize: 14, color: '#000' }
-                                    ], 
-                                    alignment: 'center', margin: [0, 10, 0, 0],
-                                    border: [false, false, false, false]
-                                },
-                                { 
-                                    text: [
-                                        { text: 'AÑO\n', fontSize: 12, bold: true },
-                                        { text: anio.toString(), fontSize: 14, bold: true }
-                                    ], 
-                                    alignment: 'center', margin: [0, 10, 0, 0],
-                                    rowSpan: 2, border: [false, false, false, false]
-                                }
-                            ],
-                            [ {}, {}, {} ]
-                        ]
-                    }
-                },
-                { canvas: [{ type: 'line', x1: 0, y1: 5, x2: 535, y2: 5, lineWidth: 2, lineColor: '#000' }] },
-                { text: '\n' },
-
-                // 2. DATOS DEL TRABAJADOR (CON FOTO Y TALLAS)
-                {
-                    columns: [
-                        // Columna de Texto
-                        {
-                            width: '*',
-                            text: [
-                                { text: 'APELLIDOS Y NOMBRES: ', bold: true }, t.cedula + ' ' + t.nombre + '\n',
-                                { text: 'CARGO: ', bold: true }, t.cargo + '\n',
-                                { text: 'TALLAS: ', bold: true }, `CAMISA: ${t.talla_camisa||'-'} | PANTALÓN: ${t.talla_pantalon||'-'} | ZAPATOS: ${t.talla_zapatos||'-'}`
-                            ],
-                            fontSize: 10,
-                            margin: [0, 10, 0, 0]
-                        },
-                        // Columna de Foto
-                        {
-                            width: 80,
-                            image: fotoBase64 || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
-                            fit: [80, 100],
-                            alignment: 'right'
-                        }
-                    ]
-                },
-                { text: '\n' },
-
-                // 3. TABLA (10 FILAS)
-                {
-                    table: {
-                        headerRows: 1,
-                        widths: ['5%', '10%', '35%', '15%', '15%', '20%'],
-                        body: [
-                            [
-                                { text: 'N°', style: 'tableHeader' },
-                                { text: 'CANTIDAD', style: 'tableHeader' },
-                                { text: 'EQUIPO DE PROTECCIÓN PERSONAL', style: 'tableHeader' },
-                                { text: 'FECHA DE RECEPCIÓN', style: 'tableHeader' },
-                                { text: 'FIRMA', style: 'tableHeader' },
-                                { text: 'OBSERVACIÓN', style: 'tableHeader' }
-                            ],
-                            ...filasVacias
-                        ]
-                    },
-                    layout: {
-                        hLineWidth: function (i, node) { return 0.5; },
-                        vLineWidth: function (i, node) { return 0.5; },
-                        paddingTop: function(i) { return 8; },
-                        paddingBottom: function(i) { return 8; }
-                    }
-                }
-                // SE ELIMINÓ EL PIE DE PÁGINA CON CÓDIGO
-            ],
-            styles: {
-                tableHeader: { bold: true, fontSize: 8, color: 'black', alignment: 'center', fillColor: '#eeeeee' }
-            },
-            defaultStyle: { fontSize: 10 }
-        };
-
-        pdfMake.createPdf(docDefinition).open();
-    }
-
-    // --- PDF: FICHA SOCIOECONÓMICA (FORMATO PDF SUBIDO) ---
-    async function generarPDF_Ficha(id) {
-        alert("GENERANDO FICHA...");
-        const { data: t } = await supabase.from('trabajadores').select('*').eq('id', id).single();
-        
-        // Imagenes
-        const logoUrl = empresa.logo_url;
-        const fotoUrl = t.foto_url;
-        // YA NO DESCARGAMOS LA FIRMA
-        const [logoBase64, fotoBase64] = await Promise.all([
-            logoUrl ? getBase64ImageFromURL(logoUrl) : null,
-            fotoUrl ? getBase64ImageFromURL(fotoUrl) : null
-        ]);
-
-        // Hijos
-        let hijos = [];
-        try { hijos = JSON.parse(t.datos_hijos || '[]'); } catch { }
-        
-        const filasHijos = hijos.map(h => [h.nombre, 'HIJO/A', '', h.fecha, '', 'ESTUDIANTE']);
-        if (filasHijos.length === 0) filasHijos.push([{ text: 'NO REGISTRA', colSpan: 6, alignment: 'center' }, {}, {}, {}, {}, {}]);
-
-        const docDefinition = {
-            pageSize: 'A4', pageMargins: [30, 30, 30, 30],
-            content: [
-                // CABECERA
-                {
-                    columns: [
-                        { image: logoBase64 || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', width: 70, height: 40, fit: [70, 40] },
-                        { text: 'FICHA SOCIO-ECONOMICA', style: 'header', alignment: 'center', margin: [0, 10, 0, 0] },
-                        { text: '', width: 70 }
-                    ]
-                },
-                { text: '\n' },
-
-                // 1. DATOS PERSONALES
-                { text: 'DATOS PERSONALES:', style: 'sectionHeader' },
-                {
-                    style: 'tableExample',
-                    table: {
-                        widths: ['15%', '35%', '15%', '35%'],
-                        body: [
-                            [{ text: 'Nombres:', bold: true }, t.nombre, { text: 'Empresa:', bold: true }, empresa.nombre],
-                            [{ text: 'Cédula:', bold: true }, t.cedula, { text: 'Tipo de Empresa:', bold: true }, 'MINA-PLANTA'],
-                            [{ text: 'Sexo:', bold: true }, t.sexo, { text: 'Subarea:', bold: true }, 'OPERACIONES'],
-                            [{ text: 'Nacionalidad:', bold: true }, t.nacionalidad, { text: 'Cargo:', bold: true }, t.cargo],
-                            [{ text: 'Lugar Nac:', bold: true }, t.lugar_nacimiento, { text: 'Sucursal:', bold: true }, 'PRINCIPAL'],
-                            [{ text: 'Fecha Nac:', bold: true }, t.fecha_nacimiento, { text: 'Tipo de Contrato:', bold: true }, 'INDEFINIDO'],
-                            [{ text: 'Edad:', bold: true }, document.getElementById('t-edad').value, { text: 'Alergia:', bold: true }, 'NINGUNA'],
-                            [{ text: 'Código:', bold: true }, t.id, { text: 'Banco:', bold: true }, t.banco || 'N/A'],
-                            [{ text: 'Gen Sanguineo:', bold: true }, t.tipo_sangre, { text: 'Cuenta:', bold: true }, t.cuenta || 'N/A'],
-                            [{ text: 'Religión:', bold: true }, t.religion, { text: 'Estado:', bold: true }, t.estado],
-                            [{ text: 'Profesión:', bold: true }, t.profesion, { text: 'Medio Transporte:', bold: true }, 'VARIOS'],
-                            [{ text: 'Sueldo:', bold: true }, '$ ' + t.sueldo, { text: 'Celular:', bold: true }, t.celular],
-                            [{ text: 'Afiliado IESS:', bold: true }, t.afiliacion ? 'SI' : 'NO', { text: 'Teléfono:', bold: true }, 'N/A'],
-                            [{ text: 'Fecha Afiliación:', bold: true }, t.afiliacion || '', { text: 'Correo:', bold: true }, t.correo],
-                            [{ text: 'Estado Civil:', bold: true }, t.estado_civil, { text: 'Discapacidad:', bold: true }, t.discapacidad || 'NO'],
-                            [{ text: 'Tiempo Conv:', bold: true }, 'N/A', { text: 'Carnet:', bold: true }, 'NO'],
-                            [{ text: 'Cónyuge:', bold: true }, t.conyuge || 'N/A', { text: 'Hijos:', bold: true }, hijos.length > 0 ? 'SI' : 'NO'],
-                            [{ text: 'Ciudad Res:', bold: true }, 'SANTA ROSA', { text: 'Número de Hijos:', bold: true }, hijos.length],
-                            [{ text: 'Barrio:', bold: true }, 'CENTRO', { text: 'Licencia:', bold: true }, t.licencia],
-                            [{ text: 'Dirección:', bold: true }, { text: t.direccion, colSpan: 3 }, {}, {}]
-                        ]
-                    }
-                },
-                { text: '\n' },
-
-                // 2. NIVEL DE ESTUDIO
-                {
-                    style: 'tableExample',
-                    table: {
-                        widths: ['30%', '40%', '30%'],
-                        headerRows: 1,
-                        body: [
-                            [{ text: 'Nivel de estudio', style: 'tableHeader' }, { text: 'Establecimiento educativo', style: 'tableHeader' }, { text: 'Observación', style: 'tableHeader' }],
-                            ['SECUNDARIA / SUPERIOR', 'COLEGIO / UNIVERSIDAD', t.profesion || '']
-                        ]
-                    }
-                },
-                { text: '\n' },
-
-                // 3. VIVIENDA Y SERVICIOS
-                { text: 'VIVIENDA ACTUAL Y SERVICIOS BASICOS:', style: 'sectionHeader' },
-                {
-                    style: 'tableExample',
-                    table: {
-                        widths: ['20%', '30%', '20%', '30%'],
-                        body: [
-                            [{ text: 'Tendencia:', bold: true }, t.vivienda, { text: 'Servicio Higiénico:', bold: true }, 'POZO SÉPTICO'],
-                            [{ text: 'Tipo Vivienda:', bold: true }, t.material_paredes, { text: 'Recolección Basura:', bold: true }, 'SI'],
-                            [{ text: 'Cubierta:', bold: true }, t.material_cubierta, { text: 'UPC cercano:', bold: true }, 'NO'],
-                            [{ text: 'Nº Habitaciones:', bold: true }, t.habitaciones || '0', { text: 'Seguridad:', bold: true }, 'REGULAR'],
-                            [{ text: 'Servicios:', bold: true }, t.servicios_basicos || 'NINGUNO', { text: 'Tipo Familia:', bold: true }, 'NUCLEAR'],
-                            [{ text: 'Agua:', bold: true }, 'RED PÚBLICA', { text: 'Problema Familiar:', bold: true }, 'NINGUNO']
-                        ]
-                    }
-                },
-                { text: '\n' },
-
-                // 4. TALLAS
-                {
-                    style: 'tableExample',
-                    table: {
-                        widths: ['25%', '25%', '25%', '25%'],
-                        headerRows: 1,
-                        body: [
-                            [{ text: 'Talla Ropa', style: 'tableHeader', colSpan: 4 }, {}, {}, {}],
-                            ['Camisa', t.talla_camisa || '', 'Pantalon', t.talla_pantalon || ''],
-                            ['Zapatos', t.talla_zapatos || '', '', '']
-                        ]
-                    }
-                },
-                { text: '\n' },
-
-                // 5. EMERGENCIA
-                { text: 'EN CASO DE EMERGENCIA:', style: 'sectionHeader' },
-                {
-                    style: 'tableExample',
-                    table: {
-                        widths: ['30%', '20%', '25%', '25%'],
-                        headerRows: 1,
-                        body: [
-                            [{ text: 'Persona', style: 'tableHeader' }, { text: 'Parentesco', style: 'tableHeader' }, { text: 'Teléfono', style: 'tableHeader' }, { text: 'Celular', style: 'tableHeader' }],
-                            [t.emergencia_nombre || '', 'FAMILIAR', '', t.emergencia_telefono || ''],
-                            [t.emergencia2_nombre || '', 'FAMILIAR', '', t.emergencia2_telefono || '']
-                        ]
-                    }
-                },
-                { text: '\n' },
-
-                // 6. CARGAS FAMILIARES
-                { text: 'CARGAS FAMILIARES:', style: 'sectionHeader' },
-                {
-                    style: 'tableExample',
-                    table: {
-                        widths: ['25%', '10%', '15%', '15%', '10%', '25%'],
-                        headerRows: 1,
-                        body: [
-                            [{ text: 'Persona', style: 'tableHeader' }, { text: 'Sexo', style: 'tableHeader' }, { text: 'Parentesco', style: 'tableHeader' }, { text: 'F. Nacim', style: 'tableHeader' }, { text: 'Edad', style: 'tableHeader' }, { text: 'Ocupación', style: 'tableHeader' }],
-                            ...filasHijos
-                        ]
-                    }
-                },
-                { text: '\n' },
-
-                // 7. EGRESOS (ESTÁTICO PARA CUMPLIR FORMATO)
-                { text: 'EGRESOS MENSUALES ESTIMADOS:', style: 'sectionHeader' },
-                {
-                    style: 'tableExample',
-                    table: {
-                        widths: ['25%', '25%', '25%', '25%'],
-                        headerRows: 1,
-                        body: [
-                            [{ text: 'Rubro', style: 'tableHeader' }, { text: 'Valor', style: 'tableHeader' }, { text: 'Rubro', style: 'tableHeader' }, { text: 'Valor', style: 'tableHeader' }],
-                            ['Alimento', '$ 150', 'Salud', '$ 20'],
-                            ['Luz', '$ 20', 'Vestido', '$ 30'],
-                            ['Agua', '$ 10', 'Arriendo', '$ 0'],
-                            ['Educación', '$ 50', 'Otros', '$ 50']
-                        ]
-                    }
-                },
-                { text: '\n' },
-
-                // 8. COMUNICACIÓN FAMILIAR (ESTÁTICO)
-                { text: 'COMUNICACIÓN FAMILIAR:', style: 'sectionHeader' },
-                {
-                    style: 'tableExample',
-                    table: {
-                        widths: ['50%', '50%'],
-                        body: [
-                            [{ text: 'Nivel de comunicación:', bold: true }, 'BUENO'],
-                            [{ text: 'Designa tareas a sus hijos:', bold: true }, 'SI'],
-                            [{ text: 'Causas de conflicto:', bold: true }, 'NINGUNA'],
-                            [{ text: 'Formas de recreación:', bold: true }, 'PASEOS']
-                        ]
-                    }
-                },
-                { text: '\n\n' },
-
-                // FIRMA (SIN IMAGEN, SOLO LINEA)
-                {
-                    stack: [
-                        { text: '\n\n\n\n' }, // Espacio para firmar
-                        { text: '_______________________________', alignment: 'center' },
-                        { text: 'FIRMA DEL SOLICITANTE', alignment: 'center', bold: true },
-                        { text: t.nombre, alignment: 'center' },
-                        { text: t.cedula, alignment: 'center' }
-                    ]
-                }
-            ],
-            styles: {
-                header: { fontSize: 14, bold: true, decoration: 'underline' },
-                sectionHeader: { fontSize: 10, bold: true, margin: [0, 5, 0, 2] },
-                tableExample: { margin: [0, 2, 0, 5], fontSize: 8 },
-                tableHeader: { bold: true, fontSize: 9, color: 'black', fillColor: '#cccccc', alignment: 'center' }
-            },
-            defaultStyle: { fontSize: 8 }
-        };
-
-        pdfMake.createPdf(docDefinition).open();
-    }
+        else if (tipo === 'kardex') {
+            abrirModalAccion('GENERAR_KARDEX'); 
+        }
+        else if (tipo === 'ats') {
+            abrirATS();
+        }
+        else {
+            alert(`GENERANDO ${tipo.toUpperCase()}... (EN DESARROLLO)`);
+        }
+    };
 
     async function listar(estado, gridId, countId) {
         const { data } = await supabase.from('trabajadores').select('*').eq('empresa_id', empresa.id).eq('estado', estado).order('nombre');
