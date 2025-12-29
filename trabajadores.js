@@ -1,4 +1,4 @@
-// trabajadores.js - VERSIÓN FINAL: FICHA SOCIOECONÓMICA REPLICADA (FORMATO EXACTO)
+// trabajadores.js - VERSIÓN FINAL: FICHA SIN FIRMA DIGITAL Y ATS EXTERNO
 
 let listaCargosCache = []; 
 
@@ -243,62 +243,9 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     window.imprimirDoc = async (tipo) => {
         toggleMenuNombre(); const id = document.getElementById('t-id').value; if (!id) return;
         if (tipo === 'ficha') await generarPDF_Ficha(id);
-        else if (tipo === 'ats') await generarPDF_ATS(id);
+        else if (tipo === 'ats') window.open('./ATS.pdf', '_blank'); // <--- AHORA ABRE EL PDF DE GITHUB
         else alert(`GENERANDO ${tipo.toUpperCase()}... (EN DESARROLLO)`);
     };
-
-    // --- PDF: ATS (CHECKLIST) ---
-    async function generarPDF_ATS(id) {
-        alert("GENERANDO ATS...");
-        const { data: t } = await supabase.from('trabajadores').select('*').eq('id', id).single();
-        const logoUrl = empresa.logo_url;
-        const [logoBase64] = await Promise.all([logoUrl ? getBase64ImageFromURL(logoUrl) : null]);
-
-        const doc = {
-            pageSize: 'A4', pageMargins: [20, 20, 20, 20],
-            content: [
-                {
-                    table: {
-                        widths: ['15%', '*', '15%'],
-                        body: [
-                            [
-                                { image: logoBase64 || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', fit: [50, 50], rowSpan: 2, alignment:'center' },
-                                { text: 'ANÁLISIS DE TRABAJO SEGURO (ATS)', style: 'header', alignment: 'center', margin: [0, 5] },
-                                { text: 'CÓDIGO: ATS-001', fontSize: 8, alignment: 'right' }
-                            ],
-                            ['', { text: 'COMPRENDO QUE SOY RESPONSABLE DE MI SEGURIDAD Y LA DE MIS COMPAÑEROS', fontSize: 7, alignment: 'center', italics: true }, '']
-                        ]
-                    }
-                },
-                { text: '\n' },
-                {
-                    table: {
-                        widths: ['15%', '35%', '15%', '35%'],
-                        body: [
-                            [{ text: 'TRABAJO:', fontSize: 8, bold: true }, { text: '', fontSize: 8 }, { text: 'FECHA:', fontSize: 8, bold: true }, { text: new Date().toLocaleDateString(), fontSize: 8 }],
-                            [{ text: 'RESPONSABLE:', fontSize: 8, bold: true }, { text: t.nombre, fontSize: 8 }, { text: 'CARGO:', fontSize: 8, bold: true }, { text: t.cargo, fontSize: 8 }]
-                        ]
-                    }
-                },
-                { text: '\n' },
-                {
-                    columns: [
-                        { width: '25%', stack: [ { text: '1. EPP', style: 'sectionHeader' }, { table: { widths: ['*', 15, 15], body: [['ITEM', 'SI', 'NO'], ['CASCO', '', ''], ['LENTES', '', ''], ['GUANTES', '', ''], ['BOTAS', '', ''], ['ARNÉS', '', ''], ['RESPIRADOR', '', ''], ['ROPA', '', ''], ['AUDITIVO', '', '']] }, layout: 'lightHorizontalLines' } ] },
-                        { width: '25%', margin: [10, 0, 0, 0], stack: [ { text: '2. HERRAMIENTAS', style: 'sectionHeader' }, { table: { widths: ['*', 15, 15], body: [['ITEM', 'SI', 'NO'], ['ESTÁNDAR', '', ''], ['INSPECCIÓN', '', ''], ['ADECUADAS', '', ''], ['CÓDIGO COLOR', '', '']] }, layout: 'lightHorizontalLines' }, { text: '\n3. ENTORNO', style: 'sectionHeader' }, { table: { widths: ['*', 15, 15], body: [['ITEM', 'SI', 'NO'], ['ORDEN', '', ''], ['LIMPIEZA', '', ''], ['SEÑALIZADO', '', '']] }, layout: 'lightHorizontalLines' } ] },
-                        { width: '25%', margin: [10, 0, 0, 0], stack: [ { text: '4. RIESGOS CRÍTICOS', style: 'sectionHeader' }, { table: { widths: ['*', 15, 15], body: [['ITEM', 'SI', 'NO'], ['ALTURA', '', ''], ['ESP. CONFINADO', '', ''], ['IZAJE', '', ''], ['CALIENTE', '', ''], ['EXCAVACIÓN', '', ''], ['ELÉCTRICO', '', '']] }, layout: 'lightHorizontalLines' } ] },
-                        { width: '25%', margin: [10, 0, 0, 0], stack: [ { text: '5. EMERGENCIAS', style: 'sectionHeader' }, { table: { widths: ['*', 15, 15], body: [['ITEM', 'SI', 'NO'], ['EXTINTOR', '', ''], ['BOTIQUÍN', '', ''], ['LAVAOJOS', '', ''], ['RUTAS EVAC.', '', '']] }, layout: 'lightHorizontalLines' } ] }
-                    ]
-                },
-                { text: '\n\n' },
-                { table: { widths: ['50%', '50%'], body: [ [ { text: '\n\n___________________________\nFIRMA DEL TRABAJADOR\n' + t.cedula, alignment: 'center', fontSize: 8 }, { text: '\n\n___________________________\nFIRMA SUPERVISOR SST', alignment: 'center', fontSize: 8 } ] ] }, layout: 'noBorders' }
-            ],
-            styles: {
-                header: { fontSize: 12, bold: true },
-                sectionHeader: { fontSize: 9, bold: true, color: 'white', fillColor: '#00d2ff', margin: [0, 2] }
-            }
-        };
-        pdfMake.createPdf(doc).open();
-    }
 
     // --- PDF: FICHA SOCIOECONÓMICA (FORMATO PDF SUBIDO) ---
     async function generarPDF_Ficha(id) {
@@ -308,11 +255,10 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         // Imagenes
         const logoUrl = empresa.logo_url;
         const fotoUrl = t.foto_url;
-        const firmaUrl = t.firma_url;
-        const [logoBase64, fotoBase64, firmaBase64] = await Promise.all([
+        // YA NO DESCARGAMOS LA FIRMA
+        const [logoBase64, fotoBase64] = await Promise.all([
             logoUrl ? getBase64ImageFromURL(logoUrl) : null,
-            fotoUrl ? getBase64ImageFromURL(fotoUrl) : null,
-            firmaUrl ? getBase64ImageFromURL(firmaUrl) : null
+            fotoUrl ? getBase64ImageFromURL(fotoUrl) : null
         ]);
 
         // Hijos
@@ -479,10 +425,10 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                 },
                 { text: '\n\n' },
 
-                // FIRMA
+                // FIRMA (SIN IMAGEN, SOLO LINEA)
                 {
                     stack: [
-                        { image: firmaBase64 || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', width: 120, height: 60, fit: [120, 60], alignment: 'center' },
+                        { text: '\n\n\n\n' }, // Espacio para firmar
                         { text: '_______________________________', alignment: 'center' },
                         { text: 'FIRMA DEL SOLICITANTE', alignment: 'center', bold: true },
                         { text: t.nombre, alignment: 'center' },
