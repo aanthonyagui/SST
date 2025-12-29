@@ -1,4 +1,4 @@
-// trabajadores.js - VERSIÓN: PDF SOLUCIONADO + SIN FIRMA IMAGEN
+// trabajadores.js - VERSIÓN: PDF FICHA CORREGIDO + ATS ENLACE DIRECTO
 
 let listaCargosCache = []; 
 
@@ -38,9 +38,10 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                 <div class="dropdown" id="cont-nombre" style="display:none;">
                     <button class="tab-btn btn-nombre" onclick="toggleMenuNombre()"><i class="fas fa-user"></i> <span id="lbl-nombre-trab">TRABAJADOR</span> <i class="fas fa-caret-down"></i></button>
                     <div id="menu-descargas" class="dropdown-content">
-                        <div style="padding:10px; color:#aaa; font-size:0.8em;">DOCUMENTOS PDF</div>
+                        <div style="padding:10px; color:#aaa; font-size:0.8em;">DOCUMENTOS</div>
                         <a onclick="imprimirDoc('ficha')"><i class="fas fa-file-pdf" style="color:var(--danger)"></i> Ficha PDF</a>
-                        <a onclick="imprimirDoc('ats')"><i class="fas fa-hard-hat" style="color:var(--warning)"></i> Generar ATS</a>
+                        <a onclick="imprimirDoc('ats')"><i class="fas fa-file-pdf" style="color:var(--warning)"></i> Abrir ATS</a>
+                        <a onclick="imprimirDoc('carnet')"><i class="fas fa-id-card" style="color:#f39c12"></i> Carnet</a>
                         <a onclick="imprimirDoc('kardex')"><i class="fas fa-clipboard-list" style="color:var(--success)"></i> Kardex EPP</a>
                         <a onclick="imprimirDoc('induccion')"><i class="fas fa-chalkboard-teacher"></i> Inducción</a>
                         <hr style="border-color:#333; margin:5px 0;">
@@ -74,7 +75,6 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                         <select id="t-civil" onchange="verificarCivil()"><option value="SOLTERO">SOLTERO</option><option value="CASADO">CASADO</option><option value="UNION DE HECHO">UNIÓN DE HECHO</option><option value="DIVORCIADO">DIVORCIADO</option><option value="VIUDO">VIUDO</option></select>
                         <div id="div-conyuge" style="display:none; grid-column:1/-1; background:rgba(255,255,255,0.1); padding:10px; border-radius:8px;"><label style="font-size:0.8em; color:#00d2ff;">NOMBRE CÓNYUGE:</label><input id="t-conyuge" placeholder="NOMBRE ESPOSO/A"></div>
                         <select id="t-sangre"><option value="">TIPO SANGRE</option><option value="A+">A+</option><option value="A-">A-</option><option value="B+">B+</option><option value="B-">B-</option><option value="AB+">AB+</option><option value="AB-">AB-</option><option value="O+">O+</option><option value="O-">O-</option></select>
-                        <select id="t-religion"><option value="CATOLICA">CATÓLICA</option><option value="CRISTIANO">CRISTIANO</option><option value="EVANGELICA">EVANGÉLICA</option><option value="TESTIGO DE JEHOVA">TESTIGO DE JEHOVÁ</option><option value="ATEISMO">ATEÍSMO</option><option value="NINGUNA">NINGUNA</option><option value="OTRA">OTRA</option></select>
                         <input id="t-nacionalidad" value="ECUATORIANA"><input id="t-lugar" placeholder="LUGAR NACIMIENTO"><input id="t-discapacidad" placeholder="DISCAPACIDAD (NO / %)">
                         <input id="t-celular" placeholder="CELULAR"><input id="t-correo" placeholder="CORREO">
                         
@@ -82,6 +82,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                         <input id="t-ciudad" placeholder="CIUDAD RESIDENCIA"><input id="t-barrio" placeholder="BARRIO">
                         <input id="t-carnet" placeholder="Nº CARNET CONADIS (NO)">
                         
+                        <select id="t-religion"><option value="CATOLICA">CATÓLICA</option><option value="CRISTIANO">CRISTIANO</option><option value="EVANGELICA">EVANGÉLICA</option><option value="NINGUNA">NINGUNA</option><option value="OTRA">OTRA</option></select>
                         <select id="t-licencia"><option value="NINGUNA">LICENCIA: NINGUNA</option><option value="A">A</option><option value="A1">A1</option><option value="B">B</option><option value="C">C</option><option value="C1">C1</option><option value="D">D</option><option value="D1">D1</option><option value="E">E</option><option value="E1">E1</option><option value="F">F</option><option value="G">G</option></select>
                     </div>
                     <div style="margin-top:15px; border-top:1px solid #444; padding-top:10px;"><div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;"><label>Nº HIJOS:</label><input id="t-num-hijos" type="number" min="0" value="0" style="width:60px; text-align:center;" oninput="generarCamposHijos()"></div><div id="contenedor-hijos"></div></div>
@@ -125,12 +126,9 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         <div id="modal-acciones" class="modal"><div class="container" style="max-width:350px;"><h3 id="modal-titulo" style="color:var(--primary)">ACCIÓN</h3><p id="modal-desc" style="font-size:0.9em; color:#ccc;"></p><div id="modal-inputs"></div><div style="margin-top:15px; display:flex; gap:10px;"><button onclick="document.getElementById('modal-acciones').style.display='none'" style="background:#444;">CANCELAR</button><button id="btn-confirmar-accion" style="background:var(--primary); color:black; font-weight:bold;">CONFIRMAR</button></div></div></div>
     `;
 
-    // ================== LÓGICA ==================
-    let trabajadorSeleccionadoId = null;
-    let datosAccionTemp = {}; 
-    const selForm = document.getElementById('t-cargo');
-    listaCargosCache.forEach(c => selForm.innerHTML += `<option value="${c.nombre.toUpperCase()}">${c.nombre.toUpperCase()}</option>`);
-
+    // LÓGICA (IGUAL)
+    let trabajadorSeleccionadoId = null; let datosAccionTemp = {}; 
+    const selForm = document.getElementById('t-cargo'); listaCargosCache.forEach(c => selForm.innerHTML += `<option value="${c.nombre.toUpperCase()}">${c.nombre.toUpperCase()}</option>`);
     const obtenerTexto = (id) => { const el = document.getElementById(id); return (el && el.value.trim() !== "") ? el.value.toUpperCase() : null; };
     const getFecha = (id) => { const val = document.getElementById(id).value; return val === "" ? null : val; };
     const getNumber = (id) => { const val = document.getElementById(id).value; return val === "" ? null : val; };
@@ -178,25 +176,15 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     };
 
     async function abrir(t) {
-        const map = {
-            'cedula': t.cedula, 'nombre': t.nombre, 'lugar': t.lugar_nacimiento, 'nacionalidad': t.nacionalidad, 'sexo': t.sexo, 'civil': t.estado_civil, 'sangre': t.tipo_sangre, 'discapacidad': t.discapacidad, 'religion': t.religion, 'celular': t.celular, 'correo': t.correo, 'licencia': t.licencia, 'profesion': t.profesion, 'sueldo': t.sueldo, 'afiliacion': t.afiliacion, 'banco': t.banco, 'cuenta': t.cuenta, 'direccion': t.direccion, 'vivienda': t.vivienda, 'material': t.material_paredes, 'cubierta': t.material_cubierta, 'habitaciones': t.habitaciones, 'conyuge': t.conyuge, 'emer-nom': t.emergencia_nombre, 'emer-tel': t.emergencia_telefono, 'emer2-nom': t.emergencia2_nombre, 'emer2-tel': t.emergencia2_telefono, 'camisa': t.talla_camisa, 'pantalon': t.talla_pantalon, 'zapatos': t.talla_zapatos
-        };
+        const map = { 'cedula': t.cedula, 'nombre': t.nombre, 'lugar': t.lugar_nacimiento, 'nacionalidad': t.nacionalidad, 'sexo': t.sexo, 'civil': t.estado_civil, 'sangre': t.tipo_sangre, 'discapacidad': t.discapacidad, 'religion': t.religion, 'celular': t.celular, 'correo': t.correo, 'licencia': t.licencia, 'profesion': t.profesion, 'sueldo': t.sueldo, 'afiliacion': t.afiliacion, 'banco': t.banco, 'cuenta': t.cuenta, 'direccion': t.direccion, 'vivienda': t.vivienda, 'material': t.material_paredes, 'cubierta': t.material_cubierta, 'habitaciones': t.habitaciones, 'conyuge': t.conyuge, 'emer-nom': t.emergencia_nombre, 'emer-tel': t.emergencia_telefono, 'emer2-nom': t.emergencia2_nombre, 'emer2-tel': t.emergencia2_telefono, 'camisa': t.talla_camisa, 'pantalon': t.talla_pantalon, 'zapatos': t.talla_zapatos };
         for (const [id, val] of Object.entries(map)) { const el = document.getElementById('t-' + id); if (el) el.value = val || ''; }
-
         let hijosData = []; try { hijosData = JSON.parse(t.datos_hijos || '[]'); } catch { hijosData = []; }
         document.getElementById('t-num-hijos').value = hijosData.length; generarCamposHijos(hijosData);
-
-        if(t.datos_extra) {
-            const ext = t.datos_extra;
-            const idsExtra = ['t-alergia','t-transporte','t-ciudad','t-barrio','t-carnet','t-nivel-estudio','t-establecimiento','t-servicio-higienico','t-basura','t-upc','t-seguridad-sector','t-tipo-familia','t-problema-familiar','g-alimento','g-luz','g-agua','g-educacion','g-salud','g-vestido','g-arriendo','g-otros','c-nivel','c-tareas','c-conflicto','c-recreacion'];
-            idsExtra.forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = ext[id] || ''; });
-        }
-
+        if(t.datos_extra) { const ext = t.datos_extra; const idsExtra = ['t-alergia','t-transporte','t-ciudad','t-barrio','t-carnet','t-nivel-estudio','t-establecimiento','t-servicio-higienico','t-basura','t-upc','t-seguridad-sector','t-tipo-familia','t-problema-familiar','g-alimento','g-luz','g-agua','g-educacion','g-salud','g-vestido','g-arriendo','g-otros','c-nivel','c-tareas','c-conflicto','c-recreacion']; idsExtra.forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = ext[id] || ''; }); }
         document.getElementById('t-nacimiento').value = t.fecha_nacimiento || ''; document.getElementById('t-ingreso-manual').value = t.fecha_ingreso || ''; document.getElementById('t-cargo').value = t.cargo || ''; document.getElementById('t-cargo-original').value = t.cargo || ''; document.getElementById('t-id').value = t.id; document.getElementById('t-estado').value = t.estado;
         const serv = (t.servicios_basicos || '').split(','); document.querySelectorAll('input[name="serv"]').forEach(c => c.checked = serv.includes(c.value));
         if(t.fecha_nacimiento) { const age = new Date().getFullYear() - new Date(t.fecha_nacimiento).getFullYear(); document.getElementById('t-edad').value = age; }
         document.getElementById('preview-foto').src = t.foto_url || 'https://via.placeholder.com/150'; document.getElementById('preview-firma').style.display = t.firma_url ? 'block' : 'none'; if(t.firma_url) document.getElementById('preview-firma').src = t.firma_url;
-        
         verificarCivil(); document.getElementById('lbl-nombre-trab').innerText = t.nombre.split(' ')[0]; document.getElementById('cont-nombre').style.display = 'inline-flex'; document.getElementById('div-fecha-ingreso-inicial').style.display = 'none'; document.getElementById('t-ingreso-manual').required = false; 
         if(t.estado === 'ACTIVO') { document.getElementById('btn-dar-baja').style.display = 'block'; document.getElementById('btn-reactivar').style.display = 'none'; } else { document.getElementById('btn-dar-baja').style.display = 'none'; document.getElementById('btn-reactivar').style.display = 'block'; }
         document.getElementById('titulo-ficha').innerText = `EDITANDO: ${t.nombre}`; await cargarHistorial(t.id); cambiarVista('xxx'); document.getElementById('vista-formulario').style.display='block';
@@ -210,297 +198,120 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     }
 
     document.getElementById('form-trabajador').onsubmit = async (e) => {
-        e.preventDefault();
-        let id = document.getElementById('t-id').value; const cargoNuevo = document.getElementById('t-cargo').value; const cargoViejo = document.getElementById('t-cargo-original').value;
+        e.preventDefault(); let id = document.getElementById('t-id').value; const cargoNuevo = document.getElementById('t-cargo').value; const cargoViejo = document.getElementById('t-cargo-original').value;
         if (!id && !document.getElementById('t-ingreso-manual').value) return alert("INGRESE FECHA DE INGRESO");
         if (id && cargoViejo && cargoNuevo !== cargoViejo) { trabajadorSeleccionadoId = id; abrirModalAccion('CAMBIO_CARGO', { cargoNuevo: cargoNuevo, cargoViejo: cargoViejo }); return; }
         await procesarGuardadoFinal();
     };
 
     async function procesarGuardadoFinal(datosExtra = {}) {
-        let id = document.getElementById('t-id').value;
-        const fFoto = document.getElementById('t-foto').files[0]; let fotoUrl = null; if(fFoto) fotoUrl = await subirArchivo(supabase, fFoto, 'fichas_personal');
-        const fFirma = document.getElementById('t-firma').files[0]; let firmaUrl = null; if(fFirma) firmaUrl = await subirArchivo(supabase, fFirma, 'fichas_personal');
-        const serv = Array.from(document.querySelectorAll('input[name="serv"]:checked')).map(c=>c.value).join(',');
-        const hijosNombres = document.querySelectorAll('.hijo-nombre'); const hijosFechas = document.querySelectorAll('.hijo-fecha');
-        let hijosArray = []; hijosNombres.forEach((input, index) => { if(input.value.trim() !== "") { hijosArray.push({ nombre: input.value.toUpperCase(), fecha: hijosFechas[index].value }); } });
-
-        const extraDataObj = {};
-        const idsExtra = ['t-alergia','t-transporte','t-ciudad','t-barrio','t-carnet','t-nivel-estudio','t-establecimiento','t-servicio-higienico','t-basura','t-upc','t-seguridad-sector','t-tipo-familia','t-problema-familiar','g-alimento','g-luz','g-agua','g-educacion','g-salud','g-vestido','g-arriendo','g-otros','c-nivel','c-tareas','c-conflicto','c-recreacion'];
-        idsExtra.forEach(id => extraDataObj[id] = obtenerTexto(id) || getNumber(id) || '');
-
-        const datos = {
-            empresa_id: empresa.id, cedula: obtenerTexto('t-cedula'), nombre: obtenerTexto('t-nombre'), fecha_nacimiento: getFecha('t-nacimiento'),
-            cargo: obtenerTexto('t-cargo'), celular: obtenerTexto('t-celular'), correo: obtenerTexto('t-correo'), profesion: obtenerTexto('t-profesion'), sueldo: getNumber('t-sueldo'),
-            direccion: obtenerTexto('t-direccion'), sexo: obtenerTexto('t-sexo'), estado_civil: obtenerTexto('t-civil'), conyuge: obtenerTexto('t-conyuge'), tipo_sangre: obtenerTexto('t-sangre'),
-            lugar_nacimiento: obtenerTexto('t-lugar'), nacionalidad: obtenerTexto('t-nacionalidad'), religion: obtenerTexto('t-religion'), discapacidad: obtenerTexto('t-discapacidad'), licencia: obtenerTexto('t-licencia'),
-            afiliacion: getFecha('t-afiliacion'), banco: obtenerTexto('t-banco'), cuenta: obtenerTexto('t-cuenta'), vivienda: obtenerTexto('t-vivienda'),
-            material_paredes: obtenerTexto('t-material'), material_cubierta: obtenerTexto('t-cubierta'), habitaciones: getNumber('t-habitaciones'), servicios_basicos: serv,
-            emergencia_nombre: obtenerTexto('t-emer-nom'), emergencia_telefono: obtenerTexto('t-emer-tel'), emergencia2_nombre: obtenerTexto('t-emer2-nom'), emergencia2_telefono: obtenerTexto('t-emer2-tel'),
-            talla_camisa: obtenerTexto('t-camisa'), talla_pantalon: obtenerTexto('t-pantalon'), talla_zapatos: obtenerTexto('t-zapatos'),
-            datos_hijos: JSON.stringify(hijosArray), datos_extra: extraDataObj,
-            fecha_ingreso: (!id) ? getFecha('t-ingreso-manual') : undefined
-        };
+        let id = document.getElementById('t-id').value; const fFoto = document.getElementById('t-foto').files[0]; let fotoUrl = null; if(fFoto) fotoUrl = await subirArchivo(supabase, fFoto, 'fichas_personal'); const fFirma = document.getElementById('t-firma').files[0]; let firmaUrl = null; if(fFirma) firmaUrl = await subirArchivo(supabase, fFirma, 'fichas_personal'); const serv = Array.from(document.querySelectorAll('input[name="serv"]:checked')).map(c=>c.value).join(',');
+        const hijosNombres = document.querySelectorAll('.hijo-nombre'); const hijosFechas = document.querySelectorAll('.hijo-fecha'); let hijosArray = []; hijosNombres.forEach((input, index) => { if(input.value.trim() !== "") { hijosArray.push({ nombre: input.value.toUpperCase(), fecha: hijosFechas[index].value }); } });
+        const extraDataObj = {}; const idsExtra = ['t-alergia','t-transporte','t-ciudad','t-barrio','t-carnet','t-nivel-estudio','t-establecimiento','t-servicio-higienico','t-basura','t-upc','t-seguridad-sector','t-tipo-familia','t-problema-familiar','g-alimento','g-luz','g-agua','g-educacion','g-salud','g-vestido','g-arriendo','g-otros','c-nivel','c-tareas','c-conflicto','c-recreacion']; idsExtra.forEach(id => extraDataObj[id] = obtenerTexto(id) || getNumber(id) || '');
+        const datos = { empresa_id: empresa.id, cedula: obtenerTexto('t-cedula'), nombre: obtenerTexto('t-nombre'), fecha_nacimiento: getFecha('t-nacimiento'), cargo: obtenerTexto('t-cargo'), celular: obtenerTexto('t-celular'), correo: obtenerTexto('t-correo'), profesion: obtenerTexto('t-profesion'), sueldo: getNumber('t-sueldo'), direccion: obtenerTexto('t-direccion'), sexo: obtenerTexto('t-sexo'), estado_civil: obtenerTexto('t-civil'), conyuge: obtenerTexto('t-conyuge'), tipo_sangre: obtenerTexto('t-sangre'), lugar_nacimiento: obtenerTexto('t-lugar'), nacionalidad: obtenerTexto('t-nacionalidad'), religion: obtenerTexto('t-religion'), discapacidad: obtenerTexto('t-discapacidad'), licencia: obtenerTexto('t-licencia'), afiliacion: getFecha('t-afiliacion'), banco: obtenerTexto('t-banco'), cuenta: obtenerTexto('t-cuenta'), vivienda: obtenerTexto('t-vivienda'), material_paredes: obtenerTexto('t-material'), material_cubierta: obtenerTexto('t-cubierta'), habitaciones: getNumber('t-habitaciones'), servicios_basicos: serv, emergencia_nombre: obtenerTexto('t-emer-nom'), emergencia_telefono: obtenerTexto('t-emer-tel'), emergencia2_nombre: obtenerTexto('t-emer2-nom'), emergencia2_telefono: obtenerTexto('t-emer2-tel'), talla_camisa: obtenerTexto('t-camisa'), talla_pantalon: obtenerTexto('t-pantalon'), talla_zapatos: obtenerTexto('t-zapatos'), datos_hijos: JSON.stringify(hijosArray), datos_extra: extraDataObj, fecha_ingreso: (!id) ? getFecha('t-ingreso-manual') : undefined };
         if(datos.fecha_ingreso === undefined) delete datos.fecha_ingreso; if(fotoUrl) datos.foto_url = fotoUrl; if(firmaUrl) datos.firma_url = firmaUrl;
-
         let data, error; if(id) { const res = await supabase.from('trabajadores').update(datos).eq('id',id).select(); data = res.data; error = res.error; } else { datos.estado = 'ACTIVO'; const res = await supabase.from('trabajadores').insert([datos]).select(); data = res.data; error = res.error; }
         if(error) return alert("ERROR SUPABASE: " + error.message);
-        
         const trabajadorId = data[0].id; document.getElementById('t-id').value = trabajadorId;
         if (!id) { await supabase.from('historial_laboral').insert({ trabajador_id: trabajadorId, cargo: datos.cargo, fecha_inicio: datos.fecha_ingreso, motivo: 'INGRESO INICIAL' }); }
         if (datosExtra.tipo === 'CAMBIO_CARGO') { await supabase.from('historial_laboral').update({ fecha_fin: datosExtra.fechaSalida, motivo: datosExtra.motivoSalida ? datosExtra.motivoSalida.toUpperCase() : 'CAMBIO DE CARGO' }).eq('trabajador_id', trabajadorId).is('fecha_fin', null); await supabase.from('historial_laboral').insert({ trabajador_id: trabajadorId, cargo: datosExtra.cargoNuevo, fecha_inicio: datosExtra.fechaEntrada, motivo: 'CAMBIO DE CARGO' }); }
-
-        alert("GUARDADO EXITOSAMENTE."); document.getElementById('modal-acciones').style.display = 'none';
-        if(!id) abrir(data[0]); else { await cargarHistorial(trabajadorId); document.getElementById('t-cargo-original').value = datos.cargo; }
-        recargarListas(); 
+        alert("GUARDADO EXITOSAMENTE."); document.getElementById('modal-acciones').style.display = 'none'; if(!id) abrir(data[0]); else { await cargarHistorial(trabajadorId); document.getElementById('t-cargo-original').value = datos.cargo; } recargarListas(); 
     }
 
-    // ================== PDF ==================
-    const getBase64ImageFromURL = (url) => {
-        return new Promise((resolve) => {
-            if (!url) { resolve(null); return; }
-            const img = new Image();
-            img.crossOrigin = "Anonymous";
-            img.src = url;
-            img.onload = () => {
-                const canvas = document.createElement("canvas");
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext("2d");
-                ctx.drawImage(img, 0, 0);
-                resolve(canvas.toDataURL("image/png"));
-            };
-            img.onerror = () => { resolve(null); }; // Si falla, sigue sin imagen
-        });
-    };
+    // ================== PDF (FIX IMÁGENES + ATS ENLACE) ==================
+    const getBase64ImageFromURL = (url) => { return new Promise((resolve) => { if (!url) { resolve(null); return; } const img = new Image(); img.crossOrigin = "Anonymous"; img.src = url; img.onload = () => { const canvas = document.createElement("canvas"); canvas.width = img.width; canvas.height = img.height; const ctx = canvas.getContext("2d"); ctx.drawImage(img, 0, 0); resolve(canvas.toDataURL("image/png")); }; img.onerror = () => { resolve(null); }; }); };
 
     window.imprimirDoc = async (tipo) => {
         toggleMenuNombre(); const id = document.getElementById('t-id').value; if (!id) return;
         if (tipo === 'ficha') {
-            try {
-                await generarPDF_Ficha(id);
-            } catch (e) {
-                alert("Error generando PDF: " + e.message);
-                console.error(e);
-            }
+            try { await generarPDF_Ficha(id); } catch (e) { alert("Error PDF Ficha: " + e.message); console.error(e); }
         }
-        else if (tipo === 'ats') await generarPDF_ATS(id);
+        else if (tipo === 'ats') {
+            window.open('ATS.pdf', '_blank'); // ABRE ARCHIVO ESTÁTICO
+        }
         else alert(`GENERANDO ${tipo.toUpperCase()}... (EN DESARROLLO)`);
     };
 
     async function generarPDF_Ficha(id) {
         alert("GENERANDO FICHA...");
         const { data: t } = await supabase.from('trabajadores').select('*').eq('id', id).single();
-        
-        const logoUrl = empresa.logo_url;
-        const fotoUrl = t.foto_url;
-        // NO cargamos firma para la ficha
-        const [logoBase64, fotoBase64] = await Promise.all([
-            getBase64ImageFromURL(logoUrl),
-            getBase64ImageFromURL(fotoUrl)
-        ]);
+        const logoUrl = empresa.logo_url; const fotoUrl = t.foto_url;
+        const [logoBase64, fotoBase64] = await Promise.all([ getBase64ImageFromURL(logoUrl), getBase64ImageFromURL(fotoUrl) ]);
+        // PIXEL TRANSPARENTE DE RESPALDO (EVITA QUE FALLE SI NO HAY FOTO)
+        const emptyImg = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 
         let hijos = []; try { hijos = JSON.parse(t.datos_hijos || '[]'); } catch { }
         const filasHijos = hijos.map(h => [h.nombre, 'HIJO/A', h.fecha, 'ESTUDIANTE']);
         if (filasHijos.length === 0) filasHijos.push([{ text: 'NO REGISTRA', colSpan: 4, alignment: 'center' }, {}, {}, {}]);
-
         const ext = t.datos_extra || {}; 
-        
-        // Pixel transparente por si falla imagen (para evitar crash de pdfmake)
-        const emptyImg = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 
         const docDefinition = {
             pageSize: 'A4', pageMargins: [40, 40, 40, 40],
             content: [
-                {
-                    columns: [
-                        { image: logoBase64 || emptyImg, width: 80, height: 50, fit: [80, 50] },
-                        { text: 'FICHA SOCIO-ECONOMICA', style: 'header', alignment: 'center', margin: [0, 15, 0, 0] },
-                        { text: '', width: 80 }
-                    ]
-                },
+                { columns: [ { image: logoBase64 || emptyImg, width: 80, height: 50, fit: [80, 50] }, { text: 'FICHA SOCIO-ECONOMICA', style: 'header', alignment: 'center', margin: [0, 15, 0, 0] }, { text: '', width: 80 } ] },
                 { text: '\n' },
-
-                // 1. DATOS PERSONALES
                 { text: 'DATOS PERSONALES:', style: 'sectionHeader' },
                 {
-                    table: {
-                        widths: ['15%', '35%', '15%', '35%'],
-                        body: [
-                            [{ image: fotoBase64 || emptyImg, width: 70, height: 80, rowSpan: 6, alignment: 'center', fit: [70, 80] }, 
-                             { text: 'Nombres:', bold: true }, t.nombre || '', { text: 'Empresa:', bold: true }, empresa.nombre],
-                            ['', { text: 'Cédula:', bold: true }, t.cedula || '', { text: 'Tipo Contrato:', bold: true }, 'INDEFINIDO'],
-                            ['', { text: 'Nacionalidad:', bold: true }, t.nacionalidad || '', { text: 'Cargo:', bold: true }, t.cargo || ''],
-                            ['', { text: 'Lugar Nac:', bold: true }, t.lugar_nacimiento || '', { text: 'Medio Transp:', bold: true }, ext['t-transporte'] || ''],
-                            ['', { text: 'Fecha Nac:', bold: true }, t.fecha_nacimiento || '', { text: 'Celular:', bold: true }, t.celular || ''],
-                            ['', { text: 'Edad:', bold: true }, document.getElementById('t-edad').value, { text: 'Correo:', bold: true }, t.correo || ''],
-                            [{ text: 'Código:', bold: true }, t.id, { text: 'Discapacidad:', bold: true }, t.discapacidad || 'NO'],
-                            [{ text: 'Gen Sanguineo:', bold: true }, t.tipo_sangre || '', { text: 'Carnet:', bold: true }, ext['t-carnet'] || 'NO'],
-                            [{ text: 'Religión:', bold: true }, t.religion || '', { text: 'Hijos:', bold: true }, hijos.length > 0 ? 'SI' : 'NO'],
-                            [{ text: 'Profesión:', bold: true }, t.profesion || '', { text: 'Número Hijos:', bold: true }, hijos.length],
-                            [{ text: 'Sueldo:', bold: true }, '$ ' + (t.sueldo || 0), { text: 'Afiliado IESS:', bold: true }, t.afiliacion ? 'SI' : 'NO'],
-                            [{ text: 'Banco:', bold: true }, t.banco || '', { text: 'Fecha Afiliación:', bold: true }, t.afiliacion || ''],
-                            [{ text: 'Cuenta:', bold: true }, t.cuenta || '', { text: 'Estado:', bold: true }, t.estado],
-                            [{ text: 'Estado Civil:', bold: true }, t.estado_civil || '', { text: 'Alergia:', bold: true }, ext['t-alergia'] || 'NINGUNA'],
-                            [{ text: 'Cónyuge:', bold: true }, t.conyuge || 'N/A', { text: 'Ciudad Res:', bold: true }, ext['t-ciudad'] || ''],
-                            [{ text: 'Barrio:', bold: true }, ext['t-barrio'] || '', { text: 'Licencia:', bold: true }, t.licencia || 'NINGUNA'],
-                            [{ text: 'Dirección:', bold: true }, { text: t.direccion || '', colSpan: 3 }, {}, {}]
-                        ]
-                    }
+                    table: { widths: ['15%', '35%', '15%', '35%'], body: [
+                        [{ image: fotoBase64 || emptyImg, width: 70, height: 80, rowSpan: 6, alignment: 'center', fit: [70, 80] }, { text: 'Nombres:', bold: true }, t.nombre || '', { text: 'Empresa:', bold: true }, empresa.nombre],
+                        ['', { text: 'Cédula:', bold: true }, t.cedula || '', { text: 'Tipo Contrato:', bold: true }, 'INDEFINIDO'],
+                        ['', { text: 'Nacionalidad:', bold: true }, t.nacionalidad || '', { text: 'Cargo:', bold: true }, t.cargo || ''],
+                        ['', { text: 'Lugar Nac:', bold: true }, t.lugar_nacimiento || '', { text: 'Medio Transp:', bold: true }, ext['t-transporte'] || ''],
+                        ['', { text: 'Fecha Nac:', bold: true }, t.fecha_nacimiento || '', { text: 'Celular:', bold: true }, t.celular || ''],
+                        ['', { text: 'Edad:', bold: true }, document.getElementById('t-edad').value, { text: 'Correo:', bold: true }, t.correo || ''],
+                        [{ text: 'Código:', bold: true }, t.id, { text: 'Discapacidad:', bold: true }, t.discapacidad || 'NO'],
+                        [{ text: 'Gen Sanguineo:', bold: true }, t.tipo_sangre || '', { text: 'Carnet:', bold: true }, ext['t-carnet'] || 'NO'],
+                        [{ text: 'Religión:', bold: true }, t.religion || '', { text: 'Hijos:', bold: true }, hijos.length > 0 ? 'SI' : 'NO'],
+                        [{ text: 'Profesión:', bold: true }, t.profesion || '', { text: 'Número Hijos:', bold: true }, hijos.length],
+                        [{ text: 'Sueldo:', bold: true }, '$ ' + (t.sueldo || 0), { text: 'Afiliado IESS:', bold: true }, t.afiliacion ? 'SI' : 'NO'],
+                        [{ text: 'Banco:', bold: true }, t.banco || '', { text: 'Fecha Afiliación:', bold: true }, t.afiliacion || ''],
+                        [{ text: 'Cuenta:', bold: true }, t.cuenta || '', { text: 'Estado:', bold: true }, t.estado],
+                        [{ text: 'Estado Civil:', bold: true }, t.estado_civil || '', { text: 'Alergia:', bold: true }, ext['t-alergia'] || 'NINGUNA'],
+                        [{ text: 'Cónyuge:', bold: true }, t.conyuge || 'N/A', { text: 'Ciudad Res:', bold: true }, ext['t-ciudad'] || ''],
+                        [{ text: 'Barrio:', bold: true }, ext['t-barrio'] || '', { text: 'Licencia:', bold: true }, t.licencia || 'NINGUNA'],
+                        [{ text: 'Dirección:', bold: true }, { text: t.direccion || '', colSpan: 3 }, {}, {}]
+                    ] }
                 },
                 { text: '\n' },
-
-                // 2. NIVEL DE ESTUDIO
                 {
-                    table: {
-                        widths: ['30%', '40%', '30%'],
-                        headerRows: 1,
-                        body: [
-                            [{ text: 'Nivel de estudio', style: 'tableHeader' }, { text: 'Establecimiento educativo', style: 'tableHeader' }, { text: 'Observación', style: 'tableHeader' }],
-                            [ext['t-nivel-estudio'] || '', ext['t-establecimiento'] || '', t.profesion || '']
-                        ]
-                    }
+                    table: { widths: ['30%', '40%', '30%'], headerRows: 1, body: [ [{ text: 'Nivel de estudio', style: 'tableHeader' }, { text: 'Establecimiento educativo', style: 'tableHeader' }, { text: 'Observación', style: 'tableHeader' }], [ext['t-nivel-estudio'] || '', ext['t-establecimiento'] || '', t.profesion || ''] ] }
                 },
                 { text: '\n' },
-
-                // 3. VIVIENDA
                 { text: 'VIVIENDA ACTUAL Y SERVICIOS BASICOS:', style: 'sectionHeader' },
                 {
-                    table: {
-                        widths: ['20%', '30%', '20%', '30%'],
-                        body: [
-                            [{ text: 'Tendencia:', bold: true }, t.vivienda || '', { text: 'Servicio Higiénico:', bold: true }, ext['t-servicio-higienico'] || ''],
-                            [{ text: 'Tipo Vivienda:', bold: true }, t.material_paredes || '', { text: 'Recolección Basura:', bold: true }, ext['t-basura'] || ''],
-                            [{ text: 'Cubierta:', bold: true }, t.material_cubierta || '', { text: 'UPC cercano:', bold: true }, ext['t-upc'] || ''],
-                            [{ text: 'Nº Habitaciones:', bold: true }, t.habitaciones || 0, { text: 'Seguridad:', bold: true }, ext['t-seguridad-sector'] || ''],
-                            [{ text: 'Servicios:', bold: true }, t.servicios_basicos || '', { text: 'Tipo Familia:', bold: true }, ext['t-tipo-familia'] || ''],
-                            [{ text: 'Agua:', bold: true }, 'RED PÚBLICA', { text: 'Problema Familiar:', bold: true }, ext['t-problema-familiar'] || 'NO']
-                        ]
-                    }
+                    table: { widths: ['20%', '30%', '20%', '30%'], body: [
+                        [{ text: 'Tendencia:', bold: true }, t.vivienda || '', { text: 'Servicio Higiénico:', bold: true }, ext['t-servicio-higienico'] || ''],
+                        [{ text: 'Tipo Vivienda:', bold: true }, t.material_paredes || '', { text: 'Recolección Basura:', bold: true }, ext['t-basura'] || ''],
+                        [{ text: 'Cubierta:', bold: true }, t.material_cubierta || '', { text: 'UPC cercano:', bold: true }, ext['t-upc'] || ''],
+                        [{ text: 'Nº Habitaciones:', bold: true }, t.habitaciones || 0, { text: 'Seguridad:', bold: true }, ext['t-seguridad-sector'] || ''],
+                        [{ text: 'Servicios:', bold: true }, t.servicios_basicos || '', { text: 'Tipo Familia:', bold: true }, ext['t-tipo-familia'] || ''],
+                        [{ text: 'Agua:', bold: true }, 'RED PÚBLICA', { text: 'Problema Familiar:', bold: true }, ext['t-problema-familiar'] || 'NO']
+                    ] }
                 },
                 { text: '\n' },
-
-                // 4. TALLAS
-                {
-                    table: {
-                        widths: ['25%', '25%', '25%', '25%'],
-                        headerRows: 1,
-                        body: [
-                            [{ text: 'Talla Ropa', style: 'tableHeader', colSpan: 4 }, {}, {}, {}],
-                            ['Camisa: ' + (t.talla_camisa || ''), 'Pantalon: ' + (t.talla_pantalon || ''), 'Zapatos: ' + (t.talla_zapatos || ''), '']
-                        ]
-                    }
-                },
+                { table: { widths: ['25%', '25%', '25%', '25%'], headerRows: 1, body: [ [{ text: 'Talla Ropa', style: 'tableHeader', colSpan: 4 }, {}, {}, {}], ['Camisa: ' + (t.talla_camisa || ''), 'Pantalon: ' + (t.talla_pantalon || ''), 'Zapatos: ' + (t.talla_zapatos || ''), ''] ] } },
                 { text: '\n' },
-
-                // 5. EMERGENCIA
                 { text: 'EN CASO DE EMERGENCIA:', style: 'sectionHeader' },
-                {
-                    table: {
-                        widths: ['40%', '30%', '30%'],
-                        headerRows: 1,
-                        body: [
-                            [{ text: 'Persona', style: 'tableHeader' }, { text: 'Parentesco', style: 'tableHeader' }, { text: 'Teléfono', style: 'tableHeader' }],
-                            [t.emergencia_nombre || '', 'FAMILIAR', t.emergencia_telefono || ''],
-                            [t.emergencia2_nombre || '', 'FAMILIAR', t.emergencia2_telefono || '']
-                        ]
-                    }
-                },
+                { table: { widths: ['40%', '30%', '30%'], headerRows: 1, body: [ [{ text: 'Persona', style: 'tableHeader' }, { text: 'Parentesco', style: 'tableHeader' }, { text: 'Teléfono', style: 'tableHeader' }], [t.emergencia_nombre || '', 'FAMILIAR', t.emergencia_telefono || ''], [t.emergencia2_nombre || '', 'FAMILIAR', t.emergencia2_telefono || ''] ] } },
                 { text: '\n' },
-
-                // 6. CARGAS FAMILIARES
                 { text: 'CARGAS FAMILIARES:', style: 'sectionHeader' },
-                {
-                    table: {
-                        widths: ['35%', '20%', '20%', '25%'],
-                        headerRows: 1,
-                        body: [
-                            [{ text: 'Persona', style: 'tableHeader' }, { text: 'Parentesco', style: 'tableHeader' }, { text: 'F. Nacim', style: 'tableHeader' }, { text: 'Ocupación', style: 'tableHeader' }],
-                            ...filasHijos
-                        ]
-                    }
-                },
+                { table: { widths: ['35%', '20%', '20%', '25%'], headerRows: 1, body: [ [{ text: 'Persona', style: 'tableHeader' }, { text: 'Parentesco', style: 'tableHeader' }, { text: 'F. Nacim', style: 'tableHeader' }, { text: 'Ocupación', style: 'tableHeader' }], ...filasHijos ] } },
                 { text: '\n' },
-
-                // 7. EGRESOS
                 { text: 'EGRESOS MENSUALES ESTIMADOS:', style: 'sectionHeader' },
-                {
-                    table: {
-                        widths: ['25%', '25%', '25%', '25%'],
-                        headerRows: 1,
-                        body: [
-                            [{ text: 'Rubro', style: 'tableHeader' }, { text: 'Valor', style: 'tableHeader' }, { text: 'Rubro', style: 'tableHeader' }, { text: 'Valor', style: 'tableHeader' }],
-                            ['Alimento', '$ ' + (ext['g-alimento'] || 0), 'Salud', '$ ' + (ext['g-salud'] || 0)],
-                            ['Luz', '$ ' + (ext['g-luz'] || 0), 'Vestido', '$ ' + (ext['g-vestido'] || 0)],
-                            ['Agua', '$ ' + (ext['g-agua'] || 0), 'Arriendo', '$ ' + (ext['g-arriendo'] || 0)],
-                            ['Educación', '$ ' + (ext['g-educacion'] || 0), 'Otros', '$ ' + (ext['g-otros'] || 0)]
-                        ]
-                    }
-                },
+                { table: { widths: ['25%', '25%', '25%', '25%'], headerRows: 1, body: [ [{ text: 'Rubro', style: 'tableHeader' }, { text: 'Valor', style: 'tableHeader' }, { text: 'Rubro', style: 'tableHeader' }, { text: 'Valor', style: 'tableHeader' }], ['Alimento', '$ ' + (ext['g-alimento'] || 0), 'Salud', '$ ' + (ext['g-salud'] || 0)], ['Luz', '$ ' + (ext['g-luz'] || 0), 'Vestido', '$ ' + (ext['g-vestido'] || 0)], ['Agua', '$ ' + (ext['g-agua'] || 0), 'Arriendo', '$ ' + (ext['g-arriendo'] || 0)], ['Educación', '$ ' + (ext['g-educacion'] || 0), 'Otros', '$ ' + (ext['g-otros'] || 0)] ] } },
                 { text: '\n' },
-
-                // 8. COMUNICACIÓN
                 { text: 'COMUNICACIÓN FAMILIAR:', style: 'sectionHeader' },
-                {
-                    table: {
-                        widths: ['50%', '50%'],
-                        body: [
-                            [{ text: 'Nivel de comunicación:', bold: true }, ext['c-nivel'] || 'BUENO'],
-                            [{ text: 'Designa tareas a sus hijos:', bold: true }, ext['c-tareas'] || 'SI'],
-                            [{ text: 'Causas de conflicto:', bold: true }, ext['c-conflicto'] || 'NINGUNA'],
-                            [{ text: 'Formas de recreación:', bold: true }, ext['c-recreacion'] || 'PASEOS']
-                        ]
-                    }
-                },
+                { table: { widths: ['50%', '50%'], body: [ [{ text: 'Nivel de comunicación:', bold: true }, ext['c-nivel'] || 'BUENO'], [{ text: 'Designa tareas a sus hijos:', bold: true }, ext['c-tareas'] || 'SI'], [{ text: 'Causas de conflicto:', bold: true }, ext['c-conflicto'] || 'NINGUNA'], [{ text: 'Formas de recreación:', bold: true }, ext['c-recreacion'] || 'PASEOS'] ] } },
                 { text: '\n\n\n' },
-
-                // FIRMA MANUAL (SIN FOTO DE FIRMA)
-                {
-                    stack: [
-                        { text: '\n\n', fontSize: 10 },
-                        { text: '_______________________________', alignment: 'center' },
-                        { text: 'FIRMA DEL SOLICITANTE', alignment: 'center', bold: true },
-                        { text: t.nombre || '', alignment: 'center' },
-                        { text: t.cedula || '', alignment: 'center' }
-                    ]
-                }
+                { stack: [ { text: '\n\n', fontSize: 10 }, { text: '_______________________________', alignment: 'center' }, { text: 'FIRMA DEL SOLICITANTE', alignment: 'center', bold: true }, { text: t.nombre || '', alignment: 'center' }, { text: t.cedula || '', alignment: 'center' } ] }
             ],
-            styles: {
-                header: { fontSize: 16, bold: true, decoration: 'underline' },
-                sectionHeader: { fontSize: 11, bold: true, margin: [0, 5, 0, 2] },
-                label: { fontSize: 8, bold: true },
-                tableHeader: { bold: true, fontSize: 9, color: 'black', fillColor: '#cccccc', alignment: 'center' }
-            },
+            styles: { header: { fontSize: 16, bold: true, decoration: 'underline' }, sectionHeader: { fontSize: 11, bold: true, margin: [0, 5, 0, 2] }, label: { fontSize: 8, bold: true }, tableHeader: { bold: true, fontSize: 9, color: 'black', fillColor: '#cccccc', alignment: 'center' } },
             defaultStyle: { fontSize: 8 }
         };
-
         pdfMake.createPdf(docDefinition).download(`Ficha_${t.nombre}.pdf`);
     }
 
-    // --- PDF: ATS (CHECKLIST) ---
-    async function generarPDF_ATS(id) {
-        alert("GENERANDO ATS...");
-        const { data: t } = await supabase.from('trabajadores').select('*').eq('id', id).single();
-        const logoUrl = empresa.logo_url;
-        const [logoBase64] = await Promise.all([logoUrl ? getBase64ImageFromURL(logoUrl) : null]);
-        const emptyImg = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
-
-        const doc = {
-            pageSize: 'A4', pageMargins: [20, 20, 20, 20],
-            content: [
-                { table: { widths: ['15%', '*', '15%'], body: [[{ image: logoBase64 || emptyImg, fit: [50, 50], rowSpan: 2, alignment:'center' }, { text: 'ANÁLISIS DE TRABAJO SEGURO (ATS)', style: 'header', alignment: 'center', margin: [0, 5] }, { text: 'CÓDIGO: ATS-001', fontSize: 8, alignment: 'right' }], ['', { text: 'COMPRENDO QUE SOY RESPONSABLE DE MI SEGURIDAD Y LA DE MIS COMPAÑEROS', fontSize: 7, alignment: 'center', italics: true }, '']] } },
-                { text: '\n' },
-                { table: { widths: ['15%', '35%', '15%', '35%'], body: [[{ text: 'TRABAJO:', fontSize: 8, bold: true }, { text: '', fontSize: 8 }, { text: 'FECHA:', fontSize: 8, bold: true }, { text: new Date().toLocaleDateString(), fontSize: 8 }], [{ text: 'RESPONSABLE:', fontSize: 8, bold: true }, { text: t.nombre, fontSize: 8 }, { text: 'CARGO:', fontSize: 8, bold: true }, { text: t.cargo, fontSize: 8 }]] } },
-                { text: '\n' },
-                { columns: [ { width: '25%', stack: [ { text: '1. EPP', style: 'sectionHeader' }, { table: { widths: ['*', 15, 15], body: [['ITEM', 'SI', 'NO'], ['CASCO', '', ''], ['LENTES', '', ''], ['GUANTES', '', ''], ['BOTAS', '', ''], ['ARNÉS', '', ''], ['RESPIRADOR', '', ''], ['ROPA', '', ''], ['AUDITIVO', '', '']] }, layout: 'lightHorizontalLines' } ] }, { width: '25%', margin: [10, 0, 0, 0], stack: [ { text: '2. HERRAMIENTAS', style: 'sectionHeader' }, { table: { widths: ['*', 15, 15], body: [['ITEM', 'SI', 'NO'], ['ESTÁNDAR', '', ''], ['INSPECCIÓN', '', ''], ['ADECUADAS', '', ''], ['CÓDIGO COLOR', '', '']] }, layout: 'lightHorizontalLines' }, { text: '\n3. ENTORNO', style: 'sectionHeader' }, { table: { widths: ['*', 15, 15], body: [['ITEM', 'SI', 'NO'], ['ORDEN', '', ''], ['LIMPIEZA', '', ''], ['SEÑALIZADO', '', '']] }, layout: 'lightHorizontalLines' } ] }, { width: '25%', margin: [10, 0, 0, 0], stack: [ { text: '4. RIESGOS CRÍTICOS', style: 'sectionHeader' }, { table: { widths: ['*', 15, 15], body: [['ITEM', 'SI', 'NO'], ['ALTURA', '', ''], ['ESP. CONFINADO', '', ''], ['IZAJE', '', ''], ['CALIENTE', '', ''], ['EXCAVACIÓN', '', ''], ['ELÉCTRICO', '', '']] }, layout: 'lightHorizontalLines' } ] }, { width: '25%', margin: [10, 0, 0, 0], stack: [ { text: '5. EMERGENCIAS', style: 'sectionHeader' }, { table: { widths: ['*', 15, 15], body: [['ITEM', 'SI', 'NO'], ['EXTINTOR', '', ''], ['BOTIQUÍN', '', ''], ['LAVAOJOS', '', ''], ['RUTAS EVAC.', '', '']] }, layout: 'lightHorizontalLines' } ] } ] },
-                { text: '\n\n' },
-                { table: { widths: ['50%', '50%'], body: [ [ { text: '\n\n___________________________\nFIRMA DEL TRABAJADOR\n' + t.cedula, alignment: 'center', fontSize: 8 }, { text: '\n\n___________________________\nFIRMA SUPERVISOR SST', alignment: 'center', fontSize: 8 } ] ] }, layout: 'noBorders' }
-            ],
-            styles: { header: { fontSize: 12, bold: true }, sectionHeader: { fontSize: 9, bold: true, color: 'white', fillColor: '#00d2ff', margin: [0, 2] } }
-        };
-        pdfMake.createPdf(doc).download(`ATS_${t.nombre}.pdf`);
-    }
-
+    // ... (El resto de funciones como modales y listar se mantienen igual que en la versión anterior)
     window.abrirModalAccion = (tipo, extraData = null) => {
         const modal = document.getElementById('modal-acciones'), titulo = document.getElementById('modal-titulo'), desc = document.getElementById('modal-desc'), inputs = document.getElementById('modal-inputs'), nombre = document.getElementById('t-nombre').value, cargoActual = document.getElementById('t-cargo-original').value;
         trabajadorSeleccionadoId = document.getElementById('t-id').value; datosAccionTemp = { tipo: tipo, ...extraData }; inputs.innerHTML = ''; 
