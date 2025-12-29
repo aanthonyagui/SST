@@ -1,14 +1,14 @@
 /* =========================================
-   STYLE.CSS - TU ESTILO ORIGINAL + FIX MÓVIL
+   STYLE.CSS - VERSIÓN FINAL CORREGIDA (V9)
    ========================================= */
 :root {
-    --primary: #00d2ff;
-    --danger: #ff4444;
-    --success: #00C851;
-    --warning: #ffbb33;
+    --primary: #00d2ff;       /* EL AZUL QUE TE GUSTA */
+    --danger: #ff4444;        /* Rojo (Solo para alertas/badges) */
+    --success: #00C851;       /* Verde (Solo para badges) */
+    --warning: #ffbb33;       /* Amarillo */
     --text: #ffffff;
     --bg-dark: #050505;
-    --glass-bg: rgba(30, 30, 30, 0.85);
+    --glass-bg: rgba(30, 30, 30, 0.9);
     --glass-border: rgba(255, 255, 255, 0.15);
     --input-bg: rgba(0, 0, 0, 0.5);
 }
@@ -70,21 +70,15 @@ body {
 /* CONTENIDO */
 .content-area { flex: 1; padding: 20px; overflow-y: auto; position: relative; }
 
-/* --- AQUÍ ESTÁ EL ARREGLO DE LOS BOTONES --- */
+/* --- BOTONES DE PESTAÑAS (CORREGIDO) --- */
 .header-tools { display: flex; flex-direction: column; }
 
-/* Contenedor de botones: Forzamos fila única con scroll */
 #tab-container {
-    display: flex; 
-    gap: 8px; 
-    overflow-x: auto; 
-    padding-bottom: 5px; 
-    align-items: center;
-    white-space: nowrap; /* Evita que bajen de línea */
-    -webkit-overflow-scrolling: touch; /* Scroll suave en iPhone */
+    display: flex; gap: 8px; 
+    overflow-x: auto; padding-bottom: 5px; align-items: center;
+    white-space: nowrap; -webkit-overflow-scrolling: touch;
 }
 
-/* Estilo Base Botón */
 .tab-btn {
     background: rgba(255,255,255,0.05); 
     border: 1px solid rgba(255,255,255,0.1); 
@@ -93,29 +87,32 @@ body {
     border-radius: 8px; 
     cursor: pointer; 
     transition: 0.2s;
-    display: inline-flex; 
-    align-items: center; 
-    gap: 6px; 
-    font-size: 0.9em; 
-    white-space: nowrap;
-    height: 40px; /* Altura fija para uniformidad */
+    display: inline-flex; align-items: center; gap: 6px; 
+    font-size: 0.9em; white-space: nowrap; height: 40px;
 }
 
-/* Colores Específicos (Como en tu foto) */
-.btn-activos.active { background: rgba(46, 204, 113, 0.2); border-color: var(--success); color: var(--success); }
-.btn-pasivos.active { background: rgba(231, 76, 60, 0.2); border-color: var(--danger); color: var(--danger); }
-.btn-nuevo { font-weight: bold; border-color: #555; }
-.btn-nombre { border-color: var(--warning); color: var(--warning); background: rgba(241, 196, 15, 0.1); }
+/* ESTADO ACTIVO: SIEMPRE AZUL (TU REQUERIMIENTO) */
+.tab-btn.active {
+    background: var(--primary); /* Azul Cian */
+    color: #000; /* Texto negro para contraste */
+    border-color: var(--primary);
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(0, 210, 255, 0.4);
+}
 
+/* Badges (Contadores) con sus colores originales */
 .badge { 
-    background: #222; color: white; border-radius: 50%; 
-    width: 20px; height: 20px; 
+    border-radius: 50%; width: 20px; height: 20px; 
     display: flex; justify-content: center; align-items: center; 
     font-size: 0.75em; font-weight: bold;
+    background: #444; color: white;
 }
-/* Colores de badges */
 .bg-green { background: var(--success); color: black; }
 .bg-red { background: var(--danger); color: white; }
+
+/* Botón Nombre (Amarillo cuando aparece) */
+.btn-nombre { border-color: var(--warning); color: var(--warning); background: rgba(241, 196, 15, 0.1); }
+.btn-nombre.active { background: var(--warning); color: black; border-color: var(--warning); }
 
 /* GRID TRABAJADORES */
 .worker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-top: 15px; }
@@ -124,7 +121,7 @@ body {
     border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 15px;
     cursor: pointer; transition: 0.2s;
 }
-.worker-card:hover { background: rgba(255,255,255,0.08); border-color: var(--primary); }
+.worker-card:hover { background: rgba(0, 210, 255, 0.1); border-color: var(--primary); transform: translateY(-3px); }
 .w-avatar {
     width: 50px; height: 50px; flex-shrink: 0; background: #222;
     border-radius: 50%; display: flex; justify-content: center; align-items: center;
@@ -148,9 +145,9 @@ button {
 }
 .btn-small { width: auto; padding: 8px 12px; font-size: 0.9em; }
 
-/* MENÚ DESPLEGABLE */
+/* DROPDOWN */
 .dropdown { position: relative; display: inline-block; }
-.dropdown-content { display: none; } /* Oculto por defecto */
+.dropdown-content { display: none; }
 
 /* RESPONSIVE MÓVIL */
 #menu-toggle, #sidebar-overlay { display: none; }
@@ -170,6 +167,7 @@ button {
     
     .content-area { height: auto; padding: 15px; padding-bottom: 100px; overflow: visible; }
     .form-grid { grid-template-columns: 1fr; }
+    .desktop-text { display: none; } /* Solo iconos en celular */
     
     #menu-toggle {
         display: inline-block; position: sticky; top: 10px; z-index: 95;
@@ -178,29 +176,23 @@ button {
     }
     #sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 90; }
 
-    /* --- MENÚ FLOTANTE CENTRADO (TIPO APP) --- */
+    /* MENÚ FLOTANTE CENTRADO EN MÓVIL */
     .dropdown-content {
         display: none; position: fixed; 
         top: 50%; left: 50%; transform: translate(-50%, -50%);
         width: 80%; max-width: 300px;
-        background: #1a1a1a; border: 1px solid var(--warning);
+        background: #1a1a1a; border: 1px solid var(--primary);
         border-radius: 15px; box-shadow: 0 0 50px rgba(0,0,0,0.9);
-        z-index: 9999; padding: 10px 0;
-        text-align: center;
+        z-index: 9999; padding: 10px 0; text-align: center;
     }
     .dropdown-content.show { display: block; animation: popUp 0.2s; }
-    
     .dropdown-content a {
         display: block; padding: 15px; color: white; text-decoration: none;
         border-bottom: 1px solid #333; font-size: 1.1em;
     }
-    .dropdown-content a:last-child { border-bottom: none; }
-    
-    /* Fondo oscuro al abrir menú */
     .dropdown.show-bg::before {
         content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
         background: rgba(0,0,0,0.8); z-index: 9998; backdrop-filter: blur(3px);
     }
 }
-
 @keyframes popUp { from { transform: translate(-50%, -40%); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; } }
