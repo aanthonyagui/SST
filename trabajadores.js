@@ -1,9 +1,9 @@
-// trabajadores.js - VERSIÓN FINAL: CORRECCIÓN CARGO NULL Y FECHAS
+// trabajadores.js - VERSIÓN FINAL: BLINDAJE TOTAL (FECHAS Y NÚMEROS)
 
 let listaCargosCache = []; 
 
 export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
-    // 1. Cargar cargos
+    // 1. Cargar lista de cargos
     const { data: cargosBD } = await supabase.from('cargos').select('*');
     listaCargosCache = cargosBD || [];
 
@@ -123,7 +123,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                     <summary style="font-weight:bold; color:#ccc; margin-bottom:10px;">Laboral y Banco</summary>
                     <div class="form-grid">
                         <input id="t-profesion" placeholder="Profesión">
-                        <input id="t-sueldo" placeholder="Sueldo $">
+                        <input id="t-sueldo" type="number" step="0.01" placeholder="Sueldo $">
                         <div><label style="font-size:0.7em; color:#aaa;">Afiliación IESS:</label><input type="date" id="t-afiliacion"></div>
                         <input id="t-banco" placeholder="Banco">
                         <input id="t-cuenta" placeholder="Nº Cuenta">
@@ -137,7 +137,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                         <select id="t-vivienda"><option>Propia</option><option>Arrendada</option><option>Familiar</option></select>
                         <input id="t-material" placeholder="Paredes">
                         <input id="t-cubierta" placeholder="Techo">
-                        <input id="t-habitaciones" placeholder="Habitaciones">
+                        <input id="t-habitaciones" type="number" placeholder="Habitaciones">
                     </div>
                     <div class="multi-select-box" style="margin-top:10px;">
                         <label>Servicios Básicos:</label><br>
@@ -219,12 +219,20 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     let trabajadorSeleccionadoId = null;
     let datosAccionTemp = {}; 
 
-    // Llenar select de cargos dinámicamente
+    // Llenar select cargos
     const selForm = document.getElementById('t-cargo');
     listaCargosCache.forEach(c => selForm.innerHTML += `<option value="${c.nombre}">${c.nombre}</option>`);
 
-    // Helper: Validar Fecha (Evita error de comillas vacías en BD)
+    // --- FUNCIONES AUXILIARES DE LIMPIEZA DE DATOS ---
+    
+    // Si la fecha está vacía "", devuelve NULL
     const getFecha = (id) => {
+        const val = document.getElementById(id).value;
+        return val === "" ? null : val;
+    };
+    
+    // Si el número está vacío "", devuelve NULL (Evita error numeric: "")
+    const getNumber = (id) => {
         const val = document.getElementById(id).value;
         return val === "" ? null : val;
     };
@@ -267,7 +275,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         document.getElementById('btn-reactivar').style.display = 'none';
         document.getElementById('titulo-ficha').innerText = "Nuevo Ingreso";
         document.getElementById('div-conyuge').style.display = 'none';
-        document.getElementById('cont-nombre').style.display = 'none'; // Se oculta al ser nuevo
+        document.getElementById('cont-nombre').style.display = 'none'; 
         
         cambiarVista('xxx');
         document.getElementById('vista-formulario').style.display = 'block';
@@ -360,11 +368,9 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             return alert("INGRESE FECHA DE INGRESO");
         }
 
-        // DETECCIÓN CAMBIO DE CARGO
-        // Aquí pasamos el cargoNuevo como parámetro extra para que NO se pierda
+        // Cambio de cargo -> Modal
         if (id && cargoViejo && cargoNuevo !== cargoViejo) {
             trabajadorSeleccionadoId = id;
-            // IMPORTANTE: Aquí se usa abrirModalAccion pasando los datos
             abrirModalAccion('CAMBIO_CARGO', { cargoNuevo: cargoNuevo, cargoViejo: cargoViejo });
             return; 
         }
@@ -385,12 +391,14 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             empresa_id: empresa.id,
             cedula: document.getElementById('t-cedula').value,
             nombre: document.getElementById('t-nombre').value.toUpperCase(),
-            fecha_nacimiento: getFecha('t-nacimiento'), // FIX: Usa getFecha
+            // FECHA SANITIZADA
+            fecha_nacimiento: getFecha('t-nacimiento'),
             cargo: document.getElementById('t-cargo').value,
             celular: document.getElementById('t-celular').value,
             correo: document.getElementById('t-correo').value,
             profesion: document.getElementById('t-profesion').value,
-            sueldo: document.getElementById('t-sueldo').value,
+            // NÚMERO SANITIZADO (SUELDO)
+            sueldo: getNumber('t-sueldo'),
             direccion: document.getElementById('t-direccion').value,
             sexo: document.getElementById('t-sexo').value,
             estado_civil: document.getElementById('t-civil').value,
@@ -401,13 +409,15 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             religion: document.getElementById('t-religion').value,
             discapacidad: document.getElementById('t-discapacidad').value,
             licencia: document.getElementById('t-licencia').value,
-            afiliacion: getFecha('t-afiliacion'), // FIX: Usa getFecha
+            // FECHA SANITIZADA
+            afiliacion: getFecha('t-afiliacion'),
             banco: document.getElementById('t-banco').value,
             cuenta: document.getElementById('t-cuenta').value,
             vivienda: document.getElementById('t-vivienda').value,
             material_paredes: document.getElementById('t-material').value,
             material_cubierta: document.getElementById('t-cubierta').value,
-            habitaciones: document.getElementById('t-habitaciones').value,
+            // NÚMERO SANITIZADO (HABITACIONES)
+            habitaciones: getNumber('t-habitaciones'),
             servicios_basicos: serv,
             emergencia_nombre: document.getElementById('t-emer-nom').value,
             emergencia_telefono: document.getElementById('t-emer-tel').value,
@@ -416,7 +426,8 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             talla_camisa: document.getElementById('t-camisa').value,
             talla_pantalon: document.getElementById('t-pantalon').value,
             talla_zapatos: document.getElementById('t-zapatos').value,
-            fecha_ingreso: (!id) ? getFecha('t-ingreso-manual') : undefined // FIX: Usa getFecha
+            // FECHA SANITIZADA
+            fecha_ingreso: (!id) ? getFecha('t-ingreso-manual') : undefined
         };
         if(datos.fecha_ingreso === undefined) delete datos.fecha_ingreso;
         if(fotoUrl) datos.foto_url = fotoUrl;
@@ -437,23 +448,18 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         const trabajadorId = data[0].id;
         document.getElementById('t-id').value = trabajadorId;
 
-        // --- LÓGICA HISTORIAL ---
+        // --- HISTORIAL ---
         if (!id) {
             await supabase.from('historial_laboral').insert({
-                trabajador_id: trabajadorId, 
-                cargo: datos.cargo, 
-                fecha_inicio: datos.fecha_ingreso, 
-                motivo: 'Ingreso Inicial'
+                trabajador_id: trabajadorId, cargo: datos.cargo, fecha_inicio: datos.fecha_ingreso, motivo: 'Ingreso Inicial'
             });
         }
         if (datosExtra.tipo === 'CAMBIO_CARGO') {
-            // Cerrar anterior
             await supabase.from('historial_laboral').update({ 
                 fecha_fin: datosExtra.fechaSalida, 
                 motivo: datosExtra.motivoSalida 
             }).eq('trabajador_id', trabajadorId).is('fecha_fin', null);
             
-            // Insertar nuevo (CORREGIDO: Usa datosExtra.cargoNuevo)
             await supabase.from('historial_laboral').insert({ 
                 trabajador_id: trabajadorId, 
                 cargo: datosExtra.cargoNuevo, 
@@ -473,7 +479,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         recargarListas(); 
     }
 
-    // --- MODALES (CORREGIDO: RECIBA DATOS EXTRA) ---
+    // --- MODALES ---
     window.abrirModalAccion = (tipo, extraData = null) => {
         const modal = document.getElementById('modal-acciones');
         const titulo = document.getElementById('modal-titulo');
@@ -483,7 +489,6 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         const cargoActual = document.getElementById('t-cargo-original').value;
 
         trabajadorSeleccionadoId = document.getElementById('t-id').value;
-        // CORRECCION: Se guardan los datos recibidos (como cargoNuevo) en la variable temporal
         datosAccionTemp = { tipo: tipo, ...extraData };
         
         inputs.innerHTML = ''; 
@@ -506,10 +511,8 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             `;
         }
         else if (tipo === 'CAMBIO_CARGO') {
-            // Accedemos a los datos seguros desde datosAccionTemp (que ya incluye extraData)
             const cViejo = datosAccionTemp.cargoViejo;
             const cNuevo = datosAccionTemp.cargoNuevo;
-
             titulo.innerText = "Cambio de Cargo"; 
             desc.innerText = `De ${cViejo} a ${cNuevo}`;
             inputs.innerHTML = `
@@ -551,13 +554,12 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                 tipo: 'CAMBIO_CARGO', 
                 fechaSalida: fSalida, 
                 fechaEntrada: fEntrada, 
-                cargoNuevo: datosAccionTemp.cargoNuevo, // Aquí recuperamos el cargo correcto
+                cargoNuevo: datosAccionTemp.cargoNuevo, 
                 motivoSalida: motivo 
             });
         }
     };
 
-    // Funciones PDF
     window.imprimirDoc = (tipo) => {
         const nombre = document.getElementById('t-nombre').value;
         alert(`Generando documento ${tipo.toUpperCase()} para ${nombre} (En desarrollo)`);
