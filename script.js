@@ -1,6 +1,6 @@
 import { iconosSST } from './iconos.js';
 import { cargarModuloTrabajadores } from './trabajadores.js'; // Asegúrate que este archivo exista
-
+import { cargarModuloAdmin } from './admin.js';
 const SUPABASE_URL = 'https://pyvasykgetphdjvbijqe.supabase.co';
 const SUPABASE_KEY = 'sb_publishable__UMvHXVhw5-se2Lik_A3pQ_TIRd8P-N';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -84,7 +84,23 @@ async function cargarDashboard(empresa) {
         const row = document.createElement('div');
         row.className = 'menu-item-row';
         row.innerHTML = `<i class="fas ${m.icono}"></i> <span>${m.titulo}</span>`;
-        
+        row.onclick = () => {
+    const titulo = m.titulo.toLowerCase();
+    const ws = document.getElementById('workspace');
+    
+    if(window.innerWidth <= 768) toggleMenu();
+
+    if(titulo.includes('trabajador') || titulo.includes('personal') || titulo.includes('rrhh')) {
+        cargarModuloTrabajadores(ws, _supabase, empresaActual);
+    } 
+    else if(titulo.includes('admin') || titulo.includes('config')) {
+        // LLAMADA AL NUEVO MÓDULO ADMIN
+        cargarModuloAdmin(ws, _supabase, empresaActual);
+    }
+    else {
+        ws.innerHTML = `<h2>${m.titulo}</h2><p>Módulo en construcción.</p>`;
+    }
+};
         row.onclick = () => {
             // DETECCIÓN DE MÓDULO TRABAJADORES
             const titulo = m.titulo.toLowerCase();
