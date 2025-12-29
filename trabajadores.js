@@ -1,4 +1,4 @@
-// trabajadores.js - VERSIÓN FINAL: SIN FOTO DE FIRMA EN FICHA + FORMATO EXACTO
+// trabajadores.js - VERSIÓN: PDF SOLUCIONADO + SIN FIRMA IMAGEN
 
 let listaCargosCache = []; 
 
@@ -74,74 +74,39 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                         <select id="t-civil" onchange="verificarCivil()"><option value="SOLTERO">SOLTERO</option><option value="CASADO">CASADO</option><option value="UNION DE HECHO">UNIÓN DE HECHO</option><option value="DIVORCIADO">DIVORCIADO</option><option value="VIUDO">VIUDO</option></select>
                         <div id="div-conyuge" style="display:none; grid-column:1/-1; background:rgba(255,255,255,0.1); padding:10px; border-radius:8px;"><label style="font-size:0.8em; color:#00d2ff;">NOMBRE CÓNYUGE:</label><input id="t-conyuge" placeholder="NOMBRE ESPOSO/A"></div>
                         <select id="t-sangre"><option value="">TIPO SANGRE</option><option value="A+">A+</option><option value="A-">A-</option><option value="B+">B+</option><option value="B-">B-</option><option value="AB+">AB+</option><option value="AB-">AB-</option><option value="O+">O+</option><option value="O-">O-</option></select>
-                        <input id="t-nacionalidad" value="ECUATORIANA"><input id="t-lugar" placeholder="LUGAR NACIMIENTO">
+                        <select id="t-religion"><option value="CATOLICA">CATÓLICA</option><option value="CRISTIANO">CRISTIANO</option><option value="EVANGELICA">EVANGÉLICA</option><option value="TESTIGO DE JEHOVA">TESTIGO DE JEHOVÁ</option><option value="ATEISMO">ATEÍSMO</option><option value="NINGUNA">NINGUNA</option><option value="OTRA">OTRA</option></select>
+                        <input id="t-nacionalidad" value="ECUATORIANA"><input id="t-lugar" placeholder="LUGAR NACIMIENTO"><input id="t-discapacidad" placeholder="DISCAPACIDAD (NO / %)">
                         <input id="t-celular" placeholder="CELULAR"><input id="t-correo" placeholder="CORREO">
                         
                         <input id="t-alergia" placeholder="ALERGIAS (NINGUNA)"><input id="t-transporte" placeholder="MEDIO TRANSPORTE (BUS/AUTO)">
                         <input id="t-ciudad" placeholder="CIUDAD RESIDENCIA"><input id="t-barrio" placeholder="BARRIO">
-                        <input id="t-discapacidad" placeholder="DISCAPACIDAD (NO / %)"><input id="t-carnet" placeholder="Nº CARNET CONADIS (NO)">
-                        <select id="t-religion"><option value="CATOLICA">CATÓLICA</option><option value="CRISTIANO">CRISTIANO</option><option value="EVANGELICA">EVANGÉLICA</option><option value="NINGUNA">NINGUNA</option><option value="OTRA">OTRA</option></select>
-                        <select id="t-licencia"><option value="NINGUNA">LICENCIA: NINGUNA</option><option value="A">A</option><option value="A1">A1</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="D1">D1</option><option value="E">E</option></select>
+                        <input id="t-carnet" placeholder="Nº CARNET CONADIS (NO)">
+                        
+                        <select id="t-licencia"><option value="NINGUNA">LICENCIA: NINGUNA</option><option value="A">A</option><option value="A1">A1</option><option value="B">B</option><option value="C">C</option><option value="C1">C1</option><option value="D">D</option><option value="D1">D1</option><option value="E">E</option><option value="E1">E1</option><option value="F">F</option><option value="G">G</option></select>
                     </div>
-                    
-                    <div style="margin-top:15px; border-top:1px solid #444; padding-top:10px;">
-                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;"><label>Nº HIJOS:</label><input id="t-num-hijos" type="number" min="0" value="0" style="width:60px; text-align:center;" oninput="generarCamposHijos()"></div>
-                        <div id="contenedor-hijos"></div>
-                    </div>
+                    <div style="margin-top:15px; border-top:1px solid #444; padding-top:10px;"><div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;"><label>Nº HIJOS:</label><input id="t-num-hijos" type="number" min="0" value="0" style="width:60px; text-align:center;" oninput="generarCamposHijos()"></div><div id="contenedor-hijos"></div></div>
                 </details>
 
                 <details class="seccion-form"><summary style="font-weight:bold; color:#ccc; margin-bottom:10px;">2. ESTUDIOS Y LABORAL</summary>
-                    <div class="form-grid">
-                        <input id="t-profesion" placeholder="PROFESIÓN / TÍTULO">
-                        <select id="t-nivel-estudio"><option value="">NIVEL ESTUDIO...</option><option value="PRIMARIA">PRIMARIA</option><option value="SECUNDARIA">SECUNDARIA</option><option value="SUPERIOR">SUPERIOR</option></select>
-                        <input id="t-establecimiento" placeholder="ESTABLECIMIENTO EDUCATIVO">
-                        <input id="t-sueldo" type="number" step="0.01" placeholder="SUELDO $">
-                        <div><label style="font-size:0.7em;">AFILIACIÓN IESS:</label><input type="date" id="t-afiliacion"></div>
-                        <input id="t-banco" placeholder="BANCO"><input id="t-cuenta" placeholder="Nº CUENTA">
-                    </div>
+                    <div class="form-grid"><input id="t-profesion" placeholder="PROFESIÓN / TÍTULO"><select id="t-nivel-estudio"><option value="">NIVEL ESTUDIO...</option><option value="PRIMARIA">PRIMARIA</option><option value="SECUNDARIA">SECUNDARIA</option><option value="SUPERIOR">SUPERIOR</option></select><input id="t-establecimiento" placeholder="ESTABLECIMIENTO EDUCATIVO"><input id="t-sueldo" type="number" step="0.01" placeholder="SUELDO $"><div><label style="font-size:0.7em;">AFILIACIÓN IESS:</label><input type="date" id="t-afiliacion"></div><input id="t-banco" placeholder="BANCO"><input id="t-cuenta" placeholder="Nº CUENTA"></div>
                 </details>
 
                 <details class="seccion-form"><summary style="font-weight:bold; color:#ccc; margin-bottom:10px;">3. VIVIENDA Y SERVICIOS</summary>
-                    <div class="form-grid">
-                        <input id="t-direccion" placeholder="DIRECCIÓN EXACTA" style="grid-column:1/-1">
-                        <select id="t-vivienda"><option value="PROPIA">VIVIENDA: PROPIA</option><option value="ARRENDADA">VIVIENDA: ARRENDADA</option><option value="FAMILIAR">VIVIENDA: FAMILIAR</option><option value="PRESTADA">VIVIENDA: PRESTADA</option></select>
-                        <select id="t-material"><option value="">PAREDES...</option><option value="CEMENTO">CEMENTO</option><option value="MIXTA">MIXTA</option><option value="CAÑA">CAÑA</option><option value="ADOBE">ADOBE</option><option value="MADERA">MADERA</option></select>
-                        <select id="t-cubierta"><option value="">TECHO...</option><option value="ZINC">ZINC</option><option value="LOSA">LOSA</option><option value="TEJA">TEJA</option><option value="ETERNIT">ETERNIT</option></select>
-                        <input id="t-habitaciones" type="number" placeholder="Nº HABITACIONES">
-                        <select id="t-servicio-higienico"><option value="RED PUBLICA">HIGIÉNICO: RED PÚBLICA</option><option value="POZO SEPTICO">HIGIÉNICO: POZO SÉPTICO</option></select>
-                        <select id="t-basura"><option value="SI">RECOLECCIÓN BASURA: SI</option><option value="NO">RECOLECCIÓN BASURA: NO</option></select>
-                        <select id="t-upc"><option value="SI">UPC CERCANO: SI</option><option value="NO">UPC CERCANO: NO</option></select>
-                        <select id="t-seguridad-sector"><option value="BUENA">SEGURIDAD SECTOR: BUENA</option><option value="REGULAR">SEGURIDAD SECTOR: REGULAR</option><option value="MALA">SEGURIDAD SECTOR: MALA</option></select>
-                        <select id="t-tipo-familia"><option value="NUCLEAR">FAMILIA NUCLEAR</option><option value="EXTENSA">FAMILIA EXTENSA</option><option value="MONOPARENTAL">MONOPARENTAL</option></select>
-                        <input id="t-problema-familiar" placeholder="PROBLEMA FAMILIAR (NINGUNO)">
-                    </div>
+                    <div class="form-grid"><input id="t-direccion" placeholder="DIRECCIÓN EXACTA" style="grid-column:1/-1"><select id="t-vivienda"><option value="PROPIA">VIVIENDA: PROPIA</option><option value="ARRENDADA">VIVIENDA: ARRENDADA</option><option value="FAMILIAR">VIVIENDA: FAMILIAR</option><option value="PRESTADA">VIVIENDA: PRESTADA</option></select><select id="t-material"><option value="">PAREDES...</option><option value="CEMENTO">CEMENTO</option><option value="MIXTA">MIXTA</option><option value="CAÑA">CAÑA</option><option value="ADOBE">ADOBE</option><option value="MADERA">MADERA</option></select><select id="t-cubierta"><option value="">TECHO...</option><option value="ZINC">ZINC</option><option value="LOSA">LOSA</option><option value="TEJA">TEJA</option><option value="ETERNIT">ETERNIT</option></select><input id="t-habitaciones" type="number" placeholder="Nº HABITACIONES"><select id="t-servicio-higienico"><option value="RED PUBLICA">HIGIÉNICO: RED PÚBLICA</option><option value="POZO SEPTICO">HIGIÉNICO: POZO SÉPTICO</option></select><select id="t-basura"><option value="SI">RECOLECCIÓN BASURA: SI</option><option value="NO">RECOLECCIÓN BASURA: NO</option></select><select id="t-upc"><option value="SI">UPC CERCANO: SI</option><option value="NO">UPC CERCANO: NO</option></select><select id="t-seguridad-sector"><option value="BUENA">SEGURIDAD SECTOR: BUENA</option><option value="REGULAR">SEGURIDAD SECTOR: REGULAR</option><option value="MALA">SEGURIDAD SECTOR: MALA</option></select><select id="t-tipo-familia"><option value="NUCLEAR">FAMILIA NUCLEAR</option><option value="EXTENSA">FAMILIA EXTENSA</option><option value="MONOPARENTAL">MONOPARENTAL</option></select><input id="t-problema-familiar" placeholder="PROBLEMA FAMILIAR (NINGUNO)"></div>
                     <div class="multi-select-box" style="margin-top:10px;"><label>SERVICIOS BÁSICOS:</label><br><label><input type="checkbox" name="serv" value="LUZ"> LUZ</label><label><input type="checkbox" name="serv" value="AGUA"> AGUA</label><label><input type="checkbox" name="serv" value="INTERNET"> INTERNET</label></div>
                 </details>
 
                 <details class="seccion-form"><summary style="font-weight:bold; color:#ccc; margin-bottom:10px;">4. GASTOS Y COMUNICACIÓN</summary>
                     <div class="sub-title">EGRESOS MENSUALES ($)</div>
                     <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr 1fr;">
-                        <input id="g-alimento" type="number" placeholder="Alimento">
-                        <input id="g-luz" type="number" placeholder="Luz">
-                        <input id="g-agua" type="number" placeholder="Agua">
-                        <input id="g-educacion" type="number" placeholder="Educación">
-                        <input id="g-salud" type="number" placeholder="Salud">
-                        <input id="g-vestido" type="number" placeholder="Vestido">
-                        <input id="g-arriendo" type="number" placeholder="Arriendo">
-                        <input id="g-otros" type="number" placeholder="Otros">
+                        <input id="g-alimento" type="number" placeholder="Alimento"><input id="g-luz" type="number" placeholder="Luz"><input id="g-agua" type="number" placeholder="Agua"><input id="g-educacion" type="number" placeholder="Educación"><input id="g-salud" type="number" placeholder="Salud"><input id="g-vestido" type="number" placeholder="Vestido"><input id="g-arriendo" type="number" placeholder="Arriendo"><input id="g-otros" type="number" placeholder="Otros">
                     </div>
-                    
                     <div class="sub-title">COMUNICACIÓN FAMILIAR</div>
-                    <div class="form-grid">
-                        <select id="c-nivel"><option value="BUENO">COMUNICACIÓN: BUENA</option><option value="REGULAR">COMUNICACIÓN: REGULAR</option><option value="MALA">COMUNICACIÓN: MALA</option></select>
-                        <select id="c-tareas"><option value="SI">DESIGNA TAREAS: SI</option><option value="NO">DESIGNA TAREAS: NO</option></select>
-                        <input id="c-conflicto" placeholder="CAUSA CONFLICTO (NINGUNA)">
-                        <input id="c-recreacion" placeholder="RECREACIÓN (PASEOS)">
-                    </div>
+                    <div class="form-grid"><select id="c-nivel"><option value="BUENO">COMUNICACIÓN: BUENA</option><option value="REGULAR">COMUNICACIÓN: REGULAR</option><option value="MALA">COMUNICACIÓN: MALA</option></select><select id="c-tareas"><option value="SI">DESIGNA TAREAS: SI</option><option value="NO">DESIGNA TAREAS: NO</option></select><input id="c-conflicto" placeholder="CAUSA CONFLICTO (NINGUNA)"><input id="c-recreacion" placeholder="RECREACIÓN (PASEOS)"></div>
                 </details>
 
                 <details class="seccion-form"><summary style="font-weight:bold; color:#ccc; margin-bottom:10px;">TALLAS Y EMERGENCIA</summary>
-                    <div class="form-grid"><select id="t-camisa"><option value="">CAMISA...</option><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option></select><select id="t-pantalon"><option value="">PANTALÓN...</option><option value="30">30</option><option value="32">32</option><option value="34">34</option><option value="36">36</option></select><select id="t-zapatos"><option value="">ZAPATOS...</option><option value="38">38</option><option value="40">40</option><option value="42">42</option></select></div>
+                    <div class="form-grid"><select id="t-camisa"><option value="">CAMISA...</option><option value="XS">XS</option><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option><option value="XXL">XXL</option><option value="XXXL">XXXL</option></select><select id="t-pantalon"><option value="">PANTALÓN...</option><option value="28">28</option><option value="30">30</option><option value="32">32</option><option value="34">34</option><option value="36">36</option><option value="38">38</option><option value="40">40</option><option value="42">42</option><option value="44">44</option><option value="46">46</option></select><select id="t-zapatos"><option value="">ZAPATOS...</option><option value="36">36</option><option value="37">37</option><option value="38">38</option><option value="39">39</option><option value="40">40</option><option value="41">41</option><option value="42">42</option><option value="43">43</option><option value="44">44</option><option value="45">45</option><option value="46">46</option><option value="47">47</option></select></div>
                     <div class="form-grid" style="margin-top:10px;"><input id="t-emer-nom" placeholder="EMERGENCIA 1: NOMBRE"><input id="t-emer-tel" placeholder="EMERGENCIA 1: TELÉFONO"><input id="t-emer2-nom" placeholder="EMERGENCIA 2: NOMBRE"><input id="t-emer2-tel" placeholder="EMERGENCIA 2: TELÉFONO"></div>
                 </details>
 
@@ -290,12 +255,35 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         recargarListas(); 
     }
 
-    // ================== PDF FICHA EXACTA (SIN FIRMA IMAGEN) ==================
-    const getBase64ImageFromURL = (url) => { return new Promise((resolve) => { const img = new Image(); img.crossOrigin = "Anonymous"; img.onload = () => { const canvas = document.createElement("canvas"); canvas.width = img.width; canvas.height = img.height; const ctx = canvas.getContext("2d"); ctx.drawImage(img, 0, 0); resolve(canvas.toDataURL("image/png")); }; img.onerror = () => resolve(null); img.src = url; }); };
+    // ================== PDF ==================
+    const getBase64ImageFromURL = (url) => {
+        return new Promise((resolve) => {
+            if (!url) { resolve(null); return; }
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.src = url;
+            img.onload = () => {
+                const canvas = document.createElement("canvas");
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0);
+                resolve(canvas.toDataURL("image/png"));
+            };
+            img.onerror = () => { resolve(null); }; // Si falla, sigue sin imagen
+        });
+    };
 
     window.imprimirDoc = async (tipo) => {
         toggleMenuNombre(); const id = document.getElementById('t-id').value; if (!id) return;
-        if (tipo === 'ficha') await generarPDF_Ficha(id);
+        if (tipo === 'ficha') {
+            try {
+                await generarPDF_Ficha(id);
+            } catch (e) {
+                alert("Error generando PDF: " + e.message);
+                console.error(e);
+            }
+        }
         else if (tipo === 'ats') await generarPDF_ATS(id);
         else alert(`GENERANDO ${tipo.toUpperCase()}... (EN DESARROLLO)`);
     };
@@ -304,21 +292,29 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         alert("GENERANDO FICHA...");
         const { data: t } = await supabase.from('trabajadores').select('*').eq('id', id).single();
         
-        const logoUrl = empresa.logo_url; const fotoUrl = t.foto_url;
-        const [logoBase64, fotoBase64] = await Promise.all([logoUrl ? getBase64ImageFromURL(logoUrl) : null, fotoUrl ? getBase64ImageFromURL(fotoUrl) : null]);
+        const logoUrl = empresa.logo_url;
+        const fotoUrl = t.foto_url;
+        // NO cargamos firma para la ficha
+        const [logoBase64, fotoBase64] = await Promise.all([
+            getBase64ImageFromURL(logoUrl),
+            getBase64ImageFromURL(fotoUrl)
+        ]);
 
         let hijos = []; try { hijos = JSON.parse(t.datos_hijos || '[]'); } catch { }
         const filasHijos = hijos.map(h => [h.nombre, 'HIJO/A', h.fecha, 'ESTUDIANTE']);
         if (filasHijos.length === 0) filasHijos.push([{ text: 'NO REGISTRA', colSpan: 4, alignment: 'center' }, {}, {}, {}]);
 
         const ext = t.datos_extra || {}; 
+        
+        // Pixel transparente por si falla imagen (para evitar crash de pdfmake)
+        const emptyImg = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 
         const docDefinition = {
             pageSize: 'A4', pageMargins: [40, 40, 40, 40],
             content: [
                 {
                     columns: [
-                        { image: logoBase64 || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', width: 80, height: 50, fit: [80, 50] },
+                        { image: logoBase64 || emptyImg, width: 80, height: 50, fit: [80, 50] },
                         { text: 'FICHA SOCIO-ECONOMICA', style: 'header', alignment: 'center', margin: [0, 15, 0, 0] },
                         { text: '', width: 80 }
                     ]
@@ -331,24 +327,24 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                     table: {
                         widths: ['15%', '35%', '15%', '35%'],
                         body: [
-                            [{ image: fotoBase64 || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', width: 70, height: 80, rowSpan: 6, alignment: 'center', fit: [70, 80] }, 
-                             { text: 'Nombres:', bold: true }, t.nombre, { text: 'Empresa:', bold: true }, empresa.nombre],
-                            ['', { text: 'Cédula:', bold: true }, t.cedula, { text: 'Tipo Contrato:', bold: true }, 'INDEFINIDO'],
-                            ['', { text: 'Nacionalidad:', bold: true }, t.nacionalidad, { text: 'Cargo:', bold: true }, t.cargo],
-                            ['', { text: 'Lugar Nac:', bold: true }, t.lugar_nacimiento, { text: 'Medio Transp:', bold: true }, ext['t-transporte'] || ''],
-                            ['', { text: 'Fecha Nac:', bold: true }, t.fecha_nacimiento, { text: 'Celular:', bold: true }, t.celular],
-                            ['', { text: 'Edad:', bold: true }, document.getElementById('t-edad').value, { text: 'Correo:', bold: true }, t.correo],
-                            [{ text: 'Código:', bold: true }, t.id, { text: 'Discapacidad:', bold: true }, t.discapacidad],
-                            [{ text: 'Gen Sanguineo:', bold: true }, t.tipo_sangre, { text: 'Carnet:', bold: true }, ext['t-carnet'] || 'NO'],
-                            [{ text: 'Religión:', bold: true }, t.religion, { text: 'Hijos:', bold: true }, hijos.length > 0 ? 'SI' : 'NO'],
-                            [{ text: 'Profesión:', bold: true }, t.profesion, { text: 'Número Hijos:', bold: true }, hijos.length],
-                            [{ text: 'Sueldo:', bold: true }, '$ ' + t.sueldo, { text: 'Afiliado IESS:', bold: true }, t.afiliacion ? 'SI' : 'NO'],
-                            [{ text: 'Banco:', bold: true }, t.banco, { text: 'Fecha Afiliación:', bold: true }, t.afiliacion || ''],
-                            [{ text: 'Cuenta:', bold: true }, t.cuenta, { text: 'Estado:', bold: true }, t.estado],
-                            [{ text: 'Estado Civil:', bold: true }, t.estado_civil, { text: 'Alergia:', bold: true }, ext['t-alergia'] || 'NINGUNA'],
+                            [{ image: fotoBase64 || emptyImg, width: 70, height: 80, rowSpan: 6, alignment: 'center', fit: [70, 80] }, 
+                             { text: 'Nombres:', bold: true }, t.nombre || '', { text: 'Empresa:', bold: true }, empresa.nombre],
+                            ['', { text: 'Cédula:', bold: true }, t.cedula || '', { text: 'Tipo Contrato:', bold: true }, 'INDEFINIDO'],
+                            ['', { text: 'Nacionalidad:', bold: true }, t.nacionalidad || '', { text: 'Cargo:', bold: true }, t.cargo || ''],
+                            ['', { text: 'Lugar Nac:', bold: true }, t.lugar_nacimiento || '', { text: 'Medio Transp:', bold: true }, ext['t-transporte'] || ''],
+                            ['', { text: 'Fecha Nac:', bold: true }, t.fecha_nacimiento || '', { text: 'Celular:', bold: true }, t.celular || ''],
+                            ['', { text: 'Edad:', bold: true }, document.getElementById('t-edad').value, { text: 'Correo:', bold: true }, t.correo || ''],
+                            [{ text: 'Código:', bold: true }, t.id, { text: 'Discapacidad:', bold: true }, t.discapacidad || 'NO'],
+                            [{ text: 'Gen Sanguineo:', bold: true }, t.tipo_sangre || '', { text: 'Carnet:', bold: true }, ext['t-carnet'] || 'NO'],
+                            [{ text: 'Religión:', bold: true }, t.religion || '', { text: 'Hijos:', bold: true }, hijos.length > 0 ? 'SI' : 'NO'],
+                            [{ text: 'Profesión:', bold: true }, t.profesion || '', { text: 'Número Hijos:', bold: true }, hijos.length],
+                            [{ text: 'Sueldo:', bold: true }, '$ ' + (t.sueldo || 0), { text: 'Afiliado IESS:', bold: true }, t.afiliacion ? 'SI' : 'NO'],
+                            [{ text: 'Banco:', bold: true }, t.banco || '', { text: 'Fecha Afiliación:', bold: true }, t.afiliacion || ''],
+                            [{ text: 'Cuenta:', bold: true }, t.cuenta || '', { text: 'Estado:', bold: true }, t.estado],
+                            [{ text: 'Estado Civil:', bold: true }, t.estado_civil || '', { text: 'Alergia:', bold: true }, ext['t-alergia'] || 'NINGUNA'],
                             [{ text: 'Cónyuge:', bold: true }, t.conyuge || 'N/A', { text: 'Ciudad Res:', bold: true }, ext['t-ciudad'] || ''],
-                            [{ text: 'Barrio:', bold: true }, ext['t-barrio'] || '', { text: 'Licencia:', bold: true }, t.licencia],
-                            [{ text: 'Dirección:', bold: true }, { text: t.direccion, colSpan: 3 }, {}, {}]
+                            [{ text: 'Barrio:', bold: true }, ext['t-barrio'] || '', { text: 'Licencia:', bold: true }, t.licencia || 'NINGUNA'],
+                            [{ text: 'Dirección:', bold: true }, { text: t.direccion || '', colSpan: 3 }, {}, {}]
                         ]
                     }
                 },
@@ -373,11 +369,11 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                     table: {
                         widths: ['20%', '30%', '20%', '30%'],
                         body: [
-                            [{ text: 'Tendencia:', bold: true }, t.vivienda, { text: 'Servicio Higiénico:', bold: true }, ext['t-servicio-higienico'] || ''],
-                            [{ text: 'Tipo Vivienda:', bold: true }, t.material_paredes, { text: 'Recolección Basura:', bold: true }, ext['t-basura'] || ''],
-                            [{ text: 'Cubierta:', bold: true }, t.material_cubierta, { text: 'UPC cercano:', bold: true }, ext['t-upc'] || ''],
-                            [{ text: 'Nº Habitaciones:', bold: true }, t.habitaciones, { text: 'Seguridad:', bold: true }, ext['t-seguridad-sector'] || ''],
-                            [{ text: 'Servicios:', bold: true }, t.servicios_basicos, { text: 'Tipo Familia:', bold: true }, ext['t-tipo-familia'] || ''],
+                            [{ text: 'Tendencia:', bold: true }, t.vivienda || '', { text: 'Servicio Higiénico:', bold: true }, ext['t-servicio-higienico'] || ''],
+                            [{ text: 'Tipo Vivienda:', bold: true }, t.material_paredes || '', { text: 'Recolección Basura:', bold: true }, ext['t-basura'] || ''],
+                            [{ text: 'Cubierta:', bold: true }, t.material_cubierta || '', { text: 'UPC cercano:', bold: true }, ext['t-upc'] || ''],
+                            [{ text: 'Nº Habitaciones:', bold: true }, t.habitaciones || 0, { text: 'Seguridad:', bold: true }, ext['t-seguridad-sector'] || ''],
+                            [{ text: 'Servicios:', bold: true }, t.servicios_basicos || '', { text: 'Tipo Familia:', bold: true }, ext['t-tipo-familia'] || ''],
                             [{ text: 'Agua:', bold: true }, 'RED PÚBLICA', { text: 'Problema Familiar:', bold: true }, ext['t-problema-familiar'] || 'NO']
                         ]
                     }
@@ -391,7 +387,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                         headerRows: 1,
                         body: [
                             [{ text: 'Talla Ropa', style: 'tableHeader', colSpan: 4 }, {}, {}, {}],
-                            ['Camisa: ' + t.talla_camisa, 'Pantalon: ' + t.talla_pantalon, 'Zapatos: ' + t.talla_zapatos, '']
+                            ['Camisa: ' + (t.talla_camisa || ''), 'Pantalon: ' + (t.talla_pantalon || ''), 'Zapatos: ' + (t.talla_zapatos || ''), '']
                         ]
                     }
                 },
@@ -458,14 +454,14 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                 },
                 { text: '\n\n\n' },
 
-                // FIRMA MANUAL (SIN FOTO)
+                // FIRMA MANUAL (SIN FOTO DE FIRMA)
                 {
                     stack: [
                         { text: '\n\n', fontSize: 10 },
                         { text: '_______________________________', alignment: 'center' },
                         { text: 'FIRMA DEL SOLICITANTE', alignment: 'center', bold: true },
-                        { text: t.nombre, alignment: 'center' },
-                        { text: t.cedula, alignment: 'center' }
+                        { text: t.nombre || '', alignment: 'center' },
+                        { text: t.cedula || '', alignment: 'center' }
                     ]
                 }
             ],
@@ -478,18 +474,21 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             defaultStyle: { fontSize: 8 }
         };
 
-        pdfMake.createPdf(docDefinition).open();
+        pdfMake.createPdf(docDefinition).download(`Ficha_${t.nombre}.pdf`);
     }
 
+    // --- PDF: ATS (CHECKLIST) ---
     async function generarPDF_ATS(id) {
         alert("GENERANDO ATS...");
         const { data: t } = await supabase.from('trabajadores').select('*').eq('id', id).single();
         const logoUrl = empresa.logo_url;
         const [logoBase64] = await Promise.all([logoUrl ? getBase64ImageFromURL(logoUrl) : null]);
+        const emptyImg = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+
         const doc = {
             pageSize: 'A4', pageMargins: [20, 20, 20, 20],
             content: [
-                { table: { widths: ['15%', '*', '15%'], body: [[{ image: logoBase64 || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', fit: [50, 50], rowSpan: 2, alignment:'center' }, { text: 'ANÁLISIS DE TRABAJO SEGURO (ATS)', style: 'header', alignment: 'center', margin: [0, 5] }, { text: 'CÓDIGO: ATS-001', fontSize: 8, alignment: 'right' }], ['', { text: 'COMPRENDO QUE SOY RESPONSABLE DE MI SEGURIDAD Y LA DE MIS COMPAÑEROS', fontSize: 7, alignment: 'center', italics: true }, '']] } },
+                { table: { widths: ['15%', '*', '15%'], body: [[{ image: logoBase64 || emptyImg, fit: [50, 50], rowSpan: 2, alignment:'center' }, { text: 'ANÁLISIS DE TRABAJO SEGURO (ATS)', style: 'header', alignment: 'center', margin: [0, 5] }, { text: 'CÓDIGO: ATS-001', fontSize: 8, alignment: 'right' }], ['', { text: 'COMPRENDO QUE SOY RESPONSABLE DE MI SEGURIDAD Y LA DE MIS COMPAÑEROS', fontSize: 7, alignment: 'center', italics: true }, '']] } },
                 { text: '\n' },
                 { table: { widths: ['15%', '35%', '15%', '35%'], body: [[{ text: 'TRABAJO:', fontSize: 8, bold: true }, { text: '', fontSize: 8 }, { text: 'FECHA:', fontSize: 8, bold: true }, { text: new Date().toLocaleDateString(), fontSize: 8 }], [{ text: 'RESPONSABLE:', fontSize: 8, bold: true }, { text: t.nombre, fontSize: 8 }, { text: 'CARGO:', fontSize: 8, bold: true }, { text: t.cargo, fontSize: 8 }]] } },
                 { text: '\n' },
@@ -499,7 +498,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             ],
             styles: { header: { fontSize: 12, bold: true }, sectionHeader: { fontSize: 9, bold: true, color: 'white', fillColor: '#00d2ff', margin: [0, 2] } }
         };
-        pdfMake.createPdf(doc).open();
+        pdfMake.createPdf(doc).download(`ATS_${t.nombre}.pdf`);
     }
 
     window.abrirModalAccion = (tipo, extraData = null) => {
