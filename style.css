@@ -1,11 +1,11 @@
 /* =========================================
-   STYLE.CSS - VERSIÓN FINAL CORREGIDA (V9)
+   STYLE.CSS - VERSIÓN CORREGIDA (V10)
    ========================================= */
 :root {
-    --primary: #00d2ff;       /* EL AZUL QUE TE GUSTA */
-    --danger: #ff4444;        /* Rojo (Solo para alertas/badges) */
-    --success: #00C851;       /* Verde (Solo para badges) */
-    --warning: #ffbb33;       /* Amarillo */
+    --primary: #00d2ff;
+    --danger: #ff4444;
+    --success: #00C851;
+    --warning: #ffbb33;
     --text: #ffffff;
     --bg-dark: #050505;
     --glass-bg: rgba(30, 30, 30, 0.9);
@@ -27,7 +27,6 @@ body {
 
 #canvas-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
 
-/* Scrollbars */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
 ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
@@ -70,49 +69,19 @@ body {
 /* CONTENIDO */
 .content-area { flex: 1; padding: 20px; overflow-y: auto; position: relative; }
 
-/* --- BOTONES DE PESTAÑAS (CORREGIDO) --- */
+/* TABS Y BOTONES */
 .header-tools { display: flex; flex-direction: column; }
-
-#tab-container {
-    display: flex; gap: 8px; 
-    overflow-x: auto; padding-bottom: 5px; align-items: center;
-    white-space: nowrap; -webkit-overflow-scrolling: touch;
-}
-
+#tab-container { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; align-items: center; white-space: nowrap; -webkit-overflow-scrolling: touch; }
 .tab-btn {
-    background: rgba(255,255,255,0.05); 
-    border: 1px solid rgba(255,255,255,0.1); 
-    color: #aaa;
-    padding: 8px 12px; 
-    border-radius: 8px; 
-    cursor: pointer; 
-    transition: 0.2s;
-    display: inline-flex; align-items: center; gap: 6px; 
-    font-size: 0.9em; white-space: nowrap; height: 40px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #aaa;
+    padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: 0.2s;
+    display: inline-flex; align-items: center; gap: 6px; font-size: 0.9em; height: 40px;
 }
-
-/* ESTADO ACTIVO: SIEMPRE AZUL (TU REQUERIMIENTO) */
-.tab-btn.active {
-    background: var(--primary); /* Azul Cian */
-    color: #000; /* Texto negro para contraste */
-    border-color: var(--primary);
-    font-weight: bold;
-    box-shadow: 0 0 10px rgba(0, 210, 255, 0.4);
-}
-
-/* Badges (Contadores) con sus colores originales */
-.badge { 
-    border-radius: 50%; width: 20px; height: 20px; 
-    display: flex; justify-content: center; align-items: center; 
-    font-size: 0.75em; font-weight: bold;
-    background: #444; color: white;
-}
+.tab-btn.active { background: var(--primary); color: #000; border-color: var(--primary); font-weight: bold; box-shadow: 0 0 10px rgba(0, 210, 255, 0.4); }
+.badge { border-radius: 50%; width: 20px; height: 20px; display: flex; justify-content: center; align-items: center; font-size: 0.75em; font-weight: bold; background: #444; color: white; }
 .bg-green { background: var(--success); color: black; }
 .bg-red { background: var(--danger); color: white; }
-
-/* Botón Nombre (Amarillo cuando aparece) */
 .btn-nombre { border-color: var(--warning); color: var(--warning); background: rgba(241, 196, 15, 0.1); }
-.btn-nombre.active { background: var(--warning); color: black; border-color: var(--warning); }
 
 /* GRID TRABAJADORES */
 .worker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-top: 15px; }
@@ -122,34 +91,76 @@ body {
     cursor: pointer; transition: 0.2s;
 }
 .worker-card:hover { background: rgba(0, 210, 255, 0.1); border-color: var(--primary); transform: translateY(-3px); }
-.w-avatar {
-    width: 50px; height: 50px; flex-shrink: 0; background: #222;
-    border-radius: 50%; display: flex; justify-content: center; align-items: center;
-    font-weight: bold; overflow: hidden; border: 2px solid #444;
-}
+.w-avatar { width: 50px; height: 50px; flex-shrink: 0; background: #222; border-radius: 50%; overflow: hidden; border: 2px solid #444; }
 .w-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
 /* FORMULARIOS */
 .seccion-form { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-.foto-perfil { width: 120px; height: 120px; object-fit: cover; border-radius: 10px; border: 2px solid #555; background: #222; margin-bottom: 10px; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .multi-select-box { background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; margin-top: 10px; }
-
-input, select {
-    width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.2); background: var(--input-bg); color: white;
-}
-button {
-    width: 100%; padding: 12px; border-radius: 8px; border: none;
-    background: #007bff; color: white; font-weight: bold; cursor: pointer;
-}
+input, select { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.2); background: var(--input-bg); color: white; }
+button { width: 100%; padding: 12px; border-radius: 8px; border: none; background: #007bff; color: white; font-weight: bold; cursor: pointer; }
 .btn-small { width: auto; padding: 8px 12px; font-size: 0.9em; }
 
 /* DROPDOWN */
 .dropdown { position: relative; display: inline-block; }
 .dropdown-content { display: none; }
 
-/* RESPONSIVE MÓVIL */
+/* --- CORRECCIONES NUEVAS --- */
+
+/* 1. SELECCIÓN DE EMPRESAS (GRID Y TAMAÑO IMAGEN) */
+.menu-grid {
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
+    gap: 15px; 
+    margin-top: 15px;
+}
+.menu-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 15px;
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 120px; /* Altura fija para uniformidad */
+}
+.menu-card:hover { background: rgba(0, 210, 255, 0.1); border-color: var(--primary); }
+
+/* Ajuste de imagen de empresa para que no se vea gigante */
+.menu-card img {
+    width: 60px; 
+    height: 60px; 
+    object-fit: contain; /* Mantiene proporción sin estirarse */
+    margin-bottom: 10px;
+}
+.menu-card span { font-size: 0.9em; text-align: center; }
+
+/* 2. MODAL CENTRADO (ICONOS) */
+.modal {
+    display: none; /* Oculto por defecto */
+    position: fixed; 
+    top: 0; left: 0; 
+    width: 100%; height: 100%; 
+    background: rgba(0, 0, 0, 0.8); /* Fondo oscuro */
+    z-index: 2000; /* Encima de todo */
+    justify-content: center; 
+    align-items: center;
+    backdrop-filter: blur(5px);
+}
+.modal .container {
+    background: #1a1a1a;
+    border: 1px solid var(--primary);
+    max-width: 90%;
+    width: 400px;
+}
+.modal .menu-card { height: auto; padding: 10px; } /* Ajuste iconos modal */
+.modal .menu-card i { font-size: 1.5rem; color: var(--primary); margin:0; }
+
+/* RESPONSIVE */
 #menu-toggle, #sidebar-overlay { display: none; }
 
 @media (max-width: 768px) {
@@ -167,7 +178,7 @@ button {
     
     .content-area { height: auto; padding: 15px; padding-bottom: 100px; overflow: visible; }
     .form-grid { grid-template-columns: 1fr; }
-    .desktop-text { display: none; } /* Solo iconos en celular */
+    .desktop-text { display: none; } 
     
     #menu-toggle {
         display: inline-block; position: sticky; top: 10px; z-index: 95;
@@ -176,23 +187,14 @@ button {
     }
     #sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 90; }
 
-    /* MENÚ FLOTANTE CENTRADO EN MÓVIL */
+    /* MENU FLOTANTE MOVIL */
     .dropdown-content {
-        display: none; position: fixed; 
-        top: 50%; left: 50%; transform: translate(-50%, -50%);
-        width: 80%; max-width: 300px;
-        background: #1a1a1a; border: 1px solid var(--primary);
-        border-radius: 15px; box-shadow: 0 0 50px rgba(0,0,0,0.9);
-        z-index: 9999; padding: 10px 0; text-align: center;
+        display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        width: 80%; max-width: 300px; background: #1a1a1a; border: 1px solid var(--primary);
+        border-radius: 15px; box-shadow: 0 0 50px rgba(0,0,0,0.9); z-index: 9999; padding: 10px 0; text-align: center;
     }
     .dropdown-content.show { display: block; animation: popUp 0.2s; }
-    .dropdown-content a {
-        display: block; padding: 15px; color: white; text-decoration: none;
-        border-bottom: 1px solid #333; font-size: 1.1em;
-    }
-    .dropdown.show-bg::before {
-        content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(0,0,0,0.8); z-index: 9998; backdrop-filter: blur(3px);
-    }
+    .dropdown-content a { display: block; padding: 15px; color: white; text-decoration: none; border-bottom: 1px solid #333; }
+    .dropdown.show-bg::before { content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 9998; backdrop-filter: blur(3px); }
 }
 @keyframes popUp { from { transform: translate(-50%, -40%); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; } }
