@@ -1,15 +1,26 @@
-const CACHE_NAME = 'sst-app-cache-v1';
+// CAMBIO 1: Subimos la versión para borrar el caché viejo y roto
+const CACHE_NAME = 'sst-app-cache-v2'; 
+
 const urlsToCache = [
-    '/',
-    '/index.html',
-    '/style.css',
-    '/script.js',
-    '/manifest.json',
-    '/icon-192x192.png', // Asegúrate de tener estos iconos
-    '/icon-512x512.png', // Asegúrate de tener estos iconos
-    // Aquí puedes añadir más recursos estáticos si tienes
+    './',                // <--- Pone punto antes de la barra
+    './index.html',      // <--- Pone punto
+    './style.css',       // <--- Pone punto
+    './script.js',       // <--- Pone punto
+    './manifest.json',   // <--- Pone punto
+    './icon-192x192.png',
+    './icon-512x512.png',
+    // Archivos nuevos (IMPORTANTE AGREGARLOS)
+    './trabajadores.js',
+    './pdfUtils.js',
+    './pdfFicha.js',
+    './pdfKardex.js',
+    './pdfCarnet.js',
+    './pdfATS.js',
+    './excelGenerator.js',
+    './iconos.js'
 ];
 
+// ... (El resto del código déjalo igual)
 // Instalar el Service Worker y cachear los archivos
 self.addEventListener('install', (event) => {
     event.waitUntil(
