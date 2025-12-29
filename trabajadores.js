@@ -1,9 +1,9 @@
-// trabajadores.js - VERSIÓN: CARGA DE DATOS FIX + HISTORIAL FIX
+// trabajadores.js - VERSIÓN: FECHAS SANITIZADAS (NULL SI ESTÁN VACÍAS)
 
 let listaCargosCache = []; 
 
 export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
-    // 1. Cargar lista de cargos
+    // 1. Cargar cargos
     const { data: cargosBD } = await supabase.from('cargos').select('*');
     listaCargosCache = cargosBD || [];
 
@@ -213,7 +213,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     `;
 
     // =========================================================
-    // LÓGICA
+    // LÓGICA DE NEGOCIO
     // =========================================================
 
     let trabajadorSeleccionadoId = null;
@@ -222,6 +222,12 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     // Llenar select cargos
     const selForm = document.getElementById('t-cargo');
     listaCargosCache.forEach(c => selForm.innerHTML += `<option value="${c.nombre}">${c.nombre}</option>`);
+
+    // Helper: Validar Fecha (Evita error "" en BD)
+    const getFecha = (id) => {
+        const val = document.getElementById(id).value;
+        return val === "" ? null : val;
+    };
 
     window.toggleMenuNombre = () => {
         const menu = document.getElementById('menu-descargas');
@@ -267,9 +273,8 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         document.getElementById('vista-formulario').style.display = 'block';
     };
 
-    // --- ABRIR TRABAJADOR (CORREGIDO PARA CARGAR TODO) ---
+    // --- ABRIR TRABAJADOR ---
     async function abrir(t) {
-        // Mapeo manual seguro
         const map = {
             'cedula': t.cedula, 'nombre': t.nombre, 'lugar': t.lugar_nacimiento, 
             'nacionalidad': t.nacionalidad, 'sexo': t.sexo, 'civil': t.estado_civil, 
@@ -289,7 +294,6 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             if (el) el.value = val || '';
         }
 
-        // Fechas
         document.getElementById('t-nacimiento').value = t.fecha_nacimiento || '';
         document.getElementById('t-ingreso-manual').value = t.fecha_ingreso || '';
         document.getElementById('t-cargo').value = t.cargo || '';
@@ -297,24 +301,20 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         document.getElementById('t-id').value = t.id;
         document.getElementById('t-estado').value = t.estado;
 
-        // Servicios Checkbox
         const serv = (t.servicios_basicos || '').split(',');
         document.querySelectorAll('input[name="serv"]').forEach(c => c.checked = serv.includes(c.value));
         
-        // Edad
         if(t.fecha_nacimiento) {
             const age = new Date().getFullYear() - new Date(t.fecha_nacimiento).getFullYear();
             document.getElementById('t-edad').value = age;
         }
 
-        // Imagenes
         document.getElementById('preview-foto').src = t.foto_url || 'https://via.placeholder.com/150';
         document.getElementById('preview-firma').style.display = t.firma_url ? 'block' : 'none';
         if(t.firma_url) document.getElementById('preview-firma').src = t.firma_url;
         
         verificarCivil();
 
-        // Botón Nombre y Estado
         document.getElementById('lbl-nombre-trab').innerText = t.nombre.split(' ')[0];
         document.getElementById('cont-nombre').style.display = 'inline-flex';
 
@@ -348,7 +348,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         });
     }
 
-    // --- GUARDAR (FIX PARA HISTORIAL NULL) ---
+    // --- GUARDAR ---
     document.getElementById('form-trabajador').onsubmit = async (e) => {
         e.preventDefault();
         
@@ -360,7 +360,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             return alert("INGRESE FECHA DE INGRESO");
         }
 
-        // Si cambia de cargo, abrir MODAL
+        // Cambio de cargo -> Modal
         if (id && cargoViejo && cargoNuevo !== cargoViejo) {
             trabajadorSeleccionadoId = id;
             datosAccionTemp = { tipo: 'CAMBIO_CARGO', cargoNuevo: cargoNuevo, cargoViejo: cargoViejo };
@@ -384,7 +384,8 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             empresa_id: empresa.id,
             cedula: document.getElementById('t-cedula').value,
             nombre: document.getElementById('t-nombre').value.toUpperCase(),
-            fecha_nacimiento: document.getElementById('t-nacimiento').value,
+            // AQUÍ USAMOS LA FUNCIÓN getFecha PARA EVITAR ""
+            fecha_nacimiento: getFecha('t-nacimiento'),
             cargo: document.getElementById('t-cargo').value,
             celular: document.getElementById('t-celular').value,
             correo: document.getElementById('t-correo').value,
@@ -400,7 +401,8 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             religion: document.getElementById('t-religion').value,
             discapacidad: document.getElementById('t-discapacidad').value,
             licencia: document.getElementById('t-licencia').value,
-            afiliacion: document.getElementById('t-afiliacion').value,
+            // FECHAS OPCIONALES CON MANEJO DE NULL
+            afiliacion: getFecha('t-afiliacion'),
             banco: document.getElementById('t-banco').value,
             cuenta: document.getElementById('t-cuenta').value,
             vivienda: document.getElementById('t-vivienda').value,
@@ -415,7 +417,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             talla_camisa: document.getElementById('t-camisa').value,
             talla_pantalon: document.getElementById('t-pantalon').value,
             talla_zapatos: document.getElementById('t-zapatos').value,
-            fecha_ingreso: (!id) ? document.getElementById('t-ingreso-manual').value : undefined
+            fecha_ingreso: (!id) ? getFecha('t-ingreso-manual') : undefined
         };
         if(datos.fecha_ingreso === undefined) delete datos.fecha_ingreso;
         if(fotoUrl) datos.foto_url = fotoUrl;
@@ -436,28 +438,24 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         const trabajadorId = data[0].id;
         document.getElementById('t-id').value = trabajadorId;
 
-        // --- LÓGICA HISTORIAL CORREGIDA ---
-        // 1. Ingreso Inicial
+        // Historial
         if (!id) {
             await supabase.from('historial_laboral').insert({
                 trabajador_id: trabajadorId, 
-                cargo: datos.cargo, // Usa el dato del formulario
+                cargo: datos.cargo, 
                 fecha_inicio: datos.fecha_ingreso, 
                 motivo: 'Ingreso Inicial'
             });
         }
-        // 2. Cambio de Cargo (Viene del Modal)
         if (datosExtra.tipo === 'CAMBIO_CARGO') {
-            // Cerrar anterior
             await supabase.from('historial_laboral').update({ 
                 fecha_fin: datosExtra.fechaSalida, 
                 motivo: datosExtra.motivoSalida 
             }).eq('trabajador_id', trabajadorId).is('fecha_fin', null);
             
-            // Insertar nuevo (AQUÍ ESTABA EL ERROR: asegurarse de usar el cargo nuevo del modal)
             await supabase.from('historial_laboral').insert({ 
                 trabajador_id: trabajadorId, 
-                cargo: datosExtra.cargoNuevo, // <--- Correcto
+                cargo: datosExtra.cargoNuevo, 
                 fecha_inicio: datosExtra.fechaEntrada, 
                 motivo: 'Cambio de Cargo' 
             });
@@ -541,12 +539,11 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             const fEntrada = document.getElementById('acc-fecha-ingreso').value;
             const motivo = document.getElementById('acc-motivo').value || 'Cambio de Cargo';
             
-            // Pasar los datos del modal explicitamente a la funcion de guardado
             await procesarGuardadoFinal({ 
                 tipo: 'CAMBIO_CARGO', 
                 fechaSalida: fSalida, 
                 fechaEntrada: fEntrada, 
-                cargoNuevo: datosAccionTemp.cargoNuevo, // <-- IMPORTANTE: Aquí pasamos el cargo nuevo seleccionado previamente
+                cargoNuevo: datosAccionTemp.cargoNuevo, 
                 motivoSalida: motivo 
             });
         }
