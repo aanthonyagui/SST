@@ -1,4 +1,4 @@
-// trabajadores.js - VERSIÓN FINAL: FICHA SOCIOECONÓMICA EXACTA + DATOS EXTRA
+// trabajadores.js - VERSIÓN FINAL: SIN FOTO DE FIRMA EN FICHA + FORMATO EXACTO
 
 let listaCargosCache = []; 
 
@@ -81,7 +81,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                         <input id="t-ciudad" placeholder="CIUDAD RESIDENCIA"><input id="t-barrio" placeholder="BARRIO">
                         <input id="t-discapacidad" placeholder="DISCAPACIDAD (NO / %)"><input id="t-carnet" placeholder="Nº CARNET CONADIS (NO)">
                         <select id="t-religion"><option value="CATOLICA">CATÓLICA</option><option value="CRISTIANO">CRISTIANO</option><option value="EVANGELICA">EVANGÉLICA</option><option value="NINGUNA">NINGUNA</option><option value="OTRA">OTRA</option></select>
-                        <select id="t-licencia"><option value="NINGUNA">LICENCIA: NINGUNA</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option></select>
+                        <select id="t-licencia"><option value="NINGUNA">LICENCIA: NINGUNA</option><option value="A">A</option><option value="A1">A1</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="D1">D1</option><option value="E">E</option></select>
                     </div>
                     
                     <div style="margin-top:15px; border-top:1px solid #444; padding-top:10px;">
@@ -206,7 +206,6 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         const { data, error } = await supabase.from('trabajadores').select('*').eq('empresa_id', empresa.id).eq('estado', estado);
         if(error) return alert("ERROR AL DESCARGAR: " + error.message);
         if(!data || data.length === 0) return alert("NO HAY TRABAJADORES " + estado + "S PARA DESCARGAR.");
-        // Filtramos para reporte simple
         const columnasExcluidas = ['id', 'empresa_id', 'foto_url', 'firma_url', 'tipo_vivienda', 'vivienda', 'servicios_basicos', 'motivo_salida', 'religion', 'discapacidad', 'carnet_conadis', 'banco', 'cuenta', 'sueldo', 'licencia', 'material_paredes', 'material_cubierta', 'habitaciones', 'seguridad_sector', 'conyuge', 'datos_extra'];
         const dataFiltrada = data.map(trabajador => { const copia = { ...trabajador }; columnasExcluidas.forEach(col => delete copia[col]); return copia; });
         const ws = XLSX.utils.json_to_sheet(dataFiltrada); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "TRABAJADORES");
@@ -214,17 +213,14 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     };
 
     async function abrir(t) {
-        // Mapeo simple
         const map = {
             'cedula': t.cedula, 'nombre': t.nombre, 'lugar': t.lugar_nacimiento, 'nacionalidad': t.nacionalidad, 'sexo': t.sexo, 'civil': t.estado_civil, 'sangre': t.tipo_sangre, 'discapacidad': t.discapacidad, 'religion': t.religion, 'celular': t.celular, 'correo': t.correo, 'licencia': t.licencia, 'profesion': t.profesion, 'sueldo': t.sueldo, 'afiliacion': t.afiliacion, 'banco': t.banco, 'cuenta': t.cuenta, 'direccion': t.direccion, 'vivienda': t.vivienda, 'material': t.material_paredes, 'cubierta': t.material_cubierta, 'habitaciones': t.habitaciones, 'conyuge': t.conyuge, 'emer-nom': t.emergencia_nombre, 'emer-tel': t.emergencia_telefono, 'emer2-nom': t.emergencia2_nombre, 'emer2-tel': t.emergencia2_telefono, 'camisa': t.talla_camisa, 'pantalon': t.talla_pantalon, 'zapatos': t.talla_zapatos
         };
         for (const [id, val] of Object.entries(map)) { const el = document.getElementById('t-' + id); if (el) el.value = val || ''; }
 
-        // JSONs: Hijos y Datos Extra
         let hijosData = []; try { hijosData = JSON.parse(t.datos_hijos || '[]'); } catch { hijosData = []; }
         document.getElementById('t-num-hijos').value = hijosData.length; generarCamposHijos(hijosData);
 
-        // Cargar Datos Extra (Egresos, Detalles, Comunicación)
         if(t.datos_extra) {
             const ext = t.datos_extra;
             const idsExtra = ['t-alergia','t-transporte','t-ciudad','t-barrio','t-carnet','t-nivel-estudio','t-establecimiento','t-servicio-higienico','t-basura','t-upc','t-seguridad-sector','t-tipo-familia','t-problema-familiar','g-alimento','g-luz','g-agua','g-educacion','g-salud','g-vestido','g-arriendo','g-otros','c-nivel','c-tareas','c-conflicto','c-recreacion'];
@@ -261,11 +257,9 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         const fFoto = document.getElementById('t-foto').files[0]; let fotoUrl = null; if(fFoto) fotoUrl = await subirArchivo(supabase, fFoto, 'fichas_personal');
         const fFirma = document.getElementById('t-firma').files[0]; let firmaUrl = null; if(fFirma) firmaUrl = await subirArchivo(supabase, fFirma, 'fichas_personal');
         const serv = Array.from(document.querySelectorAll('input[name="serv"]:checked')).map(c=>c.value).join(',');
-        
         const hijosNombres = document.querySelectorAll('.hijo-nombre'); const hijosFechas = document.querySelectorAll('.hijo-fecha');
         let hijosArray = []; hijosNombres.forEach((input, index) => { if(input.value.trim() !== "") { hijosArray.push({ nombre: input.value.toUpperCase(), fecha: hijosFechas[index].value }); } });
 
-        // Recolectar Datos Extra en un Objeto JSON
         const extraDataObj = {};
         const idsExtra = ['t-alergia','t-transporte','t-ciudad','t-barrio','t-carnet','t-nivel-estudio','t-establecimiento','t-servicio-higienico','t-basura','t-upc','t-seguridad-sector','t-tipo-familia','t-problema-familiar','g-alimento','g-luz','g-agua','g-educacion','g-salud','g-vestido','g-arriendo','g-otros','c-nivel','c-tareas','c-conflicto','c-recreacion'];
         idsExtra.forEach(id => extraDataObj[id] = obtenerTexto(id) || getNumber(id) || '');
@@ -279,7 +273,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             material_paredes: obtenerTexto('t-material'), material_cubierta: obtenerTexto('t-cubierta'), habitaciones: getNumber('t-habitaciones'), servicios_basicos: serv,
             emergencia_nombre: obtenerTexto('t-emer-nom'), emergencia_telefono: obtenerTexto('t-emer-tel'), emergencia2_nombre: obtenerTexto('t-emer2-nom'), emergencia2_telefono: obtenerTexto('t-emer2-tel'),
             talla_camisa: obtenerTexto('t-camisa'), talla_pantalon: obtenerTexto('t-pantalon'), talla_zapatos: obtenerTexto('t-zapatos'),
-            datos_hijos: JSON.stringify(hijosArray), datos_extra: extraDataObj, // GUARDAR DATOS EXTRA
+            datos_hijos: JSON.stringify(hijosArray), datos_extra: extraDataObj,
             fecha_ingreso: (!id) ? getFecha('t-ingreso-manual') : undefined
         };
         if(datos.fecha_ingreso === undefined) delete datos.fecha_ingreso; if(fotoUrl) datos.foto_url = fotoUrl; if(firmaUrl) datos.firma_url = firmaUrl;
@@ -296,7 +290,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         recargarListas(); 
     }
 
-    // ================== PDF FICHA EXACTA ==================
+    // ================== PDF FICHA EXACTA (SIN FIRMA IMAGEN) ==================
     const getBase64ImageFromURL = (url) => { return new Promise((resolve) => { const img = new Image(); img.crossOrigin = "Anonymous"; img.onload = () => { const canvas = document.createElement("canvas"); canvas.width = img.width; canvas.height = img.height; const ctx = canvas.getContext("2d"); ctx.drawImage(img, 0, 0); resolve(canvas.toDataURL("image/png")); }; img.onerror = () => resolve(null); img.src = url; }); };
 
     window.imprimirDoc = async (tipo) => {
@@ -317,7 +311,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         const filasHijos = hijos.map(h => [h.nombre, 'HIJO/A', h.fecha, 'ESTUDIANTE']);
         if (filasHijos.length === 0) filasHijos.push([{ text: 'NO REGISTRA', colSpan: 4, alignment: 'center' }, {}, {}, {}]);
 
-        const ext = t.datos_extra || {}; // Datos Extra cargados
+        const ext = t.datos_extra || {}; 
 
         const docDefinition = {
             pageSize: 'A4', pageMargins: [40, 40, 40, 40],
@@ -331,7 +325,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                 },
                 { text: '\n' },
 
-                // 1. DATOS PERSONALES (ESTILO IDÉNTICO AL PDF)
+                // 1. DATOS PERSONALES
                 { text: 'DATOS PERSONALES:', style: 'sectionHeader' },
                 {
                     table: {
@@ -461,8 +455,19 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                             [{ text: 'Formas de recreación:', bold: true }, ext['c-recreacion'] || 'PASEOS']
                         ]
                     }
+                },
+                { text: '\n\n\n' },
+
+                // FIRMA MANUAL (SIN FOTO)
+                {
+                    stack: [
+                        { text: '\n\n', fontSize: 10 },
+                        { text: '_______________________________', alignment: 'center' },
+                        { text: 'FIRMA DEL SOLICITANTE', alignment: 'center', bold: true },
+                        { text: t.nombre, alignment: 'center' },
+                        { text: t.cedula, alignment: 'center' }
+                    ]
                 }
-                // SIN FIRMA COMO SE SOLICITÓ
             ],
             styles: {
                 header: { fontSize: 16, bold: true, decoration: 'underline' },
@@ -476,7 +481,6 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         pdfMake.createPdf(docDefinition).open();
     }
 
-    // --- (Resto de funciones: ATS, Modales, Listar... IGUAL QUE ANTES) ---
     async function generarPDF_ATS(id) {
         alert("GENERANDO ATS...");
         const { data: t } = await supabase.from('trabajadores').select('*').eq('id', id).single();
@@ -498,7 +502,6 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         pdfMake.createPdf(doc).open();
     }
 
-    // (Aquí siguen window.abrirModalAccion, document.getElementById('btn-confirmar-accion').onclick, listar, recargarListas, subirArchivo, setupPreview... todo idéntico al bloque anterior)
     window.abrirModalAccion = (tipo, extraData = null) => {
         const modal = document.getElementById('modal-acciones'), titulo = document.getElementById('modal-titulo'), desc = document.getElementById('modal-desc'), inputs = document.getElementById('modal-inputs'), nombre = document.getElementById('t-nombre').value, cargoActual = document.getElementById('t-cargo-original').value;
         trabajadorSeleccionadoId = document.getElementById('t-id').value; datosAccionTemp = { tipo: tipo, ...extraData }; inputs.innerHTML = ''; 
