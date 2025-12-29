@@ -1,4 +1,4 @@
-// trabajadores.js - VERSIÓN FINAL CON CORRECCIONES
+// trabajadores.js - VERSIÓN CORREGIDA (V11)
 
 export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     contenedor.innerHTML = `
@@ -157,7 +157,6 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
 
     // --- LÓGICA ---
 
-    // Menú Nombre
     window.toggleMenuNombre = () => {
         const menu = document.getElementById('menu-descargas');
         const cont = document.getElementById('cont-nombre');
@@ -166,7 +165,6 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         else cont.classList.remove('show-bg');
     };
 
-    // Navegación
     window.cambiarVista = (vista) => {
         ['vista-activos','vista-pasivos','vista-formulario'].forEach(id=>document.getElementById(id).style.display='none');
         document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
@@ -175,6 +173,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             document.getElementById('vista-activos').style.display='block';
             document.getElementById('tab-activos').classList.add('active');
             document.getElementById('cont-nombre').style.display='none';
+            document.getElementById('bus-act').focus();
         }
         if(vista === 'pasivos') {
             document.getElementById('vista-pasivos').style.display='block';
@@ -184,21 +183,31 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     };
 
     window.nuevaFicha = () => {
-        document.getElementById('form-trabajador').reset();
-        document.getElementById('t-id').value='';
-        document.getElementById('t-estado').value='ACTIVO';
-        document.getElementById('preview-foto').src='https://via.placeholder.com/150';
+        // CORRECCION: Reset completo del formulario y limpieza manual de fotos
+        const form = document.getElementById('form-trabajador');
+        form.reset();
         
-        document.getElementById('btn-dar-baja').style.display='none';
-        document.getElementById('btn-reactivar').style.display='none';
+        document.getElementById('t-id').value = '';
+        document.getElementById('t-estado').value = 'ACTIVO';
+        
+        // Limpiar imágenes
+        document.getElementById('preview-foto').src = 'https://via.placeholder.com/150';
+        document.getElementById('preview-firma').src = '';
+        document.getElementById('preview-firma').style.display = 'none';
+        
+        // Limpiar inputs de archivo (por si acaso el reset no lo hizo)
+        document.getElementById('t-foto').value = '';
+        document.getElementById('t-firma').value = '';
+
+        document.getElementById('btn-dar-baja').style.display = 'none';
+        document.getElementById('btn-reactivar').style.display = 'none';
         document.getElementById('titulo-ficha').innerText = "Nuevo Ingreso";
         document.getElementById('cont-nombre').style.display = 'none';
 
         cambiarVista('xxx');
-        document.getElementById('vista-formulario').style.display='block';
+        document.getElementById('vista-formulario').style.display = 'block';
     };
 
-    // Listar (Activos/Pasivos)
     async function listar(estado, gridId, countId) {
         const { data } = await supabase.from('trabajadores').select('*').eq('empresa_id', empresa.id).eq('estado', estado).order('nombre');
         
@@ -214,24 +223,33 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                 <div class="w-avatar"><img src="${t.foto_url || 'https://via.placeholder.com/50'}" style="width:100%; height:100%; object-fit:cover;"></div>
                 <div><h4 style="margin:0">${t.nombre}</h4><small style="color:#aaa">${t.cargo}</small></div>
             `;
-            // AL CLIC: ABRIR FICHA
             div.onclick = () => abrir(t);
             grid.appendChild(div);
         });
     }
 
-    // Abrir Ficha
     function abrir(t) {
-        const fields = ['cedula','nombre','nacimiento','lugar','sexo','civil','sangre','discapacidad','religion','celular','correo','licencia','cargo','profesion','sueldo','afiliacion','banco','cuenta','direccion','vivienda','material','cubierta','habitaciones','seguridad','camisa','pantalon','zapatos'];
+        // Campos de texto simples
+        const fields = ['cedula','nombre','lugar','sexo','civil','sangre','discapacidad','religion','celular','correo','licencia','cargo','profesion','sueldo','afiliacion','banco','cuenta','direccion','vivienda','material','cubierta','habitaciones','seguridad','camisa','pantalon','zapatos'];
         fields.forEach(f => {
             const el = document.getElementById('t-'+f);
             if(el) el.value = t[f.replace('-','_')] || t[f] || '';
         });
         
+        // CORRECCION: Carga explicita de la fecha de nacimiento
+        // Supabase devuelve 'fecha_nacimiento', el input es 't-nacimiento'
         if(t.fecha_nacimiento) {
-            const h=new Date(), n=new Date(t.fecha_nacimiento);
-            let e=h.getFullYear()-n.getFullYear(); if(h.getMonth()<n.getMonth())e--;
+            document.getElementById('t-nacimiento').value = t.fecha_nacimiento;
+            
+            // Calculo de edad
+            const h = new Date();
+            const n = new Date(t.fecha_nacimiento + 'T00:00:00'); // T00:00:00 para evitar error de zona horaria
+            let e = h.getFullYear() - n.getFullYear(); 
+            if(h.getMonth() < n.getMonth() || (h.getMonth() === n.getMonth() && h.getDate() < n.getDate())) e--;
             document.getElementById('t-edad').value = e + ' años';
+        } else {
+            document.getElementById('t-nacimiento').value = '';
+            document.getElementById('t-edad').value = '';
         }
 
         document.getElementById('t-id').value = t.id;
@@ -241,9 +259,15 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         document.getElementById('t-emer2-tel').value = t.emergencia2_telefono;
 
         document.getElementById('preview-foto').src = t.foto_url || 'https://via.placeholder.com/150';
-        if(t.firma_url) { document.getElementById('preview-firma').src=t.firma_url; document.getElementById('preview-firma').style.display='block'; }
+        
+        // CORRECCION: Mostrar firma si existe, ocultar si no
+        if(t.firma_url) { 
+            document.getElementById('preview-firma').src = t.firma_url; 
+            document.getElementById('preview-firma').style.display = 'block'; 
+        } else {
+            document.getElementById('preview-firma').style.display = 'none';
+        }
 
-        // Botones Estado
         if(t.estado === 'ACTIVO') {
             document.getElementById('btn-dar-baja').style.display = 'block';
             document.getElementById('btn-reactivar').style.display = 'none';
@@ -252,7 +276,6 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             document.getElementById('btn-reactivar').style.display = 'block';
         }
 
-        // Mostrar Botón Nombre
         const primerNombre = t.nombre.split(' ')[0];
         document.getElementById('lbl-nombre-trab').innerText = primerNombre;
         document.getElementById('cont-nombre').style.display = 'inline-flex';
@@ -262,7 +285,6 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         document.getElementById('vista-formulario').style.display='block';
     }
 
-    // Submit Guardar
     document.getElementById('form-trabajador').onsubmit = async (e) => {
         e.preventDefault();
         const id = document.getElementById('t-id').value;
@@ -278,24 +300,31 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             empresa_id: empresa.id,
             cedula: document.getElementById('t-cedula').value,
             nombre: document.getElementById('t-nombre').value.toUpperCase(),
-            fecha_nacimiento: document.getElementById('t-nacimiento').value,
+            fecha_nacimiento: document.getElementById('t-nacimiento').value, // Esto ahora toma correctamente el valor
             cargo: document.getElementById('t-cargo').value,
             celular: document.getElementById('t-celular').value,
             servicios_basicos: serv,
             emergencia_nombre: document.getElementById('t-emer-nom').value,
             emergencia_telefono: document.getElementById('t-emer-tel').value,
-            // (Se asume que el resto de campos también se guardan, añade los faltantes aquí si es necesario)
+            emergencia2_nombre: document.getElementById('t-emer2-nom').value,
+            emergencia2_telefono: document.getElementById('t-emer2-tel').value,
             profesion: document.getElementById('t-profesion').value,
             sueldo: document.getElementById('t-sueldo').value,
-            direccion: document.getElementById('t-direccion').value
+            direccion: document.getElementById('t-direccion').value,
+            lugar_nacimiento: document.getElementById('t-lugar').value,
+            sexo: document.getElementById('t-sexo').value,
+            estado_civil: document.getElementById('t-civil').value,
+            tipo_sangre: document.getElementById('t-sangre').value
         };
+        
+        // Solo actualizar si hay nueva foto/firma o si es nuevo registro
         if(fotoUrl) datos.foto_url = fotoUrl;
         if(firmaUrl) datos.firma_url = firmaUrl;
 
         if(id) await supabase.from('trabajadores').update(datos).eq('id',id);
         else await supabase.from('trabajadores').insert([datos]);
         
-        alert("Guardado");
+        alert("Guardado exitosamente");
         recargarListas();
         cambiarVista('activos');
     };
@@ -313,33 +342,34 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         listar('PASIVO', 'grid-pasivos', 'count-pasivos');
     }
 
-    // Inicializar
     const { data: cargos } = await supabase.from('cargos').select('*');
     const sel = document.getElementById('t-cargo');
     cargos?.forEach(c => sel.innerHTML += `<option>${c.nombre}</option>`);
 
     recargarListas();
     
-    // Helpers
     const setupPreview = (inputId, imgId) => {
         document.getElementById(inputId).onchange = (e) => {
             if(e.target.files[0]){
                 const r = new FileReader();
-                r.onload = (ev) => document.getElementById(imgId).src = ev.target.result;
+                r.onload = (ev) => {
+                    const img = document.getElementById(imgId);
+                    img.src = ev.target.result;
+                    img.style.display = 'block'; // Asegurar que se vea al subir
+                };
                 r.readAsDataURL(e.target.files[0]);
             }
         }
     }
     setupPreview('t-foto', 'preview-foto');
+    setupPreview('t-firma', 'preview-firma');
     
-    // PDF
     window.imprimirDoc = async (tipo) => {
         if(tipo !== 'ficha') return alert("En construcción");
         const id = document.getElementById('t-id').value;
         const { data: tr } = await supabase.from('trabajadores').select('*').eq('id', id).single();
         const logo = await safeImageLoad(empresa.logo_url);
         const foto = await safeImageLoad(tr.foto_url);
-        const firma = await safeImageLoad(tr.firma_url);
 
         const doc = {
             pageSize: 'A4',
@@ -365,6 +395,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                         body: [
                             [{image: foto||'pixel', width:80, rowSpan:6, alignment:'center'}, {text:'Cédula:', bold:true}, tr.cedula||'', {}],
                             ['', {text:'Nombre:', bold:true}, {text:tr.nombre||'', colSpan:2}, {}],
+                            ['', {text:'Nacimiento:', bold:true}, tr.fecha_nacimiento||'', {text:'Edad: '+ document.getElementById('t-edad').value}],
                             ['', {text:'Cargo:', bold:true}, {text:tr.cargo||'', colSpan:2}, {}],
                             ['', {text:'Celular:', bold:true}, tr.celular||'', {text:'Sangre: '+(tr.tipo_sangre||'')}]
                         ]
@@ -378,7 +409,9 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     
     async function safeImageLoad(url) { if (!url) return null; try { const r = await fetch(url); const b = await r.blob(); return new Promise(res => { const f = new FileReader(); f.onload = () => res(f.result); f.readAsDataURL(b); }); } catch { return null; } }
     async function subirArchivo(sb, file, bucket) { const n = Date.now()+'_'+file.name.replace(/\W/g,''); const {error}=await sb.storage.from(bucket).upload(n,file); if(error)return null; return sb.storage.from(bucket).getPublicUrl(n).data.publicUrl; }
-    document.getElementById('buscador-activos').onkeyup = (e) => filtrarGrid('grid-activos', e.target.value);
+    
+    document.getElementById('bus-act').onkeyup = (e) => filtrarGrid('grid-activos', e.target.value);
+    document.getElementById('bus-pas').onkeyup = (e) => filtrarGrid('grid-pasivos', e.target.value);
     
     function filtrarGrid(gridId, texto) {
         const t = texto.toLowerCase();
