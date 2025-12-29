@@ -2,7 +2,7 @@
   "name": "SST Minería Ecuador",
   "short_name": "SST App",
   "description": "Aplicación de Seguridad y Salud en el Trabajo para el sector minero de Ecuador. Permite registrar incidentes y condiciones inseguras offline.",
-  "start_url": "/",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#007bff",
