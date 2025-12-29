@@ -1,4 +1,4 @@
-// trabajadores.js - VERSIÓN FINAL CON FECHAS INGRESO/SALIDA
+// trabajadores.js - VERSIÓN CON HISTORIAL Y CÓNYUGE
 
 export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     contenedor.innerHTML = `
@@ -25,11 +25,10 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                         <i class="fas fa-user"></i> <span id="lbl-nombre-trab">NOMBRE</span> <i class="fas fa-caret-down"></i>
                     </button>
                     <div id="menu-descargas" class="dropdown-content">
-                        <div style="padding:10px; color:#aaa; font-size:0.8em;">DOCUMENTOS</div>
+                        <div style="padding:10px; color:#aaa; font-size:0.8em;">ACCIONES</div>
+                        <a onclick="verHistorial()"><i class="fas fa-history" style="color:#fff"></i> Ver Historial</a>
+                        <hr style="border-color:#333">
                         <a onclick="imprimirDoc('ficha')"><i class="fas fa-file-pdf" style="color:var(--danger)"></i> Ficha PDF</a>
-                        <a onclick="imprimirDoc('ats')"><i class="fas fa-hard-hat" style="color:var(--primary)"></i> Generar ATS</a>
-                        <a onclick="imprimirDoc('kardex')"><i class="fas fa-clipboard-list" style="color:var(--success)"></i> Kardex EPP</a>
-                        <a onclick="imprimirDoc('induccion')"><i class="fas fa-chalkboard-teacher"></i> Inducción</a>
                         <a onclick="toggleMenuNombre()" style="color:#666;"><i class="fas fa-times"></i> Cerrar</a>
                     </div>
                 </div>
@@ -56,6 +55,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             <form id="form-trabajador">
                 <input type="hidden" id="t-id">
                 <input type="hidden" id="t-estado" value="ACTIVO">
+                <input type="hidden" id="t-cargo-original"> 
 
                 <div style="background:rgba(255,255,255,0.05); border:1px solid #444; border-radius:15px; padding:15px; display:flex; gap:15px; align-items:center; margin-bottom:20px;">
                     <div style="text-align:center;">
@@ -64,13 +64,13 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                         <input type="file" id="t-foto" hidden accept="image/*">
                     </div>
                     <div style="flex:1;">
-                        <input id="t-cedula" placeholder="Cédula" style="margin-bottom:5px;">
-                        <input id="t-nombre" placeholder="Nombre Completo" style="margin-bottom:5px;">
+                        <input id="t-cedula" placeholder="Cédula" style="margin-bottom:5px;" required>
+                        <input id="t-nombre" placeholder="Nombre Completo" style="margin-bottom:5px;" required>
                         <div style="display:flex; gap:5px;">
-                            <input type="date" id="t-nacimiento" title="Fecha de Nacimiento">
+                            <input type="date" id="t-nacimiento" title="Fecha de Nacimiento" required>
                             <input id="t-edad" placeholder="Edad" readonly style="width:60px; text-align:center; background:#222;">
                         </div>
-                        <select id="t-cargo" style="margin-top:5px;"><option>Cargando cargos...</option></select>
+                        <select id="t-cargo" style="margin-top:5px;" required><option value="">Seleccione Cargo...</option></select>
                     </div>
                 </div>
 
@@ -78,8 +78,21 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                     <summary style="font-weight:bold; color:#ccc; margin-bottom:10px;">Datos Personales</summary>
                     <div class="form-grid">
                         <select id="t-sexo"><option>Hombre</option><option>Mujer</option></select>
-                        <select id="t-civil"><option>Soltero</option><option>Casado</option><option>Unión Libre</option></select>
-                        <select id="t-sangre"><option>O+</option><option>A+</option><option>B+</option><option>AB+</option></select>
+                        
+                        <select id="t-civil" onchange="verificarCivil()">
+                            <option value="Soltero">Soltero</option>
+                            <option value="Casado">Casado</option>
+                            <option value="Unión Libre">Unión Libre</option>
+                            <option value="Divorciado">Divorciado</option>
+                            <option value="Viudo">Viudo</option>
+                        </select>
+                        
+                        <div id="div-conyuge" style="display:none; grid-column:1/-1; background:rgba(255,255,255,0.1); padding:10px; border-radius:8px;">
+                            <label style="font-size:0.8em; color:#00d2ff;">Nombre del Cónyuge:</label>
+                            <input id="t-conyuge" placeholder="Escriba el nombre del esposo/a">
+                        </div>
+
+                        <select id="t-sangre"><option>O+</option><option>A+</option><option>B+</option><option>AB+</option><option>O-</option></select>
                         <input id="t-nacionalidad" value="ECUATORIANA">
                         <input id="t-lugar" placeholder="Lugar Nacimiento">
                         <input id="t-religion" placeholder="Religión">
@@ -91,18 +104,18 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                 </details>
 
                 <details class="seccion-form">
-                    <summary style="font-weight:bold; color:#ccc; margin-bottom:10px;">Laboral y Banco</summary>
+                    <summary style="font-weight:bold; color:#ccc; margin-bottom:10px;">Laboral (Historial)</summary>
                     <div class="form-grid">
                         <input id="t-profesion" placeholder="Profesión">
                         <input id="t-sueldo" placeholder="Sueldo $">
                         
                         <div>
-                            <label style="font-size:0.7em; color:#aaa;">Fecha Ingreso:</label>
-                            <input type="date" id="t-ingreso">
+                            <label style="font-size:0.7em; color:#aaa;">Fecha Ingreso (Actual):</label>
+                            <input type="date" id="t-ingreso" readonly style="background:#222; color:#888;">
                         </div>
                         <div>
-                            <label style="font-size:0.7em; color:#aaa;">Fecha Retiro:</label>
-                            <input type="date" id="t-salida">
+                            <label style="font-size:0.7em; color:#aaa;">Fecha Salida:</label>
+                            <input type="date" id="t-salida" readonly style="background:#222; color:#888;">
                         </div>
                         
                         <div><label style="font-size:0.7em; color:#aaa;">Afiliación IESS:</label><input type="date" id="t-afiliacion"></div>
@@ -112,60 +125,64 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                 </details>
 
                 <details class="seccion-form">
-                    <summary style="font-weight:bold; color:#ccc; margin-bottom:10px;">Vivienda</summary>
+                    <summary style="font-weight:bold; color:#ccc; margin-bottom:10px;">Vivienda y Emergencia</summary>
                     <div class="form-grid">
                         <input id="t-direccion" placeholder="Dirección" style="grid-column:1/-1">
                         <select id="t-vivienda"><option>Propia</option><option>Arrendada</option><option>Familiar</option></select>
                         <input id="t-material" placeholder="Paredes">
                         <input id="t-cubierta" placeholder="Techo">
-                        <input id="t-habitaciones" placeholder="Habitaciones">
-                        <input id="t-seguridad" placeholder="Seguridad">
-                    </div>
-                    <div class="multi-select-box" style="margin-top:10px;">
-                        <label>Servicios:</label><br>
-                        <label><input type="checkbox" name="serv" value="Luz"> Luz</label>
-                        <label><input type="checkbox" name="serv" value="Agua"> Agua</label>
-                        <label><input type="checkbox" name="serv" value="Internet"> Internet</label>
-                    </div>
-                </details>
-
-                <details class="seccion-form">
-                    <summary style="font-weight:bold; color:#ccc; margin-bottom:10px;">Emergencia y Tallas</summary>
-                    <div class="form-grid">
-                        <input id="t-emer-nom" placeholder="Nombre Contacto 1">
-                        <input id="t-emer-tel" placeholder="Teléfono">
-                        <input id="t-emer2-nom" placeholder="Nombre Contacto 2">
-                        <input id="t-emer2-tel" placeholder="Teléfono">
+                        <input id="t-emer-nom" placeholder="Emergencia: Nombre">
+                        <input id="t-emer-tel" placeholder="Emergencia: Teléfono">
                     </div>
                     <div class="form-grid" style="margin-top:10px;">
-                        <input id="t-camisa" placeholder="Camisa">
-                        <input id="t-pantalon" placeholder="Pantalón">
-                        <input id="t-zapatos" placeholder="Zapatos">
+                        <input id="t-camisa" placeholder="Talla Camisa">
+                        <input id="t-pantalon" placeholder="Talla Pantalón">
+                        <input id="t-zapatos" placeholder="Talla Zapatos">
                     </div>
                 </details>
 
                 <div class="seccion-form" style="text-align:center;">
-                    <h4>Firma</h4>
                     <img id="preview-firma" src="" style="height:60px; display:none; margin:0 auto; background:white; padding:5px;">
                     <button type="button" onclick="document.getElementById('t-firma').click()" class="btn-small" style="background:#444; margin-top:5px;">Subir Firma</button>
                     <input type="file" id="t-firma" hidden accept="image/*">
                 </div>
 
                 <div style="margin-top:20px; padding-bottom:80px;">
-                    <button type="submit" id="btn-guardar" style="width:100%; margin-bottom:10px;">GUARDAR CAMBIOS</button>
+                    <button type="submit" id="btn-guardar" style="width:100%; margin-bottom:10px;">GUARDAR FICHA</button>
                     
-                    <button type="button" id="btn-dar-baja" style="width:100%; background:var(--danger); display:none;" onclick="cambiarEstado('PASIVO')">
-                        DAR DE BAJA
+                    <button type="button" id="btn-dar-baja" style="width:100%; background:var(--danger); display:none;" onclick="accionBaja()">
+                        DAR DE BAJA (Salida)
                     </button>
-                    <button type="button" id="btn-reactivar" style="width:100%; background:var(--success); color:black; display:none;" onclick="cambiarEstado('ACTIVO')">
-                        REACTIVAR
+                    <button type="button" id="btn-reactivar" style="width:100%; background:var(--success); color:black; display:none;" onclick="accionReactivar()">
+                        REACTIVAR (Reingreso)
                     </button>
                 </div>
             </form>
         </div>
+
+        <div id="modal-historial" class="modal">
+            <div class="container" style="width:95%; max-width:500px;">
+                <h3>Historial Laboral</h3>
+                <div id="lista-historial" style="max-height:300px; overflow-y:auto; text-align:left; font-size:0.9em;"></div>
+                <button onclick="document.getElementById('modal-historial').style.display='none'" style="margin-top:10px; background:#555;">Cerrar</button>
+            </div>
+        </div>
     `;
 
-    // --- LÓGICA ---
+    // ==========================================
+    // LÓGICA DEL MÓDULO
+    // ==========================================
+
+    window.verificarCivil = () => {
+        const val = document.getElementById('t-civil').value;
+        const div = document.getElementById('div-conyuge');
+        if(val === 'Casado' || val === 'Unión Libre') {
+            div.style.display = 'block';
+        } else {
+            div.style.display = 'none';
+            document.getElementById('t-conyuge').value = ''; // Limpiar si cambia
+        }
+    };
 
     window.toggleMenuNombre = () => {
         const menu = document.getElementById('menu-descargas');
@@ -192,36 +209,21 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         }
     };
 
-    window.nuevaFicha = () => {
-        const form = document.getElementById('form-trabajador');
-        form.reset();
-        
-        document.getElementById('t-id').value = '';
-        document.getElementById('t-estado').value = 'ACTIVO';
-        
-        document.getElementById('preview-foto').src = 'https://via.placeholder.com/150';
-        document.getElementById('preview-firma').src = '';
-        document.getElementById('preview-firma').style.display = 'none';
-        
-        document.getElementById('t-foto').value = '';
-        document.getElementById('t-firma').value = '';
+    // ------------------------------------------
+    // CARGA DE DATOS
+    // ------------------------------------------
 
-        // Reset específico de fechas para asegurar limpieza
-        document.getElementById('t-nacimiento').value = '';
-        document.getElementById('t-ingreso').value = '';
-        document.getElementById('t-salida').value = '';
-
-        document.getElementById('btn-dar-baja').style.display = 'none';
-        document.getElementById('btn-reactivar').style.display = 'none';
-        document.getElementById('titulo-ficha').innerText = "Nuevo Ingreso";
-        document.getElementById('cont-nombre').style.display = 'none';
-
-        cambiarVista('xxx');
-        document.getElementById('vista-formulario').style.display = 'block';
-    };
+    // Llenar combo de cargos al inicio
+    const { data: cargos } = await supabase.from('cargos').select('*');
+    const sel = document.getElementById('t-cargo');
+    cargos?.forEach(c => sel.innerHTML += `<option value="${c.nombre}">${c.nombre}</option>`);
 
     async function listar(estado, gridId, countId) {
-        const { data } = await supabase.from('trabajadores').select('*').eq('empresa_id', empresa.id).eq('estado', estado).order('nombre');
+        const { data } = await supabase.from('trabajadores')
+            .select('*')
+            .eq('empresa_id', empresa.id)
+            .eq('estado', estado)
+            .order('nombre');
         
         if(document.getElementById(countId)) document.getElementById(countId).innerText = data ? data.length : 0;
         
@@ -241,35 +243,37 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     }
 
     function abrir(t) {
-        // Campos de texto simples
-        const fields = ['cedula','nombre','lugar','sexo','civil','sangre','discapacidad','religion','celular','correo','licencia','cargo','profesion','sueldo','afiliacion','banco','cuenta','direccion','vivienda','material','cubierta','habitaciones','seguridad','camisa','pantalon','zapatos'];
+        // Llenado básico
+        const fields = ['cedula','nombre','lugar','sexo','civil','sangre','discapacidad','religion','celular','correo','licencia','cargo','profesion','sueldo','afiliacion','banco','cuenta','direccion','vivienda','material','cubierta','camisa','pantalon','zapatos','conyuge'];
         fields.forEach(f => {
             const el = document.getElementById('t-'+f);
             if(el) el.value = t[f.replace('-','_')] || t[f] || '';
         });
         
-        // Manejo de Fechas
+        // Manejo específico de fechas
         document.getElementById('t-nacimiento').value = t.fecha_nacimiento || '';
-        document.getElementById('t-ingreso').value = t.fecha_ingreso || ''; // Nuevo campo
-        document.getElementById('t-salida').value = t.fecha_salida || '';   // Nuevo campo
+        document.getElementById('t-ingreso').value = t.fecha_ingreso || '';
+        document.getElementById('t-salida').value = t.fecha_salida || '';
         
-        // Cálculo Edad
+        // Guardar estado original para detectar cambios
+        document.getElementById('t-id').value = t.id;
+        document.getElementById('t-cargo-original').value = t.cargo; 
+        document.getElementById('t-estado').value = t.estado;
+
+        // Cónyuge
+        verificarCivil(); // Muestra/oculta según el valor cargado
+
+        // Edad
         if(t.fecha_nacimiento) {
-            const h = new Date();
-            const n = new Date(t.fecha_nacimiento + 'T00:00:00');
+            const h = new Date(); const n = new Date(t.fecha_nacimiento + 'T00:00:00');
             let e = h.getFullYear() - n.getFullYear(); 
             if(h.getMonth() < n.getMonth() || (h.getMonth() === n.getMonth() && h.getDate() < n.getDate())) e--;
-            document.getElementById('t-edad').value = e + ' años';
-        } else {
-            document.getElementById('t-edad').value = '';
+            document.getElementById('t-edad').value = e;
         }
 
-        document.getElementById('t-id').value = t.id;
+        // Emergencias y Fotos
         document.getElementById('t-emer-nom').value = t.emergencia_nombre;
         document.getElementById('t-emer-tel').value = t.emergencia_telefono;
-        document.getElementById('t-emer2-nom').value = t.emergencia2_nombre;
-        document.getElementById('t-emer2-tel').value = t.emergencia2_telefono;
-
         document.getElementById('preview-foto').src = t.foto_url || 'https://via.placeholder.com/150';
         
         if(t.firma_url) { 
@@ -279,6 +283,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             document.getElementById('preview-firma').style.display = 'none';
         }
 
+        // Botones de acción
         if(t.estado === 'ACTIVO') {
             document.getElementById('btn-dar-baja').style.display = 'block';
             document.getElementById('btn-reactivar').style.display = 'none';
@@ -287,157 +292,279 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             document.getElementById('btn-reactivar').style.display = 'block';
         }
 
-        const primerNombre = t.nombre.split(' ')[0];
-        document.getElementById('lbl-nombre-trab').innerText = primerNombre;
+        document.getElementById('lbl-nombre-trab').innerText = t.nombre.split(' ')[0];
         document.getElementById('cont-nombre').style.display = 'inline-flex';
-        document.getElementById('titulo-ficha').innerText = `Ficha: ${t.nombre}`;
+        document.getElementById('titulo-ficha').innerText = `Editando: ${t.nombre}`;
 
         cambiarVista('xxx');
         document.getElementById('vista-formulario').style.display='block';
     }
 
+    window.nuevaFicha = () => {
+        document.getElementById('form-trabajador').reset();
+        document.getElementById('t-id').value = '';
+        document.getElementById('t-estado').value = 'ACTIVO';
+        document.getElementById('t-cargo-original').value = '';
+        
+        // Limpiar visuales
+        document.getElementById('preview-foto').src = 'https://via.placeholder.com/150';
+        document.getElementById('preview-firma').style.display = 'none';
+        document.getElementById('div-conyuge').style.display = 'none';
+        
+        // Habilitar fecha ingreso para el nuevo
+        document.getElementById('t-ingreso').removeAttribute('readonly');
+        document.getElementById('t-ingreso').style.background = '#000';
+        document.getElementById('t-ingreso').focus();
+
+        document.getElementById('btn-dar-baja').style.display = 'none';
+        document.getElementById('btn-reactivar').style.display = 'none';
+        document.getElementById('titulo-ficha').innerText = "Nuevo Ingreso";
+        document.getElementById('cont-nombre').style.display = 'none';
+
+        cambiarVista('xxx');
+        document.getElementById('vista-formulario').style.display = 'block';
+    };
+
+    // ------------------------------------------
+    // GUARDADO INTELIGENTE (Detecta cambio de cargo)
+    // ------------------------------------------
+
     document.getElementById('form-trabajador').onsubmit = async (e) => {
         e.preventDefault();
-        const id = document.getElementById('t-id').value;
-        const serv = Array.from(document.querySelectorAll('input[name="serv"]:checked')).map(c=>c.value).join(',');
         
+        const id = document.getElementById('t-id').value;
+        const cargoNuevo = document.getElementById('t-cargo').value;
+        const cargoViejo = document.getElementById('t-cargo-original').value;
+        const nombre = document.getElementById('t-nombre').value.toUpperCase();
+        
+        // 1. Detectar si hubo CAMBIO DE CARGO en un trabajador existente
+        let fechaFinViejo = null;
+        let fechaInicioNuevo = null;
+
+        if (id && cargoViejo && cargoNuevo !== cargoViejo) {
+            const confirmar = confirm(`Has cambiado el cargo de ${cargoViejo} a ${cargoNuevo}.\n\n¿Deseas registrar esto en el historial?`);
+            if (confirmar) {
+                fechaFinViejo = prompt(`Fecha de fin para el cargo ${cargoViejo} (YYYY-MM-DD):`, new Date().toISOString().split('T')[0]);
+                fechaInicioNuevo = prompt(`Fecha de inicio para el cargo ${cargoNuevo} (YYYY-MM-DD):`, new Date().toISOString().split('T')[0]);
+                
+                if (!fechaFinViejo || !fechaInicioNuevo) return alert("Debes ingresar ambas fechas para registrar el cambio.");
+            } else {
+                // Si cancela, revertimos el cargo en el select visualmente (opcional) o simplemente guardamos sin historial
+                alert("Se guardará el cambio sin historial.");
+            }
+        }
+
+        // 2. Subir Archivos
         const fFoto = document.getElementById('t-foto').files[0];
         let fotoUrl = null; if(fFoto) fotoUrl = await subirArchivo(supabase, fFoto, 'fichas_personal');
         
         const fFirma = document.getElementById('t-firma').files[0];
         let firmaUrl = null; if(fFirma) firmaUrl = await subirArchivo(supabase, fFirma, 'fichas_personal');
 
+        // 3. Preparar Datos Generales
+        const serv = Array.from(document.querySelectorAll('input[name="serv"]:checked')).map(c=>c.value).join(',');
+        
         const datos = {
             empresa_id: empresa.id,
             cedula: document.getElementById('t-cedula').value,
-            nombre: document.getElementById('t-nombre').value.toUpperCase(),
+            nombre: nombre,
             fecha_nacimiento: document.getElementById('t-nacimiento').value,
-            // NUEVOS CAMPOS EN BD
-            fecha_ingreso: document.getElementById('t-ingreso').value, 
-            fecha_salida: document.getElementById('t-salida').value,
-            
-            cargo: document.getElementById('t-cargo').value,
+            cargo: cargoNuevo,
+            // Solo actualizamos fecha_ingreso si es NUEVO registro o Reactivación explícita
+            // En edición normal, no tocamos fechas a menos que el usuario las haya desbloqueado
             celular: document.getElementById('t-celular').value,
-            servicios_basicos: serv,
             emergencia_nombre: document.getElementById('t-emer-nom').value,
             emergencia_telefono: document.getElementById('t-emer-tel').value,
-            emergencia2_nombre: document.getElementById('t-emer2-nom').value,
-            emergencia2_telefono: document.getElementById('t-emer2-tel').value,
             profesion: document.getElementById('t-profesion').value,
             sueldo: document.getElementById('t-sueldo').value,
             direccion: document.getElementById('t-direccion').value,
             lugar_nacimiento: document.getElementById('t-lugar').value,
             sexo: document.getElementById('t-sexo').value,
             estado_civil: document.getElementById('t-civil').value,
-            tipo_sangre: document.getElementById('t-sangre').value
+            conyuge: document.getElementById('t-conyuge').value, // NUEVO CAMPO
+            tipo_sangre: document.getElementById('t-sangre').value,
+            vivienda: document.getElementById('t-vivienda').value,
+            material_paredes: document.getElementById('t-material').value,
+            material_cubierta: document.getElementById('t-cubierta').value,
+            talla_camisa: document.getElementById('t-camisa').value,
+            talla_pantalon: document.getElementById('t-pantalon').value,
+            talla_zapatos: document.getElementById('t-zapatos').value
         };
-        
+
         if(fotoUrl) datos.foto_url = fotoUrl;
         if(firmaUrl) datos.firma_url = firmaUrl;
-
-        if(id) await supabase.from('trabajadores').update(datos).eq('id',id);
-        else await supabase.from('trabajadores').insert([datos]);
         
-        alert("Guardado exitosamente");
+        // Si es NUEVO, tomamos la fecha de ingreso del input (que desbloqueamos)
+        if(!id) {
+            datos.fecha_ingreso = document.getElementById('t-ingreso').value;
+            datos.estado = 'ACTIVO';
+        }
+        
+        // Si hubo cambio de cargo con fechas
+        if (fechaInicioNuevo) {
+            datos.fecha_ingreso = fechaInicioNuevo; // Actualizamos la fecha de ingreso "actual" al nuevo cargo
+        }
+
+        // 4. GUARDAR EN BD
+        let result;
+        if(id) {
+            result = await supabase.from('trabajadores').update(datos).eq('id',id).select();
+        } else {
+            result = await supabase.from('trabajadores').insert([datos]).select();
+        }
+
+        const trabajadorGuardado = result.data[0];
+
+        // 5. ACTUALIZAR HISTORIAL (Si hubo cambio de cargo o es Nuevo)
+        if (id && fechaFinViejo && fechaInicioNuevo) {
+            // Cerrar historial anterior
+            await supabase.from('historial_laboral').insert({
+                trabajador_id: id,
+                cargo: cargoViejo,
+                fecha_inicio: document.getElementById('t-ingreso').value, // La fecha que tenía antes
+                fecha_fin: fechaFinViejo,
+                motivo: 'Cambio de Cargo'
+            });
+            // El nuevo periodo empieza implícitamente ahora, se guardará cuando termine este cargo
+        } 
+        else if (!id) {
+            // Es nuevo, opcionalmente podemos crear un registro inicial en historial
+             await supabase.from('historial_laboral').insert({
+                trabajador_id: trabajadorGuardado.id,
+                cargo: trabajadorGuardado.cargo,
+                fecha_inicio: trabajadorGuardado.fecha_ingreso,
+                motivo: 'Ingreso Inicial'
+            });
+        }
+        
+        alert("Ficha guardada correctamente");
         recargarListas();
         cambiarVista('activos');
     };
 
-    window.cambiarEstado = async (nuevo) => {
-        if(!confirm(`¿Cambiar estado a ${nuevo}?`)) return;
-        const id = document.getElementById('t-id').value;
-        const updateData = { estado: nuevo };
-        
-        // OPCIONAL: Auto-llenar fecha de salida si se da de baja
-        if(nuevo === 'PASIVO' && !document.getElementById('t-salida').value) {
-            const hoy = new Date().toISOString().split('T')[0];
-            updateData.fecha_salida = hoy;
-        }
+    // ------------------------------------------
+    // ACCIONES DE ESTADO (BAJA / REACTIVAR)
+    // ------------------------------------------
 
-        await supabase.from('trabajadores').update(updateData).eq('id', id);
-        recargarListas();
-        cambiarVista(nuevo==='ACTIVO'?'activos':'pasivos');
+    window.accionBaja = async () => {
+        const id = document.getElementById('t-id').value;
+        const nombre = document.getElementById('t-nombre').value;
+        
+        const fechaSalida = prompt(`Ingrese la FECHA DE SALIDA para ${nombre} (YYYY-MM-DD):`, new Date().toISOString().split('T')[0]);
+        if(!fechaSalida) return;
+
+        // 1. Guardar en historial el periodo que termina
+        const cargoActual = document.getElementById('t-cargo').value;
+        const fechaInicioActual = document.getElementById('t-ingreso').value;
+
+        await supabase.from('historial_laboral').insert({
+            trabajador_id: id,
+            cargo: cargoActual,
+            fecha_inicio: fechaInicioActual,
+            fecha_fin: fechaSalida,
+            motivo: 'Baja / Renuncia'
+        });
+
+        // 2. Actualizar trabajador
+        const { error } = await supabase.from('trabajadores').update({
+            estado: 'PASIVO',
+            fecha_salida: fechaSalida
+        }).eq('id', id);
+
+        if(error) alert("Error al dar de baja");
+        else {
+            alert("Trabajador dado de baja correctamente.");
+            recargarListas();
+            cambiarVista('pasivos');
+        }
     };
 
+    window.accionReactivar = async () => {
+        const id = document.getElementById('t-id').value;
+        const nombre = document.getElementById('t-nombre').value;
+        
+        // Al reactivar, necesitamos la NUEVA fecha de ingreso (re-ingreso)
+        const nuevaFechaIngreso = prompt(`Ingrese la FECHA DE RE-INGRESO para ${nombre} (YYYY-MM-DD):`, new Date().toISOString().split('T')[0]);
+        if(!nuevaFechaIngreso) return;
+        
+        // Opcional: ¿Cambia de cargo al volver?
+        const nuevoCargo = prompt("Ingrese el CARGO de reingreso (o deje vacío para mantener el anterior):");
+        const datosUpdate = {
+            estado: 'ACTIVO',
+            fecha_ingreso: nuevaFechaIngreso,
+            fecha_salida: null // Limpiamos la salida porque volvió
+        };
+        if(nuevoCargo) datosUpdate.cargo = nuevoCargo;
+
+        // Actualizar
+        await supabase.from('trabajadores').update(datosUpdate).eq('id', id);
+        
+        // Registrar inicio de nuevo ciclo en historial? 
+        // Normalmente el historial guarda periodos CERRADOS, pero podemos guardar el inicio
+         await supabase.from('historial_laboral').insert({
+            trabajador_id: id,
+            cargo: nuevoCargo || document.getElementById('t-cargo').value,
+            fecha_inicio: nuevaFechaIngreso,
+            motivo: 'Reingreso'
+        });
+
+        alert("Trabajador reactivado exitosamente.");
+        recargarListas();
+        cambiarVista('activos');
+    };
+
+    window.verHistorial = async () => {
+        const id = document.getElementById('t-id').value;
+        if(!id) return;
+        
+        const { data } = await supabase.from('historial_laboral')
+            .select('*').eq('trabajador_id', id).order('fecha_inicio', { ascending: false });
+        
+        const lista = document.getElementById('lista-historial');
+        lista.innerHTML = '';
+        
+        if(!data || data.length === 0) {
+            lista.innerHTML = '<p>No hay historial registrado aún.</p>';
+        } else {
+            const table = document.createElement('table');
+            table.style.width = '100%';
+            table.style.borderCollapse = 'collapse';
+            table.innerHTML = `<tr style="border-bottom:1px solid #555; text-align:left;"><th>Cargo</th><th>Inicio</th><th>Fin</th><th>Motivo</th></tr>`;
+            
+            data.forEach(h => {
+                table.innerHTML += `
+                    <tr style="border-bottom:1px solid #333; font-size:0.85em;">
+                        <td style="padding:5px;">${h.cargo}</td>
+                        <td>${h.fecha_inicio || '-'}</td>
+                        <td>${h.fecha_fin || 'Activo'}</td>
+                        <td style="color:#aaa">${h.motivo || ''}</td>
+                    </tr>
+                `;
+            });
+            lista.appendChild(table);
+        }
+        document.getElementById('modal-historial').style.display = 'flex';
+    };
+
+    // Utils
     function recargarListas() {
         listar('ACTIVO', 'grid-activos', 'count-activos');
         listar('PASIVO', 'grid-pasivos', 'count-pasivos');
     }
-
-    const { data: cargos } = await supabase.from('cargos').select('*');
-    const sel = document.getElementById('t-cargo');
-    cargos?.forEach(c => sel.innerHTML += `<option>${c.nombre}</option>`);
+    async function subirArchivo(sb, file, bucket) { const n = Date.now()+'_'+file.name.replace(/\W/g,''); const {error}=await sb.storage.from(bucket).upload(n,file); if(error)return null; return sb.storage.from(bucket).getPublicUrl(n).data.publicUrl; }
 
     recargarListas();
     
+    // Preview imagenes
     const setupPreview = (inputId, imgId) => {
         document.getElementById(inputId).onchange = (e) => {
             if(e.target.files[0]){
                 const r = new FileReader();
-                r.onload = (ev) => {
-                    const img = document.getElementById(imgId);
-                    img.src = ev.target.result;
-                    img.style.display = 'block';
-                };
+                r.onload = (ev) => { document.getElementById(imgId).src = ev.target.result; document.getElementById(imgId).style.display='block'; };
                 r.readAsDataURL(e.target.files[0]);
             }
         }
     }
     setupPreview('t-foto', 'preview-foto');
     setupPreview('t-firma', 'preview-firma');
-    
-    window.imprimirDoc = async (tipo) => {
-        if(tipo !== 'ficha') return alert("En construcción");
-        const id = document.getElementById('t-id').value;
-        const { data: tr } = await supabase.from('trabajadores').select('*').eq('id', id).single();
-        const logo = await safeImageLoad(empresa.logo_url);
-        const foto = await safeImageLoad(tr.foto_url);
-
-        const doc = {
-            pageSize: 'A4',
-            pageMargins: [40, 40, 40, 40],
-            content: [
-                {
-                    columns: [
-                        { image: logo || 'pixel', width: 60, fit: [60, 60] },
-                        {
-                            text: [
-                                { text: empresa.nombre.toUpperCase() + '\n', fontSize: 14, bold: true, color: '#1f4e79' },
-                                { text: 'FICHA SOCIOECONÓMICA', fontSize: 16, bold: true, color: '#c00000', margin: [0, 5, 0, 0] }
-                            ],
-                            alignment: 'center'
-                        },
-                        { text: '', width: 60 }
-                    ]
-                },
-                { text: '\n' },
-                {
-                    table: {
-                        widths: [90, '*', 90, '*'],
-                        body: [
-                            [{image: foto||'pixel', width:80, rowSpan:6, alignment:'center'}, {text:'Cédula:', bold:true}, tr.cedula||'', {}],
-                            ['', {text:'Nombre:', bold:true}, {text:tr.nombre||'', colSpan:2}, {}],
-                            ['', {text:'Nacimiento:', bold:true}, tr.fecha_nacimiento||'', {text:'Edad: '+ document.getElementById('t-edad').value}],
-                            ['', {text:'Fecha Ingreso:', bold:true}, tr.fecha_ingreso||'', {text:'Fecha Retiro: '+(tr.fecha_salida||'')}],
-                            ['', {text:'Cargo:', bold:true}, {text:tr.cargo||'', colSpan:2}, {}],
-                            ['', {text:'Celular:', bold:true}, tr.celular||'', {text:'Sangre: '+(tr.tipo_sangre||'')}]
-                        ]
-                    }
-                }
-            ],
-            images: { pixel: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=' }
-        };
-        pdfMake.createPdf(doc).download(`Ficha_${tr.nombre}.pdf`);
-    };
-    
-    async function safeImageLoad(url) { if (!url) return null; try { const r = await fetch(url); const b = await r.blob(); return new Promise(res => { const f = new FileReader(); f.onload = () => res(f.result); f.readAsDataURL(b); }); } catch { return null; } }
-    async function subirArchivo(sb, file, bucket) { const n = Date.now()+'_'+file.name.replace(/\W/g,''); const {error}=await sb.storage.from(bucket).upload(n,file); if(error)return null; return sb.storage.from(bucket).getPublicUrl(n).data.publicUrl; }
-    
-    document.getElementById('bus-act').onkeyup = (e) => filtrarGrid('grid-activos', e.target.value);
-    document.getElementById('bus-pas').onkeyup = (e) => filtrarGrid('grid-pasivos', e.target.value);
-    
-    function filtrarGrid(gridId, texto) {
-        const t = texto.toLowerCase();
-        document.querySelectorAll(`#${gridId} .worker-card`).forEach(c => c.style.display = c.innerText.toLowerCase().includes(t) ? 'flex' : 'none');
-    }
 }
