@@ -1,4 +1,4 @@
-// trabajadores.js - VERSIÓN FINAL: FICHA FUNCIONAL (TU CÓDIGO) + ATS LINK DIRECTO
+// trabajadores.js - VERSIÓN FINAL: FICHA GENERADA DETALLADA + ATS ARCHIVO
 
 let listaCargosCache = []; 
 
@@ -12,6 +12,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             #vista-formulario textarea, 
             #vista-formulario select { text-transform: uppercase; }
             .hijo-card { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid var(--primary); }
+            .sub-title { color: #aaa; font-size: 0.85em; margin-top: 10px; margin-bottom: 5px; width: 100%; border-bottom: 1px solid #444; }
         </style>
 
         <div class="header-tools">
@@ -74,7 +75,8 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                         <select id="t-civil" onchange="verificarCivil()"><option value="SOLTERO">SOLTERO</option><option value="CASADO">CASADO</option><option value="UNION DE HECHO">UNIÓN DE HECHO</option><option value="DIVORCIADO">DIVORCIADO</option><option value="VIUDO">VIUDO</option></select>
                         <div id="div-conyuge" style="display:none; grid-column:1/-1; background:rgba(255,255,255,0.1); padding:10px; border-radius:8px;"><label style="font-size:0.8em; color:#00d2ff;">NOMBRE CÓNYUGE:</label><input id="t-conyuge" placeholder="NOMBRE ESPOSO/A"></div>
                         <select id="t-sangre"><option value="">TIPO SANGRE</option><option value="A+">A+</option><option value="A-">A-</option><option value="B+">B+</option><option value="B-">B-</option><option value="AB+">AB+</option><option value="AB-">AB-</option><option value="O+">O+</option><option value="O-">O-</option></select>
-                        <input id="t-nacionalidad" value="ECUATORIANA"><input id="t-lugar" placeholder="LUGAR NACIMIENTO"><input id="t-discapacidad" placeholder="DISCAPACIDAD (NO / %)">
+                        <input id="t-nacionalidad" value="ECUATORIANA"><input id="t-lugar" placeholder="LUGAR NACIMIENTO">
+                        <input id="t-discapacidad" placeholder="DISCAPACIDAD (NO / %)">
                         <input id="t-celular" placeholder="CELULAR"><input id="t-correo" placeholder="CORREO">
                         
                         <input id="t-alergia" placeholder="ALERGIAS (NINGUNA)"><input id="t-transporte" placeholder="MEDIO TRANSPORTE (BUS/AUTO)">
@@ -92,11 +94,31 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                 </details>
 
                 <details class="seccion-form"><summary style="font-weight:bold; color:#ccc; margin-bottom:10px;">2. ESTUDIOS Y LABORAL</summary>
-                    <div class="form-grid"><input id="t-profesion" placeholder="PROFESIÓN / TÍTULO"><select id="t-nivel-estudio"><option value="">NIVEL ESTUDIO...</option><option value="PRIMARIA">PRIMARIA</option><option value="SECUNDARIA">SECUNDARIA</option><option value="SUPERIOR">SUPERIOR</option></select><input id="t-establecimiento" placeholder="ESTABLECIMIENTO EDUCATIVO"><input id="t-sueldo" type="number" step="0.01" placeholder="SUELDO $"><div><label style="font-size:0.7em;">AFILIACIÓN IESS:</label><input type="date" id="t-afiliacion"></div><input id="t-banco" placeholder="BANCO"><input id="t-cuenta" placeholder="Nº CUENTA"></div>
+                    <div class="form-grid">
+                        <input id="t-profesion" placeholder="PROFESIÓN / TÍTULO">
+                        <select id="t-nivel-estudio"><option value="">NIVEL ESTUDIO...</option><option value="PRIMARIA">PRIMARIA</option><option value="SECUNDARIA">SECUNDARIA</option><option value="SUPERIOR">SUPERIOR</option></select>
+                        <input id="t-establecimiento" placeholder="ESTABLECIMIENTO EDUCATIVO">
+                        <input id="t-sueldo" type="number" step="0.01" placeholder="SUELDO $">
+                        <div><label style="font-size:0.7em;">AFILIACIÓN IESS:</label><input type="date" id="t-afiliacion"></div>
+                        <input id="t-banco" placeholder="BANCO"><input id="t-cuenta" placeholder="Nº CUENTA">
+                    </div>
                 </details>
 
                 <details class="seccion-form"><summary style="font-weight:bold; color:#ccc; margin-bottom:10px;">3. VIVIENDA Y SERVICIOS</summary>
-                    <div class="form-grid"><input id="t-direccion" placeholder="DIRECCIÓN EXACTA" style="grid-column:1/-1"><select id="t-vivienda"><option value="PROPIA">VIVIENDA: PROPIA</option><option value="ARRENDADA">VIVIENDA: ARRENDADA</option><option value="FAMILIAR">VIVIENDA: FAMILIAR</option><option value="PRESTADA">VIVIENDA: PRESTADA</option></select><select id="t-material"><option value="">PAREDES...</option><option value="CEMENTO">CEMENTO</option><option value="MIXTA">MIXTA</option><option value="CAÑA">CAÑA</option><option value="ADOBE">ADOBE</option><option value="MADERA">MADERA</option></select><select id="t-cubierta"><option value="">TECHO...</option><option value="ZINC">ZINC</option><option value="LOSA">LOSA</option><option value="TEJA">TEJA</option><option value="ETERNIT">ETERNIT</option></select><input id="t-habitaciones" type="number" placeholder="Nº HABITACIONES"><select id="t-servicio-higienico"><option value="RED PUBLICA">HIGIÉNICO: RED PÚBLICA</option><option value="POZO SEPTICO">HIGIÉNICO: POZO SÉPTICO</option></select><select id="t-basura"><option value="SI">RECOLECCIÓN BASURA: SI</option><option value="NO">RECOLECCIÓN BASURA: NO</option></select><select id="t-upc"><option value="SI">UPC CERCANO: SI</option><option value="NO">UPC CERCANO: NO</option></select><select id="t-seguridad-sector"><option value="BUENA">SEGURIDAD SECTOR: BUENA</option><option value="REGULAR">SEGURIDAD SECTOR: REGULAR</option><option value="MALA">SEGURIDAD SECTOR: MALA</option></select><select id="t-tipo-familia"><option value="NUCLEAR">FAMILIA NUCLEAR</option><option value="EXTENSA">FAMILIA EXTENSA</option><option value="MONOPARENTAL">MONOPARENTAL</option></select><input id="t-problema-familiar" placeholder="PROBLEMA FAMILIAR (NINGUNO)"></div>
+                    <div class="form-grid">
+                        <input id="t-direccion" placeholder="DIRECCIÓN EXACTA" style="grid-column:1/-1">
+                        <select id="t-vivienda"><option value="PROPIA">VIVIENDA: PROPIA</option><option value="ARRENDADA">VIVIENDA: ARRENDADA</option><option value="FAMILIAR">VIVIENDA: FAMILIAR</option><option value="PRESTADA">VIVIENDA: PRESTADA</option></select>
+                        <select id="t-material"><option value="">PAREDES...</option><option value="CEMENTO">CEMENTO</option><option value="MIXTA">MIXTA</option><option value="CAÑA">CAÑA</option><option value="ADOBE">ADOBE</option><option value="MADERA">MADERA</option></select>
+                        <select id="t-cubierta"><option value="">TECHO...</option><option value="ZINC">ZINC</option><option value="LOSA">LOSA</option><option value="TEJA">TEJA</option><option value="ETERNIT">ETERNIT</option></select>
+                        <input id="t-habitaciones" type="number" placeholder="Nº HABITACIONES">
+                        
+                        <select id="t-servicio-higienico"><option value="RED PUBLICA">HIGIÉNICO: RED PÚBLICA</option><option value="POZO SEPTICO">HIGIÉNICO: POZO SÉPTICO</option></select>
+                        <select id="t-basura"><option value="SI">RECOLECCIÓN BASURA: SI</option><option value="NO">RECOLECCIÓN BASURA: NO</option></select>
+                        <select id="t-upc"><option value="SI">UPC CERCANO: SI</option><option value="NO">UPC CERCANO: NO</option></select>
+                        <select id="t-seguridad-sector"><option value="BUENA">SEGURIDAD SECTOR: BUENA</option><option value="REGULAR">SEGURIDAD SECTOR: REGULAR</option><option value="MALA">SEGURIDAD SECTOR: MALA</option></select>
+                        <select id="t-tipo-familia"><option value="NUCLEAR">FAMILIA NUCLEAR</option><option value="EXTENSA">FAMILIA EXTENSA</option><option value="MONOPARENTAL">MONOPARENTAL</option></select>
+                        <input id="t-problema-familiar" placeholder="PROBLEMA FAMILIAR (NINGUNO)">
+                    </div>
                     <div class="multi-select-box" style="margin-top:10px;"><label>SERVICIOS BÁSICOS:</label><br><label><input type="checkbox" name="serv" value="LUZ"> LUZ</label><label><input type="checkbox" name="serv" value="AGUA"> AGUA</label><label><input type="checkbox" name="serv" value="INTERNET"> INTERNET</label></div>
                 </details>
 
@@ -106,7 +128,11 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                         <input id="g-alimento" type="number" placeholder="Alimento"><input id="g-luz" type="number" placeholder="Luz"><input id="g-agua" type="number" placeholder="Agua"><input id="g-educacion" type="number" placeholder="Educación"><input id="g-salud" type="number" placeholder="Salud"><input id="g-vestido" type="number" placeholder="Vestido"><input id="g-arriendo" type="number" placeholder="Arriendo"><input id="g-otros" type="number" placeholder="Otros">
                     </div>
                     <div class="sub-title">COMUNICACIÓN FAMILIAR</div>
-                    <div class="form-grid"><select id="c-nivel"><option value="BUENO">COMUNICACIÓN: BUENA</option><option value="REGULAR">COMUNICACIÓN: REGULAR</option><option value="MALA">COMUNICACIÓN: MALA</option></select><select id="c-tareas"><option value="SI">DESIGNA TAREAS: SI</option><option value="NO">DESIGNA TAREAS: NO</option></select><input id="c-conflicto" placeholder="CAUSA CONFLICTO (NINGUNA)"><input id="c-recreacion" placeholder="RECREACIÓN (PASEOS)"></div>
+                    <div class="form-grid">
+                        <select id="c-nivel"><option value="BUENO">COMUNICACIÓN: BUENA</option><option value="REGULAR">COMUNICACIÓN: REGULAR</option><option value="MALA">COMUNICACIÓN: MALA</option></select>
+                        <select id="c-tareas"><option value="SI">DESIGNA TAREAS: SI</option><option value="NO">DESIGNA TAREAS: NO</option></select>
+                        <input id="c-conflicto" placeholder="CAUSA CONFLICTO (NINGUNA)"><input id="c-recreacion" placeholder="RECREACIÓN (PASEOS)">
+                    </div>
                 </details>
 
                 <details class="seccion-form"><summary style="font-weight:bold; color:#ccc; margin-bottom:10px;">TALLAS Y EMERGENCIA</summary>
@@ -114,7 +140,11 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                     <div class="form-grid" style="margin-top:10px;"><input id="t-emer-nom" placeholder="EMERGENCIA 1: NOMBRE"><input id="t-emer-tel" placeholder="EMERGENCIA 1: TELÉFONO"><input id="t-emer2-nom" placeholder="EMERGENCIA 2: NOMBRE"><input id="t-emer2-tel" placeholder="EMERGENCIA 2: TELÉFONO"></div>
                 </details>
 
-                <div class="seccion-form" style="text-align:center;"><img id="preview-firma" src="" style="height:60px; display:none; margin:0 auto; background:white; padding:5px;"><button type="button" onclick="document.getElementById('t-firma').click()" class="btn-small" style="background:#444; margin-top:5px;">SUBIR FIRMA</button><input type="file" id="t-firma" hidden accept="image/*"></div>
+                <div class="seccion-form" style="text-align:center;">
+                    <img id="preview-firma" src="" style="height:60px; display:none; margin:0 auto; background:white; padding:5px;">
+                    <button type="button" onclick="document.getElementById('t-firma').click()" class="btn-small" style="background:#444; margin-top:5px;">SUBIR FIRMA</button>
+                    <input type="file" id="t-firma" hidden accept="image/*">
+                </div>
 
                 <div style="margin-top:20px;">
                     <button type="submit" id="btn-guardar" style="width:100%; margin-bottom:10px;">GUARDAR CAMBIOS</button>
@@ -259,22 +289,23 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         recargarListas(); 
     }
 
-    // ================== PDF Y DOCUMENTOS ==================
+    // ================== DOCUMENTOS Y PDF ==================
     const getBase64ImageFromURL = (url) => {
         return new Promise((resolve) => {
             if (!url) { resolve(null); return; }
             const img = new Image(); img.crossOrigin = "Anonymous"; img.src = url;
             img.onload = () => { const c = document.createElement("canvas"); c.width = img.width; c.height = img.height; const x = c.getContext("2d"); x.drawImage(img, 0, 0); resolve(c.toDataURL("image/png")); };
-            img.onerror = () => { resolve(null); }; 
+            img.onerror = () => { resolve(null); }; // PROTECCIÓN: Si falla la imagen, no rompe el PDF
         });
     };
 
     window.imprimirDoc = async (tipo) => {
-        toggleMenuNombre(); const id = document.getElementById('t-id').value; if (!id) return;
+        toggleMenuNombre(); 
+        const id = document.getElementById('t-id').value; 
+        if (!id) return;
 
-        // AQUÍ ESTÁ EL CAMBIO SOLICITADO: ATS ABRE ARCHIVO, FICHA GENERA PDF
         if (tipo === 'ats') {
-            window.open('ATS.pdf', '_blank'); // Abre el archivo estático
+            window.open('ATS.pdf', '_blank'); // <--- CAMBIO: ABRE EL ARCHIVO DIRECTAMENTE
         }
         else if (tipo === 'ficha') {
             try { await generarPDF_Ficha(id); } catch (e) { alert("Error PDF Ficha: " + e.message); console.error(e); }
@@ -284,13 +315,16 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         else if (tipo === 'carnet') alert("GENERANDO CARNET... (EN DESARROLLO)");
     };
 
+    // --- PDF: FICHA SOCIOECONÓMICA ---
     async function generarPDF_Ficha(id) {
         alert("GENERANDO FICHA...");
         const { data: t } = await supabase.from('trabajadores').select('*').eq('id', id).single();
         
         // Carga Segura de Imágenes
-        const [logoBase64, fotoBase64] = await Promise.all([getBase64ImageFromURL(empresa.logo_url), getBase64ImageFromURL(t.foto_url)]);
-        const emptyImg = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='; // Pixel transparente
+        const logoUrl = empresa.logo_url;
+        const fotoUrl = t.foto_url;
+        const [logoBase64, fotoBase64] = await Promise.all([getBase64ImageFromURL(logoUrl), getBase64ImageFromURL(fotoUrl)]);
+        const emptyImg = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 
         let hijos = []; try { hijos = JSON.parse(t.datos_hijos || '[]'); } catch { }
         const filasHijos = hijos.map(h => [h.nombre, 'HIJO/A', h.fecha, 'ESTUDIANTE']);
