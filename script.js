@@ -81,36 +81,34 @@ async function cargarDashboard(empresa) {
     const menuDiv = document.getElementById('menu-dinamico');
     menuDiv.innerHTML = '';
 
-  // ... dentro de cargarDashboard(empresa) en script.js
-menus?.forEach(m => {
-    if(m.solo_admin && usuarioActual.rol !== 'admin') return;
-    
-    const row = document.createElement('div');
-    row.className = 'menu-item-row';
-    row.innerHTML = `<i class="fas ${m.icono}"></i> <span>${m.titulo}</span>`;
-    
-    row.onclick = () => {
-        const titulo = m.titulo.toLowerCase();
-        const ws = document.getElementById('workspace');
+    menus?.forEach(m => {
+        if(m.solo_admin && usuarioActual.rol !== 'admin') return;
         
-        if(window.innerWidth <= 768) toggleMenu();
+        const row = document.createElement('div');
+        row.className = 'menu-item-row';
+        row.innerHTML = `<i class="fas ${m.icono}"></i> <span>${m.titulo}</span>`;
+        
+        row.onclick = () => {
+            const titulo = m.titulo.toLowerCase();
+            const ws = document.getElementById('workspace');
+            
+            if(window.innerWidth <= 768) toggleMenu();
 
-        // Detección de Módulo Trabajadores
-        if(titulo.includes('trabajador') || titulo.includes('personal') || titulo.includes('rrhh')) {
-            cargarModuloTrabajadores(ws, _supabase, empresaActual);
-        } 
-        // NUEVA DETECCIÓN: Módulo Admin / Configuración
-        else if(titulo.includes('admin') || titulo.includes('config') || titulo.includes('ajustes')) {
-            cargarModuloAdmin(ws, _supabase, empresaActual);
-        }
-        else {
-            ws.innerHTML = `<h2>${m.titulo}</h2><p>Módulo en construcción para ${empresa.nombre}.</p>`;
-        }
-    };
-    menuDiv.appendChild(row);
-}); // Cierre de forEach
-} // Cierre de cargarDashboard
-// FUNCIONES ADMIN (BOTONES INFERIORES)
+            if(titulo.includes('trabajador') || titulo.includes('personal') || titulo.includes('rrhh') || titulo.includes('socio')) {
+                cargarModuloTrabajadores(ws, _supabase, empresaActual);
+            } 
+            else if(titulo.includes('admin') || titulo.includes('config')) {
+                cargarModuloAdmin(ws, _supabase, empresaActual);
+            }
+            else {
+                ws.innerHTML = `<h2>${m.titulo}</h2><p>Módulo en construcción para ${empresaActual.nombre}.</p>`;
+            }
+        };
+        menuDiv.appendChild(row);
+    });
+}
+
+// FUNCIONES ADMIN
 document.getElementById('admin-add-company').onclick = async () => {
     const n = prompt("Nombre Empresa:"); const l = prompt("URL Logo:");
     if(n && l) { await _supabase.from('empresas').insert([{nombre:n, logo_url:l}]); mostrarSeleccionEmpresa(); }
@@ -123,7 +121,7 @@ document.getElementById('admin-add-menu').onclick = () => {
         const d = document.createElement('div'); d.className='menu-card'; d.innerHTML=`<i class="fas ${icon}"></i>`;
         d.onclick=async()=>{
             const t = prompt("Título:");
-            if(t){ await _supabase.from('config_menus').insert([{titulo:t, icono:icon, solo_admin:confirm("¿Es solo para Admin?"), color:'#00d2ff'}]); location.reload(); }
+            if(t){ await _supabase.from('config_menus').insert([{titulo:t, icono:icon, solo_admin:confirm("¿Admin?"), color:'#00d2ff'}]); location.reload(); }
         };
         l.appendChild(d);
     });
