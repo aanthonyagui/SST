@@ -1,9 +1,9 @@
-// trabajadores.js - VERSIÓN FINAL: MENÚ "+" CON EXCEL + FICHA COMPLETA
+// trabajadores.js - VERSIÓN: EXCEL FILTRADO + CORRECCIONES PREVIAS
 
 let listaCargosCache = []; 
 
 export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
-    // 1. Cargar cargos
+    // 1. Cargar lista de cargos
     const { data: cargosBD } = await supabase.from('cargos').select('*');
     listaCargosCache = cargosBD || [];
 
@@ -241,14 +241,11 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         return valor === "" ? null : valor;
     };
 
-    // --- NUEVO: FUNCIÓN TOGGLE PARA EL BOTÓN "+" ---
     window.toggleMenuMas = () => {
         const menu = document.getElementById('menu-mas');
         const cont = document.getElementById('cont-opciones-mas');
-        // Cerramos el otro menú por si acaso
         document.getElementById('menu-descargas').classList.remove('show');
         document.getElementById('cont-nombre').classList.remove('show-bg');
-
         menu.classList.toggle('show');
         if(menu.classList.contains('show')) cont.classList.add('show-bg');
         else cont.classList.remove('show-bg');
@@ -257,10 +254,8 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     window.toggleMenuNombre = () => {
         const menu = document.getElementById('menu-descargas');
         const cont = document.getElementById('cont-nombre');
-        // Cerramos el menú "+"
         document.getElementById('menu-mas').classList.remove('show');
         document.getElementById('cont-opciones-mas').classList.remove('show-bg');
-
         menu.classList.toggle('show');
         if(menu.classList.contains('show')) cont.classList.add('show-bg');
         else cont.classList.remove('show-bg');
@@ -280,7 +275,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
 
     // --- NUEVA FICHA (Opción del menú) ---
     window.nuevaFicha = () => {
-        toggleMenuMas(); // Cerrar el menú
+        toggleMenuMas(); 
         document.getElementById('form-trabajador').reset();
         document.getElementById('t-id').value = '';
         document.getElementById('t-estado').value = 'ACTIVO';
@@ -303,19 +298,15 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         document.getElementById('vista-formulario').style.display = 'block';
     };
 
-    // --- NUEVO: FUNCIÓN DESCARGAR EXCEL ---
+    // --- DESCARGAR EXCEL (FILTRADO) ---
     window.descargarExcel = async (estado) => {
-        toggleMenuMas(); // Cerrar menú
+        toggleMenuMas(); 
         
-        if (typeof XLSX === 'undefined') {
-            return alert("Error: Librería XLSX no cargada. Asegúrate de agregar el script en index.html");
-        }
+        if (typeof XLSX === 'undefined') return alert("Error: Librería XLSX no cargada.");
 
         const mensaje = estado === 'ACTIVO' ? 'Descargando Activos...' : 'Descargando Pasivos...';
-        const originalText = document.getElementById('titulo-ficha').innerText; // Usamos un lugar visible o alerta
-        alert(mensaje); // Simple feedback
+        alert(mensaje); 
 
-        // Obtener datos
         const { data, error } = await supabase
             .from('trabajadores')
             .select('*')
@@ -325,12 +316,30 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         if(error) return alert("Error al descargar: " + error.message);
         if(!data || data.length === 0) return alert("No hay trabajadores " + estado + "s para descargar.");
 
+        // COLUMNAS A EXCLUIR DEL REPORTE
+        const columnasExcluidas = [
+            'id', 'empresa_id', 'foto_url', 'firma_url', 
+            'tipo_vivienda', 'vivienda', // Ambos por si acaso
+            'servicios_basicos', 'motivo_salida', 
+            'religion', 'discapacidad', 'carnet_conadis',
+            'banco', 'cuenta', 'sueldo',
+            'licencia', 
+            'material_paredes', 'material_cubierta', 'habitaciones', 
+            'seguridad_sector', 'conyuge'
+        ];
+
+        // Crear una copia limpia de los datos
+        const dataFiltrada = data.map(trabajador => {
+            const copia = { ...trabajador }; // Copia superficial
+            columnasExcluidas.forEach(col => delete copia[col]);
+            return copia;
+        });
+
         // Generar Excel
-        const ws = XLSX.utils.json_to_sheet(data);
+        const ws = XLSX.utils.json_to_sheet(dataFiltrada);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Trabajadores");
         
-        // Nombre del archivo con fecha
         const date = new Date().toISOString().split('T')[0];
         XLSX.writeFile(wb, `Nomina_${estado}_${empresa.nombre}_${date}.xlsx`);
     };
