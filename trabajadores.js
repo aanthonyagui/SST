@@ -1,4 +1,4 @@
-// trabajadores.js - VERSIÓN FINAL: FICHA SIN FIRMA DIGITAL Y ATS EXTERNO
+// trabajadores.js - VERSIÓN FINAL: KARDEX EPP, FICHA Y ATS
 
 let listaCargosCache = []; 
 
@@ -39,9 +39,9 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                     <div id="menu-descargas" class="dropdown-content">
                         <div style="padding:10px; color:#aaa; font-size:0.8em;">DOCUMENTOS PDF</div>
                         <a onclick="imprimirDoc('ficha')"><i class="fas fa-file-pdf" style="color:var(--danger)"></i> Ficha PDF</a>
+                        <a onclick="imprimirDoc('kardex')"><i class="fas fa-clipboard-list" style="color:var(--success)"></i> Kardex EPP</a>
                         <a onclick="imprimirDoc('ats')"><i class="fas fa-hard-hat" style="color:var(--warning)"></i> Generar ATS</a>
                         <a onclick="imprimirDoc('carnet')"><i class="fas fa-id-card" style="color:#f39c12"></i> Carnet</a>
-                        <a onclick="imprimirDoc('kardex')"><i class="fas fa-clipboard-list" style="color:var(--success)"></i> Kardex EPP</a>
                         <a onclick="imprimirDoc('induccion')"><i class="fas fa-chalkboard-teacher"></i> Inducción</a>
                         <hr style="border-color:#333; margin:5px 0;">
                         <a onclick="toggleMenuNombre()" style="color:#666;"><i class="fas fa-times"></i> Cerrar</a>
@@ -243,9 +243,124 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     window.imprimirDoc = async (tipo) => {
         toggleMenuNombre(); const id = document.getElementById('t-id').value; if (!id) return;
         if (tipo === 'ficha') await generarPDF_Ficha(id);
-        else if (tipo === 'ats') window.open('./ATS.pdf', '_blank'); // <--- AHORA ABRE EL PDF DE GITHUB
+        else if (tipo === 'kardex') await generarPDF_Kardex(id); // <--- NUEVA OPCIÓN
+        else if (tipo === 'ats') window.open('./ATS.pdf', '_blank'); 
         else alert(`GENERANDO ${tipo.toUpperCase()}... (EN DESARROLLO)`);
     };
+
+    // --- NUEVA FUNCIÓN: GENERAR KARDEX EPP (SEGÚN TU IMAGEN) ---
+    async function generarPDF_Kardex(id) {
+        alert("GENERANDO KARDEX DE EPP...");
+        const { data: t } = await supabase.from('trabajadores').select('*').eq('id', id).single();
+        const logoUrl = empresa.logo_url;
+        const [logoBase64] = await Promise.all([logoUrl ? getBase64ImageFromURL(logoUrl) : null]);
+
+        // Filas vacías para el registro manual (1 a 15)
+        const filasVacias = [];
+        for (let i = 1; i <= 15; i++) {
+            filasVacias.push([
+                { text: i.toString(), alignment: 'center' }, 
+                { text: '', alignment: 'center' }, // Cantidad
+                { text: '', alignment: 'center' }, // Detalle
+                { text: '', alignment: 'center' }, // Fecha
+                { text: '', alignment: 'center' }, // Firma
+                { text: '', alignment: 'center' }  // Observación
+            ]);
+        }
+
+        const docDefinition = {
+            pageSize: 'A4', pageMargins: [30, 30, 30, 30],
+            content: [
+                // 1. ENCABEZADO PERSONALIZADO
+                {
+                    table: {
+                        widths: [60, '*', 70],
+                        body: [
+                            [
+                                { 
+                                    image: logoBase64 || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 
+                                    width: 50, height: 50, fit: [50, 50], 
+                                    alignment: 'center', margin: [0, 5, 0, 0],
+                                    rowSpan: 2, border: [false, false, false, false]
+                                },
+                                { 
+                                    text: [
+                                        { text: empresa.nombre.toUpperCase() + '\n', bold: true, fontSize: 16, color: '#000' },
+                                        { text: 'KARDEX DE EPP', bold: true, fontSize: 14, color: '#000' }
+                                    ], 
+                                    alignment: 'center', margin: [0, 10, 0, 0],
+                                    border: [false, false, false, false]
+                                },
+                                { 
+                                    text: [
+                                        { text: 'AÑO\n', fontSize: 12, bold: true },
+                                        { text: new Date().getFullYear().toString(), fontSize: 14, bold: true }
+                                    ], 
+                                    alignment: 'center', margin: [0, 10, 0, 0],
+                                    rowSpan: 2, border: [false, false, false, false]
+                                }
+                            ],
+                            [ {}, {}, {} ] // Fila dummy para el rowspan
+                        ]
+                    }
+                },
+                { canvas: [{ type: 'line', x1: 0, y1: 5, x2: 535, y2: 5, lineWidth: 2, lineColor: '#000' }] },
+                { text: '\n' },
+
+                // 2. DATOS DEL TRABAJADOR
+                {
+                    text: [
+                        { text: 'APELLIDOS Y NOMBRES: ', bold: true }, t.cedula + ' ' + t.nombre + '\n',
+                        { text: 'CARGO: ', bold: true }, t.cargo + '\n\n'
+                    ],
+                    fontSize: 10
+                },
+
+                // 3. TABLA DE REGISTRO DE EPP
+                {
+                    table: {
+                        headerRows: 1,
+                        widths: ['5%', '10%', '35%', '15%', '15%', '20%'],
+                        body: [
+                            [
+                                { text: 'N°', style: 'tableHeader' },
+                                { text: 'CANTIDAD', style: 'tableHeader' },
+                                { text: 'EQUIPO DE PROTECCIÓN PERSONAL', style: 'tableHeader' },
+                                { text: 'FECHA DE RECEPCIÓN', style: 'tableHeader' },
+                                { text: 'FIRMA', style: 'tableHeader' },
+                                { text: 'OBSERVACIÓN', style: 'tableHeader' }
+                            ],
+                            ...filasVacias
+                        ]
+                    },
+                    layout: {
+                        hLineWidth: function (i, node) { return 0.5; },
+                        vLineWidth: function (i, node) { return 0.5; },
+                        paddingTop: function(i) { return 8; }, // Más espacio para escribir
+                        paddingBottom: function(i) { return 8; }
+                    }
+                },
+                { text: '\n' },
+
+                // 4. PIE DE PÁGINA (TALLAS Y CÓDIGO)
+                {
+                    columns: [
+                        { text: 'CÓDIGO: SSO', fontSize: 10, bold: true },
+                        { 
+                            text: `TALLAS: PANTALON: ${t.talla_pantalon||'N/A'}; BOTAS: ${t.talla_zapatos||'N/A'}; CAMISETA: ${t.talla_camisa||'N/A'}`, 
+                            fontSize: 10, alignment: 'right' 
+                        }
+                    ]
+                }
+            ],
+            styles: {
+                tableHeader: { bold: true, fontSize: 8, color: 'black', alignment: 'center', fillColor: '#eeeeee' }
+            },
+            defaultStyle: { fontSize: 10 }
+        };
+
+        pdfMake.createPdf(docDefinition).open();
+    }
 
     // --- PDF: FICHA SOCIOECONÓMICA (FORMATO PDF SUBIDO) ---
     async function generarPDF_Ficha(id) {
