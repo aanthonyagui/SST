@@ -83,29 +83,32 @@ async function cargarDashboard(empresa) {
 
   // ... dentro de cargarDashboard(empresa) en script.js
 menus?.forEach(m => {
-        if(m.solo_admin && usuarioActual.rol !== 'admin') return;
+    if(m.solo_admin && usuarioActual.rol !== 'admin') return;
+    
+    const row = document.createElement('div');
+    row.className = 'menu-item-row';
+    row.innerHTML = `<i class="fas ${m.icono}"></i> <span>${m.titulo}</span>`;
+    
+    row.onclick = () => {
+        const titulo = m.titulo.toLowerCase();
+        const ws = document.getElementById('workspace');
         
-        const row = document.createElement('div');
-        row.className = 'menu-item-row';
-        row.innerHTML = `<i class="fas ${m.icono}"></i> <span>${m.titulo}</span>`;
-        
-        row.onclick = () => {
-            const titulo = m.titulo.toLowerCase();
-            const ws = document.getElementById('workspace');
-            if(window.innerWidth <= 768) toggleMenu();
+        if(window.innerWidth <= 768) toggleMenu();
 
-            if(titulo.includes('trabajador')) {
-                cargarModuloTrabajadores(ws, _supabase, empresaActual);
-            } 
-            else if(titulo.includes('admin') || titulo.includes('config')) {
-                cargarModuloAdmin(ws, _supabase, empresaActual);
-            }
-            else {
-                ws.innerHTML = `<h2>${m.titulo}</h2><p>Módulo en construcción.</p>`;
-            }
-        }; // Cierre de row.onclick
-        menuDiv.appendChild(row);
-    }); // Cierre de forEach
+        // Detección de Módulo Trabajadores
+        if(titulo.includes('trabajador') || titulo.includes('personal') || titulo.includes('rrhh')) {
+            cargarModuloTrabajadores(ws, _supabase, empresaActual);
+        } 
+        // NUEVA DETECCIÓN: Módulo Admin / Configuración
+        else if(titulo.includes('admin') || titulo.includes('config') || titulo.includes('ajustes')) {
+            cargarModuloAdmin(ws, _supabase, empresaActual);
+        }
+        else {
+            ws.innerHTML = `<h2>${m.titulo}</h2><p>Módulo en construcción para ${empresa.nombre}.</p>`;
+        }
+    };
+    menuDiv.appendChild(row);
+}); // Cierre de forEach
 } // Cierre de cargarDashboard
 // FUNCIONES ADMIN (BOTONES INFERIORES)
 document.getElementById('admin-add-company').onclick = async () => {
