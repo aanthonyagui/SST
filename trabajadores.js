@@ -1,4 +1,4 @@
-// trabajadores.js - VERSIÓN CORREGIDA (V11)
+// trabajadores.js - VERSIÓN FINAL CON FECHAS INGRESO/SALIDA
 
 export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     contenedor.innerHTML = `
@@ -67,7 +67,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                         <input id="t-cedula" placeholder="Cédula" style="margin-bottom:5px;">
                         <input id="t-nombre" placeholder="Nombre Completo" style="margin-bottom:5px;">
                         <div style="display:flex; gap:5px;">
-                            <input type="date" id="t-nacimiento">
+                            <input type="date" id="t-nacimiento" title="Fecha de Nacimiento">
                             <input id="t-edad" placeholder="Edad" readonly style="width:60px; text-align:center; background:#222;">
                         </div>
                         <select id="t-cargo" style="margin-top:5px;"><option>Cargando cargos...</option></select>
@@ -95,7 +95,17 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                     <div class="form-grid">
                         <input id="t-profesion" placeholder="Profesión">
                         <input id="t-sueldo" placeholder="Sueldo $">
-                        <div><label style="font-size:0.7em">Afiliación IESS</label><input type="date" id="t-afiliacion"></div>
+                        
+                        <div>
+                            <label style="font-size:0.7em; color:#aaa;">Fecha Ingreso:</label>
+                            <input type="date" id="t-ingreso">
+                        </div>
+                        <div>
+                            <label style="font-size:0.7em; color:#aaa;">Fecha Retiro:</label>
+                            <input type="date" id="t-salida">
+                        </div>
+                        
+                        <div><label style="font-size:0.7em; color:#aaa;">Afiliación IESS:</label><input type="date" id="t-afiliacion"></div>
                         <input id="t-banco" placeholder="Banco">
                         <input id="t-cuenta" placeholder="Nº Cuenta">
                     </div>
@@ -183,21 +193,23 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     };
 
     window.nuevaFicha = () => {
-        // CORRECCION: Reset completo del formulario y limpieza manual de fotos
         const form = document.getElementById('form-trabajador');
         form.reset();
         
         document.getElementById('t-id').value = '';
         document.getElementById('t-estado').value = 'ACTIVO';
         
-        // Limpiar imágenes
         document.getElementById('preview-foto').src = 'https://via.placeholder.com/150';
         document.getElementById('preview-firma').src = '';
         document.getElementById('preview-firma').style.display = 'none';
         
-        // Limpiar inputs de archivo (por si acaso el reset no lo hizo)
         document.getElementById('t-foto').value = '';
         document.getElementById('t-firma').value = '';
+
+        // Reset específico de fechas para asegurar limpieza
+        document.getElementById('t-nacimiento').value = '';
+        document.getElementById('t-ingreso').value = '';
+        document.getElementById('t-salida').value = '';
 
         document.getElementById('btn-dar-baja').style.display = 'none';
         document.getElementById('btn-reactivar').style.display = 'none';
@@ -236,19 +248,19 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             if(el) el.value = t[f.replace('-','_')] || t[f] || '';
         });
         
-        // CORRECCION: Carga explicita de la fecha de nacimiento
-        // Supabase devuelve 'fecha_nacimiento', el input es 't-nacimiento'
+        // Manejo de Fechas
+        document.getElementById('t-nacimiento').value = t.fecha_nacimiento || '';
+        document.getElementById('t-ingreso').value = t.fecha_ingreso || ''; // Nuevo campo
+        document.getElementById('t-salida').value = t.fecha_salida || '';   // Nuevo campo
+        
+        // Cálculo Edad
         if(t.fecha_nacimiento) {
-            document.getElementById('t-nacimiento').value = t.fecha_nacimiento;
-            
-            // Calculo de edad
             const h = new Date();
-            const n = new Date(t.fecha_nacimiento + 'T00:00:00'); // T00:00:00 para evitar error de zona horaria
+            const n = new Date(t.fecha_nacimiento + 'T00:00:00');
             let e = h.getFullYear() - n.getFullYear(); 
             if(h.getMonth() < n.getMonth() || (h.getMonth() === n.getMonth() && h.getDate() < n.getDate())) e--;
             document.getElementById('t-edad').value = e + ' años';
         } else {
-            document.getElementById('t-nacimiento').value = '';
             document.getElementById('t-edad').value = '';
         }
 
@@ -260,7 +272,6 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
 
         document.getElementById('preview-foto').src = t.foto_url || 'https://via.placeholder.com/150';
         
-        // CORRECCION: Mostrar firma si existe, ocultar si no
         if(t.firma_url) { 
             document.getElementById('preview-firma').src = t.firma_url; 
             document.getElementById('preview-firma').style.display = 'block'; 
@@ -300,7 +311,11 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             empresa_id: empresa.id,
             cedula: document.getElementById('t-cedula').value,
             nombre: document.getElementById('t-nombre').value.toUpperCase(),
-            fecha_nacimiento: document.getElementById('t-nacimiento').value, // Esto ahora toma correctamente el valor
+            fecha_nacimiento: document.getElementById('t-nacimiento').value,
+            // NUEVOS CAMPOS EN BD
+            fecha_ingreso: document.getElementById('t-ingreso').value, 
+            fecha_salida: document.getElementById('t-salida').value,
+            
             cargo: document.getElementById('t-cargo').value,
             celular: document.getElementById('t-celular').value,
             servicios_basicos: serv,
@@ -317,7 +332,6 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             tipo_sangre: document.getElementById('t-sangre').value
         };
         
-        // Solo actualizar si hay nueva foto/firma o si es nuevo registro
         if(fotoUrl) datos.foto_url = fotoUrl;
         if(firmaUrl) datos.firma_url = firmaUrl;
 
@@ -332,7 +346,15 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     window.cambiarEstado = async (nuevo) => {
         if(!confirm(`¿Cambiar estado a ${nuevo}?`)) return;
         const id = document.getElementById('t-id').value;
-        await supabase.from('trabajadores').update({ estado: nuevo }).eq('id', id);
+        const updateData = { estado: nuevo };
+        
+        // OPCIONAL: Auto-llenar fecha de salida si se da de baja
+        if(nuevo === 'PASIVO' && !document.getElementById('t-salida').value) {
+            const hoy = new Date().toISOString().split('T')[0];
+            updateData.fecha_salida = hoy;
+        }
+
+        await supabase.from('trabajadores').update(updateData).eq('id', id);
         recargarListas();
         cambiarVista(nuevo==='ACTIVO'?'activos':'pasivos');
     };
@@ -355,7 +377,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                 r.onload = (ev) => {
                     const img = document.getElementById(imgId);
                     img.src = ev.target.result;
-                    img.style.display = 'block'; // Asegurar que se vea al subir
+                    img.style.display = 'block';
                 };
                 r.readAsDataURL(e.target.files[0]);
             }
@@ -396,6 +418,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                             [{image: foto||'pixel', width:80, rowSpan:6, alignment:'center'}, {text:'Cédula:', bold:true}, tr.cedula||'', {}],
                             ['', {text:'Nombre:', bold:true}, {text:tr.nombre||'', colSpan:2}, {}],
                             ['', {text:'Nacimiento:', bold:true}, tr.fecha_nacimiento||'', {text:'Edad: '+ document.getElementById('t-edad').value}],
+                            ['', {text:'Fecha Ingreso:', bold:true}, tr.fecha_ingreso||'', {text:'Fecha Retiro: '+(tr.fecha_salida||'')}],
                             ['', {text:'Cargo:', bold:true}, {text:tr.cargo||'', colSpan:2}, {}],
                             ['', {text:'Celular:', bold:true}, tr.celular||'', {text:'Sangre: '+(tr.tipo_sangre||'')}]
                         ]
