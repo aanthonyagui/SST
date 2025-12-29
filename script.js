@@ -1,6 +1,7 @@
 import { iconosSST } from './iconos.js';
-import { cargarModuloTrabajadores } from './trabajadores.js'; // Asegúrate que este archivo exista
+import { cargarModuloTrabajadores } from './trabajadores.js';
 import { cargarModuloAdmin } from './admin.js';
+
 const SUPABASE_URL = 'https://pyvasykgetphdjvbijqe.supabase.co';
 const SUPABASE_KEY = 'sb_publishable__UMvHXVhw5-se2Lik_A3pQ_TIRd8P-N';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -48,7 +49,9 @@ async function mostrarSeleccionEmpresa() {
     document.getElementById('company-section').style.display = 'block';
     document.getElementById('app-section').style.display = 'none';
 
-    if(usuarioActual.rol === 'admin') document.querySelectorAll('.admin-only').forEach(el => el.style.display='block');
+    if(usuarioActual.rol === 'admin') {
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display='block');
+    }
 
     const { data: empresas } = await _supabase.from('empresas').select('*');
     const list = document.getElementById('lista-empresas');
@@ -84,43 +87,29 @@ async function cargarDashboard(empresa) {
         const row = document.createElement('div');
         row.className = 'menu-item-row';
         row.innerHTML = `<i class="fas ${m.icono}"></i> <span>${m.titulo}</span>`;
+        
         row.onclick = () => {
-    const titulo = m.titulo.toLowerCase();
-    const ws = document.getElementById('workspace');
-    
-    if(window.innerWidth <= 768) toggleMenu();
-
-    if(titulo.includes('trabajador') || titulo.includes('personal') || titulo.includes('rrhh')) {
-        cargarModuloTrabajadores(ws, _supabase, empresaActual);
-    } 
-    else if(titulo.includes('admin') || titulo.includes('config')) {
-        // LLAMADA AL NUEVO MÓDULO ADMIN
-        cargarModuloAdmin(ws, _supabase, empresaActual);
-    }
-    else {
-        ws.innerHTML = `<h2>${m.titulo}</h2><p>Módulo en construcción.</p>`;
-    }
-};
-        row.onclick = () => {
-            // DETECCIÓN DE MÓDULO TRABAJADORES
             const titulo = m.titulo.toLowerCase();
             const ws = document.getElementById('workspace');
             
-            // Cerrar menú móvil si está abierto
             if(window.innerWidth <= 768) toggleMenu();
 
+            // Detección de Módulos
             if(titulo.includes('trabajador') || titulo.includes('personal') || titulo.includes('rrhh') || titulo.includes('socio')) {
-                // AQUÍ CARGAMOS EL MÓDULO EXTERNO
                 cargarModuloTrabajadores(ws, _supabase, empresaActual);
-            } else {
-                ws.innerHTML = `<h2>${m.titulo}</h2><p>Módulo en construcción para ${empresa.nombre}.</p>`;
+            } 
+            else if(titulo.includes('admin') || titulo.includes('config')) {
+                cargarModuloAdmin(ws, _supabase, empresaActual);
+            }
+            else {
+                ws.innerHTML = `<h2>${m.titulo}</h2><p>Módulo en construcción para ${empresaActual.nombre}.</p>`;
             }
         };
         menuDiv.appendChild(row);
     });
 }
 
-// FUNCIONES ADMIN
+// FUNCIONES ADMIN (BOTONES INFERIORES)
 document.getElementById('admin-add-company').onclick = async () => {
     const n = prompt("Nombre Empresa:"); const l = prompt("URL Logo:");
     if(n && l) { await _supabase.from('empresas').insert([{nombre:n, logo_url:l}]); mostrarSeleccionEmpresa(); }
@@ -133,7 +122,7 @@ document.getElementById('admin-add-menu').onclick = () => {
         const d = document.createElement('div'); d.className='menu-card'; d.innerHTML=`<i class="fas ${icon}"></i>`;
         d.onclick=async()=>{
             const t = prompt("Título:");
-            if(t){ await _supabase.from('config_menus').insert([{titulo:t, icono:icon, solo_admin:confirm("¿Admin?"), color:'#00d2ff'}]); location.reload(); }
+            if(t){ await _supabase.from('config_menus').insert([{titulo:t, icono:icon, solo_admin:confirm("¿Es solo para Admin?"), color:'#00d2ff'}]); location.reload(); }
         };
         l.appendChild(d);
     });
