@@ -1,9 +1,9 @@
-// trabajadores.js - VERSIÓN FINAL: BLINDAJE TOTAL (FECHAS Y NÚMEROS)
+// trabajadores.js - VERSIÓN FINAL: CORRECCIÓN TOTAL DE TIPOS DE DATOS (NULL SAFE)
 
 let listaCargosCache = []; 
 
 export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
-    // 1. Cargar lista de cargos
+    // 1. Cargar cargos
     const { data: cargosBD } = await supabase.from('cargos').select('*');
     listaCargosCache = cargosBD || [];
 
@@ -219,22 +219,17 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     let trabajadorSeleccionadoId = null;
     let datosAccionTemp = {}; 
 
-    // Llenar select cargos
+    // Llenar select de cargos dinámicamente
     const selForm = document.getElementById('t-cargo');
     listaCargosCache.forEach(c => selForm.innerHTML += `<option value="${c.nombre}">${c.nombre}</option>`);
 
-    // --- FUNCIONES AUXILIARES DE LIMPIEZA DE DATOS ---
-    
-    // Si la fecha está vacía "", devuelve NULL
-    const getFecha = (id) => {
-        const val = document.getElementById(id).value;
-        return val === "" ? null : val;
-    };
-    
-    // Si el número está vacío "", devuelve NULL (Evita error numeric: "")
-    const getNumber = (id) => {
-        const val = document.getElementById(id).value;
-        return val === "" ? null : val;
+    // --- FUNCIÓN SALVAVIDAS: Devuelve NULL si el campo está vacío ---
+    // Esto arregla el error "invalid input syntax"
+    const obtenerValor = (id) => {
+        const elemento = document.getElementById(id);
+        if (!elemento) return null;
+        const valor = elemento.value.trim(); // Quita espacios en blanco
+        return valor === "" ? null : valor;
     };
 
     window.toggleMenuNombre = () => {
@@ -324,7 +319,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         verificarCivil();
 
         document.getElementById('lbl-nombre-trab').innerText = t.nombre.split(' ')[0];
-        document.getElementById('cont-nombre').style.display = 'inline-flex'; // Restaurado
+        document.getElementById('cont-nombre').style.display = 'inline-flex'; 
 
         document.getElementById('div-fecha-ingreso-inicial').style.display = 'none'; 
         document.getElementById('t-ingreso-manual').required = false; 
@@ -387,47 +382,47 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
 
         const serv = Array.from(document.querySelectorAll('input[name="serv"]:checked')).map(c=>c.value).join(',');
 
+        // --- CONSTRUCCIÓN DEL OBJETO CON LIMPIEZA AUTOMÁTICA (obtenerValor) ---
+        // Esto evita enviar "" a campos que esperan número o fecha
         const datos = {
             empresa_id: empresa.id,
-            cedula: document.getElementById('t-cedula').value,
+            cedula: obtenerValor('t-cedula'),
             nombre: document.getElementById('t-nombre').value.toUpperCase(),
-            // FECHA SANITIZADA
-            fecha_nacimiento: getFecha('t-nacimiento'),
-            cargo: document.getElementById('t-cargo').value,
-            celular: document.getElementById('t-celular').value,
-            correo: document.getElementById('t-correo').value,
-            profesion: document.getElementById('t-profesion').value,
-            // NÚMERO SANITIZADO (SUELDO)
-            sueldo: getNumber('t-sueldo'),
-            direccion: document.getElementById('t-direccion').value,
-            sexo: document.getElementById('t-sexo').value,
-            estado_civil: document.getElementById('t-civil').value,
-            conyuge: document.getElementById('t-conyuge').value,
-            tipo_sangre: document.getElementById('t-sangre').value,
-            lugar_nacimiento: document.getElementById('t-lugar').value,
-            nacionalidad: document.getElementById('t-nacionalidad').value,
-            religion: document.getElementById('t-religion').value,
-            discapacidad: document.getElementById('t-discapacidad').value,
-            licencia: document.getElementById('t-licencia').value,
-            // FECHA SANITIZADA
-            afiliacion: getFecha('t-afiliacion'),
-            banco: document.getElementById('t-banco').value,
-            cuenta: document.getElementById('t-cuenta').value,
-            vivienda: document.getElementById('t-vivienda').value,
-            material_paredes: document.getElementById('t-material').value,
-            material_cubierta: document.getElementById('t-cubierta').value,
-            // NÚMERO SANITIZADO (HABITACIONES)
-            habitaciones: getNumber('t-habitaciones'),
+            fecha_nacimiento: obtenerValor('t-nacimiento'),
+            cargo: obtenerValor('t-cargo'),
+            celular: obtenerValor('t-celular'),
+            correo: obtenerValor('t-correo'),
+            profesion: obtenerValor('t-profesion'),
+            
+            // CAMPOS NUMÉRICOS Y FECHAS QUE DABAN ERROR
+            sueldo: obtenerValor('t-sueldo'),
+            afiliacion: obtenerValor('t-afiliacion'),
+            cuenta: obtenerValor('t-cuenta'),
+            habitaciones: obtenerValor('t-habitaciones'),
+            
+            banco: obtenerValor('t-banco'),
+            direccion: obtenerValor('t-direccion'),
+            sexo: obtenerValor('t-sexo'),
+            estado_civil: obtenerValor('t-civil'),
+            conyuge: obtenerValor('t-conyuge'),
+            tipo_sangre: obtenerValor('t-sangre'),
+            lugar_nacimiento: obtenerValor('t-lugar'),
+            nacionalidad: obtenerValor('t-nacionalidad'),
+            religion: obtenerValor('t-religion'),
+            discapacidad: obtenerValor('t-discapacidad'),
+            licencia: obtenerValor('t-licencia'),
+            vivienda: obtenerValor('t-vivienda'),
+            material_paredes: obtenerValor('t-material'),
+            material_cubierta: obtenerValor('t-cubierta'),
             servicios_basicos: serv,
-            emergencia_nombre: document.getElementById('t-emer-nom').value,
-            emergencia_telefono: document.getElementById('t-emer-tel').value,
-            emergencia2_nombre: document.getElementById('t-emer2-nom').value,
-            emergencia2_telefono: document.getElementById('t-emer2-tel').value,
-            talla_camisa: document.getElementById('t-camisa').value,
-            talla_pantalon: document.getElementById('t-pantalon').value,
-            talla_zapatos: document.getElementById('t-zapatos').value,
-            // FECHA SANITIZADA
-            fecha_ingreso: (!id) ? getFecha('t-ingreso-manual') : undefined
+            emergencia_nombre: obtenerValor('t-emer-nom'),
+            emergencia_telefono: obtenerValor('t-emer-tel'),
+            emergencia2_nombre: obtenerValor('t-emer2-nom'),
+            emergencia2_telefono: obtenerValor('t-emer2-tel'),
+            talla_camisa: obtenerValor('t-camisa'),
+            talla_pantalon: obtenerValor('t-pantalon'),
+            talla_zapatos: obtenerValor('t-zapatos'),
+            fecha_ingreso: (!id) ? obtenerValor('t-ingreso-manual') : undefined
         };
         if(datos.fecha_ingreso === undefined) delete datos.fecha_ingreso;
         if(fotoUrl) datos.foto_url = fotoUrl;
@@ -443,7 +438,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             data = res.data; error = res.error;
         }
 
-        if(error) return alert("Error: " + error.message);
+        if(error) return alert("Error Supabase: " + error.message);
         
         const trabajadorId = data[0].id;
         document.getElementById('t-id').value = trabajadorId;
@@ -451,7 +446,10 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         // --- HISTORIAL ---
         if (!id) {
             await supabase.from('historial_laboral').insert({
-                trabajador_id: trabajadorId, cargo: datos.cargo, fecha_inicio: datos.fecha_ingreso, motivo: 'Ingreso Inicial'
+                trabajador_id: trabajadorId, 
+                cargo: datos.cargo, 
+                fecha_inicio: datos.fecha_ingreso, 
+                motivo: 'Ingreso Inicial'
             });
         }
         if (datosExtra.tipo === 'CAMBIO_CARGO') {
@@ -560,6 +558,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         }
     };
 
+    // Funciones PDF
     window.imprimirDoc = (tipo) => {
         const nombre = document.getElementById('t-nombre').value;
         alert(`Generando documento ${tipo.toUpperCase()} para ${nombre} (En desarrollo)`);
