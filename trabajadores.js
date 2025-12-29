@@ -1,9 +1,9 @@
-// trabajadores.js - VERSIÓN: BOTÓN NOMBRE RESTAURADO + MODALES FECHAS + CARGA COMPLETA
+// trabajadores.js - VERSIÓN: CARGA DE DATOS FIX + HISTORIAL FIX
 
 let listaCargosCache = []; 
 
 export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
-    // 1. Cargar lista de cargos de la base de datos
+    // 1. Cargar lista de cargos
     const { data: cargosBD } = await supabase.from('cargos').select('*');
     listaCargosCache = cargosBD || [];
 
@@ -213,17 +213,16 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     `;
 
     // =========================================================
-    // LÓGICA DE NEGOCIO
+    // LÓGICA
     // =========================================================
 
     let trabajadorSeleccionadoId = null;
     let datosAccionTemp = {}; 
 
-    // Llenar select de cargos dinámicamente
+    // Llenar select cargos
     const selForm = document.getElementById('t-cargo');
     listaCargosCache.forEach(c => selForm.innerHTML += `<option value="${c.nombre}">${c.nombre}</option>`);
 
-    // Helper: Toggle Dropdown del Nombre
     window.toggleMenuNombre = () => {
         const menu = document.getElementById('menu-descargas');
         const cont = document.getElementById('cont-nombre');
@@ -254,39 +253,43 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         document.getElementById('preview-foto').src = 'https://via.placeholder.com/150';
         document.getElementById('preview-firma').style.display = 'none';
         document.getElementById('body-historial').innerHTML = '<tr><td colspan="4" style="text-align:center; padding:10px; color:#666;">Guarde para iniciar historial.</td></tr>';
-        
         document.querySelectorAll('input[name="serv"]').forEach(c => c.checked = false);
 
-        // Visuales Nuevo
         document.getElementById('div-fecha-ingreso-inicial').style.display = 'block'; 
         document.getElementById('t-ingreso-manual').required = true;
         document.getElementById('btn-dar-baja').style.display = 'none';
         document.getElementById('btn-reactivar').style.display = 'none';
         document.getElementById('titulo-ficha').innerText = "Nuevo Ingreso";
         document.getElementById('div-conyuge').style.display = 'none';
-        
-        // Ocultar botón del nombre porque aún no hay nombre guardado
         document.getElementById('cont-nombre').style.display = 'none';
         
         cambiarVista('xxx');
         document.getElementById('vista-formulario').style.display = 'block';
     };
 
-    // --- ABRIR TRABAJADOR (Carga Total) ---
+    // --- ABRIR TRABAJADOR (CORREGIDO PARA CARGAR TODO) ---
     async function abrir(t) {
-        const fields = [
-            'cedula','nombre','lugar','nacionalidad','sexo','civil','sangre','discapacidad','religion','celular','correo','licencia',
-            'profesion','sueldo','afiliacion','banco','cuenta',
-            'direccion','vivienda','material','cubierta','habitaciones','conyuge',
-            'emer-nom','emer-tel','emer2-nom','emer2-tel',
-            'camisa','pantalon','zapatos'
-        ];
-        fields.forEach(f => {
-            const el = document.getElementById('t-'+f);
-            if(el) el.value = t[f.replace('-','_')] || t[f] || '';
-        });
+        // Mapeo manual seguro
+        const map = {
+            'cedula': t.cedula, 'nombre': t.nombre, 'lugar': t.lugar_nacimiento, 
+            'nacionalidad': t.nacionalidad, 'sexo': t.sexo, 'civil': t.estado_civil, 
+            'sangre': t.tipo_sangre, 'discapacidad': t.discapacidad, 'religion': t.religion,
+            'celular': t.celular, 'correo': t.correo, 'licencia': t.licencia,
+            'profesion': t.profesion, 'sueldo': t.sueldo, 'afiliacion': t.afiliacion, 
+            'banco': t.banco, 'cuenta': t.cuenta,
+            'direccion': t.direccion, 'vivienda': t.vivienda, 'material': t.material_paredes, 
+            'cubierta': t.material_cubierta, 'habitaciones': t.habitaciones, 'conyuge': t.conyuge,
+            'emer-nom': t.emergencia_nombre, 'emer-tel': t.emergencia_telefono, 
+            'emer2-nom': t.emergencia2_nombre, 'emer2-tel': t.emergencia2_telefono,
+            'camisa': t.talla_camisa, 'pantalon': t.talla_pantalon, 'zapatos': t.talla_zapatos
+        };
 
-        // Fechas y Cargo
+        for (const [id, val] of Object.entries(map)) {
+            const el = document.getElementById('t-' + id);
+            if (el) el.value = val || '';
+        }
+
+        // Fechas
         document.getElementById('t-nacimiento').value = t.fecha_nacimiento || '';
         document.getElementById('t-ingreso-manual').value = t.fecha_ingreso || '';
         document.getElementById('t-cargo').value = t.cargo || '';
@@ -294,7 +297,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         document.getElementById('t-id').value = t.id;
         document.getElementById('t-estado').value = t.estado;
 
-        // Servicios Checkboxes
+        // Servicios Checkbox
         const serv = (t.servicios_basicos || '').split(',');
         document.querySelectorAll('input[name="serv"]').forEach(c => c.checked = serv.includes(c.value));
         
@@ -304,19 +307,17 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             document.getElementById('t-edad').value = age;
         }
 
-        // Fotos
+        // Imagenes
         document.getElementById('preview-foto').src = t.foto_url || 'https://via.placeholder.com/150';
         document.getElementById('preview-firma').style.display = t.firma_url ? 'block' : 'none';
         if(t.firma_url) document.getElementById('preview-firma').src = t.firma_url;
         
         verificarCivil();
 
-        // Configurar Botón Amarillo del Nombre
-        const primerNombre = t.nombre.split(' ')[0];
-        document.getElementById('lbl-nombre-trab').innerText = primerNombre;
-        document.getElementById('cont-nombre').style.display = 'inline-flex'; // Se muestra
+        // Botón Nombre y Estado
+        document.getElementById('lbl-nombre-trab').innerText = t.nombre.split(' ')[0];
+        document.getElementById('cont-nombre').style.display = 'inline-flex';
 
-        // Inputs Estado
         document.getElementById('div-fecha-ingreso-inicial').style.display = 'none'; 
         document.getElementById('t-ingreso-manual').required = false; 
 
@@ -347,7 +348,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         });
     }
 
-    // --- GUARDAR ---
+    // --- GUARDAR (FIX PARA HISTORIAL NULL) ---
     document.getElementById('form-trabajador').onsubmit = async (e) => {
         e.preventDefault();
         
@@ -359,7 +360,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             return alert("INGRESE FECHA DE INGRESO");
         }
 
-        // Si hay cambio de cargo, INTERRUMPIMOS y abrimos el MODAL
+        // Si cambia de cargo, abrir MODAL
         if (id && cargoViejo && cargoNuevo !== cargoViejo) {
             trabajadorSeleccionadoId = id;
             datosAccionTemp = { tipo: 'CAMBIO_CARGO', cargoNuevo: cargoNuevo, cargoViejo: cargoViejo };
@@ -435,15 +436,31 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         const trabajadorId = data[0].id;
         document.getElementById('t-id').value = trabajadorId;
 
-        // Historial
+        // --- LÓGICA HISTORIAL CORREGIDA ---
+        // 1. Ingreso Inicial
         if (!id) {
             await supabase.from('historial_laboral').insert({
-                trabajador_id: trabajadorId, cargo: datos.cargo, fecha_inicio: datos.fecha_ingreso, motivo: 'Ingreso Inicial'
+                trabajador_id: trabajadorId, 
+                cargo: datos.cargo, // Usa el dato del formulario
+                fecha_inicio: datos.fecha_ingreso, 
+                motivo: 'Ingreso Inicial'
             });
         }
+        // 2. Cambio de Cargo (Viene del Modal)
         if (datosExtra.tipo === 'CAMBIO_CARGO') {
-            await supabase.from('historial_laboral').update({ fecha_fin: datosExtra.fechaSalida, motivo: datosExtra.motivoSalida }).eq('trabajador_id', trabajadorId).is('fecha_fin', null);
-            await supabase.from('historial_laboral').insert({ trabajador_id: trabajadorId, cargo: datosExtra.cargoNuevo, fecha_inicio: datosExtra.fechaEntrada, motivo: 'Cambio de Cargo' });
+            // Cerrar anterior
+            await supabase.from('historial_laboral').update({ 
+                fecha_fin: datosExtra.fechaSalida, 
+                motivo: datosExtra.motivoSalida 
+            }).eq('trabajador_id', trabajadorId).is('fecha_fin', null);
+            
+            // Insertar nuevo (AQUÍ ESTABA EL ERROR: asegurarse de usar el cargo nuevo del modal)
+            await supabase.from('historial_laboral').insert({ 
+                trabajador_id: trabajadorId, 
+                cargo: datosExtra.cargoNuevo, // <--- Correcto
+                fecha_inicio: datosExtra.fechaEntrada, 
+                motivo: 'Cambio de Cargo' 
+            });
         }
 
         alert("Guardado exitosamente.");
@@ -457,7 +474,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         recargarListas(); 
     }
 
-    // --- MODALES (Fechas y Motivos) ---
+    // --- MODALES ---
     window.abrirModalAccion = (tipo) => {
         const modal = document.getElementById('modal-acciones');
         const titulo = document.getElementById('modal-titulo');
@@ -523,15 +540,23 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             const fSalida = document.getElementById('acc-fecha-salida').value;
             const fEntrada = document.getElementById('acc-fecha-ingreso').value;
             const motivo = document.getElementById('acc-motivo').value || 'Cambio de Cargo';
-            await procesarGuardadoFinal({ tipo: 'CAMBIO_CARGO', fechaSalida: fSalida, fechaEntrada: fEntrada, cargoNuevo: datosAccionTemp.cargoNuevo, motivoSalida: motivo });
+            
+            // Pasar los datos del modal explicitamente a la funcion de guardado
+            await procesarGuardadoFinal({ 
+                tipo: 'CAMBIO_CARGO', 
+                fechaSalida: fSalida, 
+                fechaEntrada: fEntrada, 
+                cargoNuevo: datosAccionTemp.cargoNuevo, // <-- IMPORTANTE: Aquí pasamos el cargo nuevo seleccionado previamente
+                motivoSalida: motivo 
+            });
         }
     };
 
-    // Funciones PDF Placeholder
+    // Funciones PDF
     window.imprimirDoc = (tipo) => {
         const nombre = document.getElementById('t-nombre').value;
         alert(`Generando documento ${tipo.toUpperCase()} para ${nombre} (En desarrollo)`);
-        toggleMenuNombre(); // Cerrar menú
+        toggleMenuNombre(); 
     };
 
     async function listar(estado, gridId, countId) {
