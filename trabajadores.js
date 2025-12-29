@@ -1,4 +1,4 @@
-// trabajadores.js - VERSIÓN: HISTORIAL MANUAL BAJO BOTONES
+// trabajadores.js - VERSIÓN CORREGIDA: HISTORIAL AL FINAL + MENÚ RESTAURADO + FIX GUARDADO
 
 export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     contenedor.innerHTML = `
@@ -25,7 +25,12 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                         <i class="fas fa-user"></i> <span id="lbl-nombre-trab">NOMBRE</span> <i class="fas fa-caret-down"></i>
                     </button>
                     <div id="menu-descargas" class="dropdown-content">
+                        <div style="padding:10px; color:#aaa; font-size:0.8em;">DOCUMENTOS</div>
                         <a onclick="imprimirDoc('ficha')"><i class="fas fa-file-pdf" style="color:var(--danger)"></i> Ficha PDF</a>
+                        <a onclick="imprimirDoc('ats')"><i class="fas fa-hard-hat" style="color:var(--primary)"></i> Generar ATS</a>
+                        <a onclick="imprimirDoc('kardex')"><i class="fas fa-clipboard-list" style="color:var(--success)"></i> Kardex EPP</a>
+                        <a onclick="imprimirDoc('induccion')"><i class="fas fa-chalkboard-teacher"></i> Inducción</a>
+                        <hr style="border-color:#333; margin:5px 0;">
                         <a onclick="toggleMenuNombre()" style="color:#666;"><i class="fas fa-times"></i> Cerrar</a>
                     </div>
                 </div>
@@ -72,9 +77,9 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                             <label style="font-size:0.8em; color:var(--primary);">Cargo Actual:</label>
                             <select id="t-cargo" style="margin-top:2px;" required><option value="">Seleccione Cargo...</option></select>
                             
-                            <div id="div-fecha-ingreso-inicial" style="display:none;">
+                            <div id="div-fecha-ingreso-inicial" style="display:none; margin-top:5px;">
                                 <label style="font-size:0.8em; color:var(--success);">Fecha de Ingreso (Nuevo):</label>
-                                <input type="date" id="t-ingreso-manual">
+                                <input type="date" id="t-ingreso-manual" style="border:1px solid var(--success);">
                             </div>
                         </div>
                     </div>
@@ -123,6 +128,11 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                         <input id="t-emer-nom" placeholder="Emergencia: Nombre">
                         <input id="t-emer-tel" placeholder="Emergencia: Teléfono">
                     </div>
+                    <div class="form-grid" style="margin-top:10px;">
+                        <input id="t-camisa" placeholder="Talla Camisa">
+                        <input id="t-pantalon" placeholder="Talla Pantalón">
+                        <input id="t-zapatos" placeholder="Talla Zapatos">
+                    </div>
                 </details>
 
                 <div class="seccion-form" style="text-align:center;">
@@ -143,8 +153,11 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
                     </button>
                 </div>
 
-                <div style="margin-top:25px; border-top: 1px solid #444; padding-top:15px;">
-                    <h4 style="color:#00d2ff; margin-bottom:10px;"><i class="fas fa-history"></i> Historial Laboral</h4>
+                <div style="margin-top:30px; border-top: 2px solid #333; padding-top:20px; padding-bottom: 50px;">
+                    <h4 style="color:#00d2ff; margin-bottom:10px; text-align:center;"><i class="fas fa-history"></i> Historial Laboral</h4>
+                    <p style="font-size:0.8em; color:#aaa; text-align:center; margin-top:-5px; margin-bottom:10px;">
+                        Registro automático de cambios de cargo y reingresos
+                    </p>
                     <div style="background:rgba(0,0,0,0.3); border-radius:10px; padding:10px;">
                         <table id="tabla-historial" style="width:100%; font-size:0.85em; border-collapse: collapse; text-align:left;">
                             <thead>
@@ -164,7 +177,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     `;
 
     // =========================================================
-    // LÓGICA DEL NEGOCIO (FECHAS Y CARGOS)
+    // LÓGICA DEL NEGOCIO
     // =========================================================
 
     // 1. CARGA INICIAL
@@ -172,13 +185,21 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     const sel = document.getElementById('t-cargo');
     cargos?.forEach(c => sel.innerHTML += `<option value="${c.nombre}">${c.nombre}</option>`);
 
-    // Helper: Verificar estado civil para cónyuge
+    // Helper: Verificar estado civil
     window.verificarCivil = () => {
         const val = document.getElementById('t-civil').value;
         document.getElementById('div-conyuge').style.display = (val === 'Casado' || val === 'Unión Libre') ? 'block' : 'none';
     };
 
-    // Helper: Navegación
+    // Helper: Navegación y Menú
+    window.toggleMenuNombre = () => {
+        const menu = document.getElementById('menu-descargas');
+        const cont = document.getElementById('cont-nombre');
+        menu.classList.toggle('show');
+        if(menu.classList.contains('show')) cont.classList.add('show-bg');
+        else cont.classList.remove('show-bg');
+    };
+
     window.cambiarVista = (vista) => {
         ['vista-activos','vista-pasivos','vista-formulario'].forEach(id=>document.getElementById(id).style.display='none');
         document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
@@ -186,31 +207,35 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         if(vista==='pasivos'){ document.getElementById('vista-pasivos').style.display='block'; document.getElementById('tab-pasivos').classList.add('active'); }
     };
 
+    // 2. NUEVA FICHA (Limpieza Total)
     window.nuevaFicha = () => {
         document.getElementById('form-trabajador').reset();
         document.getElementById('t-id').value = '';
         document.getElementById('t-estado').value = 'ACTIVO';
         document.getElementById('t-cargo-original').value = '';
         
-        // Limpiar
+        // Limpiar visuales
         document.getElementById('preview-foto').src = 'https://via.placeholder.com/150';
         document.getElementById('preview-firma').style.display = 'none';
-        document.getElementById('body-historial').innerHTML = '<tr><td colspan="3" style="text-align:center; padding:10px; color:#666;">Guardar para iniciar historial</td></tr>';
+        document.getElementById('body-historial').innerHTML = '<tr><td colspan="3" style="text-align:center; padding:10px; color:#666;">Guarde la ficha para iniciar el historial.</td></tr>';
 
-        // Configuración para NUEVO
-        document.getElementById('div-fecha-ingreso-inicial').style.display = 'block'; // Mostrar input fecha ingreso
+        // Configuración visual para NUEVO
+        document.getElementById('div-fecha-ingreso-inicial').style.display = 'block'; 
+        document.getElementById('t-ingreso-manual').required = true; // Obligatorio al crear
         document.getElementById('btn-dar-baja').style.display = 'none';
         document.getElementById('btn-reactivar').style.display = 'none';
         document.getElementById('titulo-ficha').innerText = "Nuevo Ingreso";
+        document.getElementById('cont-nombre').style.display = 'none';
+        document.getElementById('div-conyuge').style.display = 'none';
         
         cambiarVista('xxx');
         document.getElementById('vista-formulario').style.display = 'block';
     };
 
-    // 2. ABRIR TRABAJADOR EXISTENTE
+    // 3. ABRIR TRABAJADOR EXISTENTE
     async function abrir(t) {
         // Llenar campos simples
-        const fields = ['cedula','nombre','lugar','sexo','civil','sangre','discapacidad','religion','celular','correo','licencia','profesion','sueldo','afiliacion','banco','cuenta','direccion','vivienda','material','cubierta','conyuge','emer-nom','emer-tel'];
+        const fields = ['cedula','nombre','lugar','sexo','civil','sangre','discapacidad','religion','celular','correo','licencia','profesion','sueldo','afiliacion','banco','cuenta','direccion','vivienda','material','cubierta','conyuge','emer-nom','emer-tel','camisa','pantalon','zapatos'];
         fields.forEach(f => {
             const el = document.getElementById('t-'+f);
             if(el) el.value = t[f.replace('-','_')] || t[f] || '';
@@ -218,7 +243,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
 
         document.getElementById('t-nacimiento').value = t.fecha_nacimiento || '';
         document.getElementById('t-cargo').value = t.cargo || '';
-        document.getElementById('t-cargo-original').value = t.cargo || ''; // Guardar para detectar cambios
+        document.getElementById('t-cargo-original').value = t.cargo || ''; 
         document.getElementById('t-id').value = t.id;
         document.getElementById('t-estado').value = t.estado;
         
@@ -228,15 +253,18 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             document.getElementById('t-edad').value = age;
         }
 
-        // Fotos y Visuales
+        // Fotos
         document.getElementById('preview-foto').src = t.foto_url || 'https://via.placeholder.com/150';
-        if(t.firma_url) { document.getElementById('preview-firma').src = t.firma_url; document.getElementById('preview-firma').style.display = 'block'; }
-        else document.getElementById('preview-firma').style.display = 'none';
+        if(t.firma_url) { 
+            document.getElementById('preview-firma').src = t.firma_url; 
+            document.getElementById('preview-firma').style.display = 'block'; 
+        } else document.getElementById('preview-firma').style.display = 'none';
         
         verificarCivil();
 
-        // Botones y Inputs
-        document.getElementById('div-fecha-ingreso-inicial').style.display = 'none'; // En edición no mostramos este input simple
+        // Configuración visual
+        document.getElementById('div-fecha-ingreso-inicial').style.display = 'none'; 
+        document.getElementById('t-ingreso-manual').required = false; 
         
         if(t.estado === 'ACTIVO') {
             document.getElementById('btn-dar-baja').style.display = 'block';
@@ -246,16 +274,19 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             document.getElementById('btn-reactivar').style.display = 'block';
         }
 
+        // Configurar menú nombre
+        const pNombre = t.nombre.split(' ')[0];
+        document.getElementById('lbl-nombre-trab').innerText = pNombre;
+        document.getElementById('cont-nombre').style.display = 'inline-flex';
         document.getElementById('titulo-ficha').innerText = `Editando: ${t.nombre}`;
         
-        // CARGAR HISTORIAL EN LA TABLA
+        // CARGAR HISTORIAL AL FINAL
         await cargarHistorial(t.id);
 
         cambiarVista('xxx');
         document.getElementById('vista-formulario').style.display='block';
     }
 
-    // 3. FUNCIÓN PARA CARGAR LA TABLA DE HISTORIAL
     async function cargarHistorial(trabajadorId) {
         const tbody = document.getElementById('body-historial');
         tbody.innerHTML = '<tr><td colspan="3">Cargando...</td></tr>';
@@ -263,7 +294,7 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         const { data } = await supabase.from('historial_laboral')
             .select('*')
             .eq('trabajador_id', trabajadorId)
-            .order('fecha_inicio', { ascending: false }); // El más reciente primero
+            .order('fecha_inicio', { ascending: false });
 
         tbody.innerHTML = '';
         if(!data || data.length === 0) {
@@ -287,52 +318,49 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
     document.getElementById('form-trabajador').onsubmit = async (e) => {
         e.preventDefault();
         
-        const id = document.getElementById('t-id').value;
+        let id = document.getElementById('t-id').value; // Puede estar vacío si es nuevo
         const cargoNuevo = document.getElementById('t-cargo').value;
         const cargoViejo = document.getElementById('t-cargo-original').value;
         const nombre = document.getElementById('t-nombre').value.toUpperCase();
 
-        // VALIDACIÓN: Si es nuevo, debe tener fecha de ingreso
+        // VALIDACIÓN DE NUEVO INGRESO
         if (!id && !document.getElementById('t-ingreso-manual').value) {
-            return alert("Por favor, ingrese la FECHA DE INGRESO para el nuevo trabajador.");
+            return alert("ERROR: Debe ingresar la FECHA DE INGRESO para el nuevo trabajador.");
         }
 
-        // DETECCIÓN CAMBIO DE CARGO (Solo si ya existe y el cargo es diferente)
+        // DETECCIÓN CAMBIO DE CARGO (Solo si existe ID)
         let fechaSalidaCargoAnterior = null;
         let fechaIngresoCargoNuevo = null;
 
         if (id && cargoViejo && cargoNuevo !== cargoViejo) {
-            // El usuario dijo: "se agrega la fecha de retiro... yo lo ingreso"
-            const confirmar = confirm(`El cargo cambió de ${cargoViejo} a ${cargoNuevo}.\n\n¿Deseas registrar este cambio en el historial?`);
+            const confirmar = confirm(`El cargo cambió de ${cargoViejo} a ${cargoNuevo}.\n\n¿Registrar cambio en historial?`);
             if (confirmar) {
-                fechaSalidaCargoAnterior = prompt(`Ingrese la fecha de FIN del cargo: ${cargoViejo} (YYYY-MM-DD)`);
-                fechaIngresoCargoNuevo = prompt(`Ingrese la fecha de INICIO del cargo: ${cargoNuevo} (YYYY-MM-DD)`);
+                fechaSalidaCargoAnterior = prompt(`Fecha FIN cargo ${cargoViejo} (YYYY-MM-DD):`);
+                fechaIngresoCargoNuevo = prompt(`Fecha INICIO cargo ${cargoNuevo} (YYYY-MM-DD):`);
                 
                 if (!fechaSalidaCargoAnterior || !fechaIngresoCargoNuevo) {
-                    return alert("Cancelado: Se necesitan ambas fechas para registrar el cambio de cargo.");
+                    return alert("Cancelado: Se requieren ambas fechas.");
                 }
             } else {
-                // Si dice que no, revertimos el cargo en el select visualmente para no guardar error
-                document.getElementById('t-cargo').value = cargoViejo;
-                return; 
+                document.getElementById('t-cargo').value = cargoViejo; // Revertir visualmente
+                return;
             }
         }
 
-        // Subir Archivos
+        // Subida de Archivos
         const fFoto = document.getElementById('t-foto').files[0];
         let fotoUrl = null; if(fFoto) fotoUrl = await subirArchivo(supabase, fFoto, 'fichas_personal');
         const fFirma = document.getElementById('t-firma').files[0];
         let firmaUrl = null; if(fFirma) firmaUrl = await subirArchivo(supabase, fFirma, 'fichas_personal');
 
-        // Datos Generales
+        // Objeto Datos
         const datos = {
             empresa_id: empresa.id,
             cedula: document.getElementById('t-cedula').value,
             nombre: nombre,
             fecha_nacimiento: document.getElementById('t-nacimiento').value,
-            cargo: cargoNuevo, // Se guarda el nuevo cargo
+            cargo: cargoNuevo,
             celular: document.getElementById('t-celular').value,
-            // ... resto de campos ...
             profesion: document.getElementById('t-profesion').value,
             sueldo: document.getElementById('t-sueldo').value,
             direccion: document.getElementById('t-direccion').value,
@@ -340,45 +368,56 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             estado_civil: document.getElementById('t-civil').value,
             conyuge: document.getElementById('t-conyuge').value,
             tipo_sangre: document.getElementById('t-sangre').value,
-            // Guardamos las fechas principales en la tabla madre también para referencia rápida
-            // Si es nuevo usamos el input, si es cambio usamos el prompt, si es edit normal no tocamos
-            fecha_ingreso: id ? (fechaIngresoCargoNuevo || undefined) : document.getElementById('t-ingreso-manual').value
+            // Guardamos fecha ingreso en la tabla principal solo si es NUEVO
+            fecha_ingreso: (!id) ? document.getElementById('t-ingreso-manual').value : undefined
         };
+        // Limpiamos undefined
+        if(datos.fecha_ingreso === undefined) delete datos.fecha_ingreso;
+
         if(fotoUrl) datos.foto_url = fotoUrl;
         if(firmaUrl) datos.firma_url = firmaUrl;
 
-        // GUARDAR EN BD PRINCIPAL
-        let trabajadorResult;
+        // GUARDADO EN SUPABASE (CORREGIDO PARA OBTENER ID)
+        let data, error;
         if(id) {
-            trabajadorResult = await supabase.from('trabajadores').update(datos).eq('id',id).select();
+            const res = await supabase.from('trabajadores').update(datos).eq('id',id).select();
+            data = res.data; error = res.error;
         } else {
             datos.estado = 'ACTIVO';
-            trabajadorResult = await supabase.from('trabajadores').insert([datos]).select();
+            const res = await supabase.from('trabajadores').insert([datos]).select();
+            data = res.data; error = res.error;
         }
 
-        const trabajadorId = id || trabajadorResult.data[0].id;
-
-        // 5. LÓGICA DE HISTORIAL
+        if(error) return alert("Error al guardar: " + error.message);
         
-        // A) SI ES NUEVO: Crear primer registro
+        // CAPTURAR EL ID (Sea nuevo o existente)
+        const trabajadorGuardado = data[0];
+        const trabajadorId = trabajadorGuardado.id;
+        
+        // Actualizar el campo oculto por si se sigue editando sin salir
+        document.getElementById('t-id').value = trabajadorId;
+
+        // LÓGICA HISTORIAL
+        
+        // A) SI ES NUEVO (Recién creado, ID no existía al inicio de la función)
         if (!id) {
             await supabase.from('historial_laboral').insert({
                 trabajador_id: trabajadorId,
                 cargo: cargoNuevo,
                 fecha_inicio: document.getElementById('t-ingreso-manual').value,
-                fecha_fin: null // Vigente
+                fecha_fin: null
             });
         }
 
-        // B) SI CAMBIÓ DE CARGO: Cerrar anterior y abrir nuevo
+        // B) SI HUBO CAMBIO DE CARGO
         if (id && fechaSalidaCargoAnterior && fechaIngresoCargoNuevo) {
-            // 1. Cerrar el historial abierto anterior (buscamos el que tenga fecha_fin NULL y cargo viejo)
+            // Cerrar anterior
             await supabase.from('historial_laboral')
                 .update({ fecha_fin: fechaSalidaCargoAnterior })
                 .eq('trabajador_id', trabajadorId)
-                .is('fecha_fin', null); // Asumimos que el último abierto es el que cerramos
+                .is('fecha_fin', null); // Cierra el que estaba abierto
 
-            // 2. Crear el nuevo
+            // Abrir nuevo
             await supabase.from('historial_laboral').insert({
                 trabajador_id: trabajadorId,
                 cargo: cargoNuevo,
@@ -387,21 +426,21 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             });
         }
 
-        alert("Guardado correctamente.");
+        alert("Guardado exitosamente.");
         
-        // Recargar todo para ver la tabla actualizada
-        if (id) {
-            // Si estamos editando, recargamos el historial ahí mismo
-            await cargarHistorial(id);
-            document.getElementById('t-cargo-original').value = cargoNuevo; // Actualizar referencia
+        // Si era nuevo, ahora estamos en modo edición
+        if(!id) {
+            abrir(trabajadorGuardado); // Recargar en modo edición para ver opciones
         } else {
-            // Si es nuevo, volvemos a la lista
-            recargarListas();
-            cambiarVista('activos');
+            await cargarHistorial(trabajadorId); // Solo actualizar tabla
+            document.getElementById('t-cargo-original').value = cargoNuevo;
         }
+        
+        // Actualizar contadores de fondo
+        recargarListas(); 
     };
 
-    // 6. DAR DE BAJA (Pide fecha salida -> Cierra historial)
+    // 5. DAR DE BAJA
     window.accionDarBaja = async () => {
         const id = document.getElementById('t-id').value;
         const nombre = document.getElementById('t-nombre').value;
@@ -409,14 +448,13 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         const fechaSalida = prompt(`Ingrese la FECHA DE RETIRO para ${nombre} (YYYY-MM-DD):`);
         if(!fechaSalida) return;
 
-        // 1. Actualizar Trabajador a PASIVO
+        // Update Trabajador
         await supabase.from('trabajadores').update({
             estado: 'PASIVO',
             fecha_salida: fechaSalida
         }).eq('id', id);
 
-        // 2. Cerrar historial en la tabla
-        // Busca cualquier registro abierto de este trabajador y le pone fecha fin
+        // Update Historial (Cerrar)
         await supabase.from('historial_laboral')
             .update({ fecha_fin: fechaSalida })
             .eq('trabajador_id', id)
@@ -427,28 +465,27 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
         cambiarVista('pasivos');
     };
 
-    // 7. REACTIVAR (Pide fecha ingreso -> Abre nuevo historial)
+    // 6. REACTIVAR
     window.accionReactivar = async () => {
         const id = document.getElementById('t-id').value;
         const nombre = document.getElementById('t-nombre').value;
         const cargoActual = document.getElementById('t-cargo').value;
 
-        const nuevaFecha = prompt(`Va a reactivar a ${nombre}.\n\nIngrese la NUEVA FECHA DE INGRESO (YYYY-MM-DD):`);
+        const nuevaFecha = prompt(`REACTIVAR a ${nombre}.\n\nNueva FECHA DE INGRESO (YYYY-MM-DD):`);
         if(!nuevaFecha) return;
         
-        // Opcional: ¿Cambia de cargo?
-        let nuevoCargo = prompt(`Confirme el CARGO para el reingreso:`, cargoActual);
+        let nuevoCargo = prompt(`Confirme CARGO de reingreso:`, cargoActual);
         if(!nuevoCargo) nuevoCargo = cargoActual;
 
-        // 1. Actualizar Trabajador a ACTIVO
+        // Update Trabajador
         await supabase.from('trabajadores').update({
             estado: 'ACTIVO',
             fecha_ingreso: nuevaFecha,
-            fecha_salida: null, // Limpiamos la salida general
+            fecha_salida: null,
             cargo: nuevoCargo
         }).eq('id', id);
 
-        // 2. Crear nueva entrada en historial
+        // Insert Historial
         await supabase.from('historial_laboral').insert({
             trabajador_id: id,
             cargo: nuevoCargo,
@@ -456,12 +493,20 @@ export async function cargarModuloTrabajadores(contenedor, supabase, empresa) {
             fecha_fin: null
         });
 
-        alert("Trabajador reactivado exitosamente.");
+        alert("Trabajador reactivado.");
         recargarListas();
         cambiarVista('activos');
     };
 
-    // Utils
+    // 7. FUNCIONES EXTRA (Placeholders para documentos)
+    window.imprimirDoc = (tipo) => {
+        const nombre = document.getElementById('t-nombre').value;
+        if(tipo === 'ficha') { alert("Generando PDF Ficha..."); /* Tu lógica de pdfMake aquí */ return; }
+        if(tipo === 'ats') alert("Generando ATS para " + nombre);
+        if(tipo === 'kardex') alert("Generando Kardex EPP para " + nombre);
+        if(tipo === 'induccion') alert("Generando Constancia Inducción para " + nombre);
+    };
+
     async function listar(estado, gridId, countId) {
         const { data } = await supabase.from('trabajadores').select('*').eq('empresa_id', empresa.id).eq('estado', estado).order('nombre');
         if(document.getElementById(countId)) document.getElementById(countId).innerText = data ? data.length : 0;
