@@ -109,7 +109,7 @@ menus?.forEach(m => {
     };
     menuDiv.appendChild(row);
 });
-
+}
 // FUNCIONES ADMIN (BOTONES INFERIORES)
 document.getElementById('admin-add-company').onclick = async () => {
     const n = prompt("Nombre Empresa:"); const l = prompt("URL Logo:");
