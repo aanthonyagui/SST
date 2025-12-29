@@ -100,7 +100,7 @@ menus?.forEach(m => {
             cargarModuloTrabajadores(ws, _supabase, empresaActual);
         } 
         // NUEVA DETECCIÓN: Módulo Admin / Configuración
-        else if(titulo.includes('admin') || titulo.includes('config') || titulo.includes('ajustes')) {
+        else if(titulo.includes('ADMIN') || titulo.includes('config') || titulo.includes('ajustes')) {
             cargarModuloAdmin(ws, _supabase, empresaActual);
         }
         else {
